@@ -1,25 +1,43 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getEnergyApi } from "../data/getEnergyApi";
-import type { SiteSummary } from "../data/api/energyApi";
+import type { EnergyReading, SiteSummary } from "../data/api/energyApi";
+import { Card } from "../components/ui/Card";
+import { Spinner } from "../components/ui/Spinner";
+import { EmptyState } from "../components/ui/EmptyState";
+import { ErrorState } from "../components/ui/ErrorState";
+import { SiteSummaryCard } from "../components/dashboard/SiteSummaryCard";
+import { ConsumptionChart } from "../components/dashboard/ConsumptionChart";
+import { RecentReadings } from "../components/dashboard/RecentReadings";
+
+type LoadState =
+  | { status: "loading" }
+  | { status: "error"; message: string }
+  | { status: "ready"; sites: SiteSummary[]; readings: EnergyReading[] };
 
 export function DashboardPage() {
-  const [sites, setSites] = useState<SiteSummary[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [state, setState] = useState<LoadState>({ status: "loading" });
+  const [reloadKey, setReloadKey] = useState(0);
+
+  const load = useCallback(async () => {
+    setState({ status: "loading" });
+    try {
+      const api = getEnergyApi();
+      const sites = await api.getSiteSummaries();
+      const readings = sites.length
+        ? await api.getRecentReadings(sites[0].siteId, 12)
+        : [];
+      setState({ status: "ready", sites, readings });
+    } catch (err) {
+      setState({
+        status: "error",
+        message: err instanceof Error ? err.message : "Unknown error",
+      });
+    }
+  }, []);
 
   useEffect(() => {
-    let active = true;
-    getEnergyApi()
-      .getSiteSummaries()
-      .then((result) => {
-        if (active) setSites(result);
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
+    void load();
+  }, [load, reloadKey]);
 
   return (
     <section className="space-y-6">
@@ -30,33 +48,42 @@ export function DashboardPage() {
         </p>
       </div>
 
-      {loading ? (
-        <p className="text-sm text-gray-500">Loading…</p>
+      {state.status === "loading" ? (
+        <Spinner label="Loading dashboard" />
+      ) : state.status === "error" ? (
+        <ErrorState
+          message={state.message}
+          onRetry={() => setReloadKey((k) => k + 1)}
+        />
+      ) : state.sites.length === 0 ? (
+        <EmptyState
+          title="No sites available"
+          description="Connect a device or configure sample data to see readings."
+        />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {sites.map((site) => (
-            <article
-              key={site.siteId}
-              className="rounded-2xl border border-white/10 bg-white/[0.03] p-5"
-            >
-              <h2 className="text-sm font-semibold text-white">{site.name}</h2>
-              <dl className="mt-4 space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <dt className="text-gray-400">Current power</dt>
-                  <dd className="font-medium text-white">{site.currentPowerKw} kW</dd>
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {state.sites.map((site) => (
+              <SiteSummaryCard key={site.siteId} site={site} />
+            ))}
+          </div>
+
+          <Card title="Consumption over time">
+            {state.readings.length === 0 ? (
+              <EmptyState
+                title="No readings"
+                description="No recent readings for the selected site."
+              />
+            ) : (
+              <>
+                <ConsumptionChart readings={state.readings} />
+                <div className="mt-4">
+                  <RecentReadings readings={state.readings} />
                 </div>
-                <div className="flex justify-between">
-                  <dt className="text-gray-400">Today energy</dt>
-                  <dd className="font-medium text-white">{site.todayEnergyKwh} kWh</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-gray-400">Today cost</dt>
-                  <dd className="font-medium text-emerald-400">₹{site.todayCostInr}</dd>
-                </div>
-              </dl>
-            </article>
-          ))}
-        </div>
+              </>
+            )}
+          </Card>
+        </>
       )}
     </section>
   );

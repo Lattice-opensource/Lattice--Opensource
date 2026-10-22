@@ -33,11 +33,22 @@ src/
   App.tsx                   routes
   index.css                 global styles + theme tokens
   components/layout/        shared layout shell, nav, top bar
+  components/ui/            reusable UI primitives (Card, Spinner, EmptyState, ErrorState)
+  components/dashboard/     dashboard-specific components
   pages/                    route pages
   data/api/                 data-access interface + sample implementation
   data/sample/              clearly labeled sample data
   data/getEnergyApi.ts      provider (swap implementation here)
+  config/env.ts             environment configuration
+  types/apiContract.ts      proposed API contract types
 ```
+
+## Outstanding issues / next steps
+
+- API contract v0.1.0 only exposes `/api/health` and `/api/readings/latest`; site summaries, cost and device/circuit grouping need contract additions (team approval).
+- HTTP-backed `EnergyApi` implementation is not yet provided; sample provider remains default.
+- No test framework is configured; add tests when a runner is agreed.
+- Dashboard chart is a minimal SVG implementation; replace with a chart library if needed.
 
 ## Data access
 
