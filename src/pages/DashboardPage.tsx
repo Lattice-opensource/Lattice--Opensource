@@ -12,7 +12,7 @@ import { RecentReadings } from "../components/dashboard/RecentReadings";
 type LoadState =
   | { status: "loading" }
   | { status: "error"; message: string }
-  | { status: "ready"; sites: SiteSummary[]; readings: EnergyReading[] };
+  | { status: "ready"; sites: SiteSummary[]; readings: EnergyReading[]; dataSource?: { simulated: boolean; notice: string } };
 
 export function DashboardPage() {
   const [state, setState] = useState<LoadState>({ status: "loading" });
@@ -26,7 +26,8 @@ export function DashboardPage() {
       const readings = sites.length
         ? await api.getRecentReadings(sites[0].siteId, 12)
         : [];
-      setState({ status: "ready", sites, readings });
+      const dataSource = (await api.getDataSource?.()) ?? undefined;
+      setState({ status: "ready", sites, readings, dataSource });
     } catch (err) {
       setState({
         status: "error",
@@ -62,6 +63,11 @@ export function DashboardPage() {
         />
       ) : (
         <>
+          {state.dataSource?.simulated || state.dataSource === undefined ? (
+            <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs text-amber-300">
+              {state.dataSource?.notice ?? "Sample data only. Not real sensor measurements."}
+            </div>
+          ) : null}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {state.sites.map((site) => (
               <SiteSummaryCard key={site.siteId} site={site} />

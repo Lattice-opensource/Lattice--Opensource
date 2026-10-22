@@ -1,5 +1,4 @@
 import type { EnergyApi, EnergyReading, SiteSummary } from "./energyApi";
-import type { ApiReading, ReadingsResponse, ApiSiteSummary } from "../../types/apiContract";
 import { config } from "../../config/env";
 
 const API_BASE = config.apiBaseUrl.replace(/\/$/, "");
@@ -21,32 +20,81 @@ async function request<T>(path: string): Promise<T> {
   return (await res.json()) as T;
 }
 
+interface SiteDto {
+  id: string;
+  name: string;
+}
+
+interface SummaryTotals {
+  powerW: number;
+  energyKwh: number;
+  costInr: number;
+}
+
+interface SummaryResponse {
+  data: { siteId: string; totals: SummaryTotals };
+}
+
+interface SitesResponse {
+  data: SiteDto[];
+}
+
+interface ReadingDto {
+  deviceId: string;
+  timestamp: string;
+  powerWatts: number;
+  energyKwh: number;
+  source: "simulated" | "real";
+  isSimulated?: boolean;
+}
+
+interface LatestResponse {
+  readings?: ReadingDto[];
+  data?: ReadingDto[];
+}
+
+interface ConfigResponse {
+  data: { dataSource: { simulated: boolean; notice: string } };
+}
+
 export class HttpEnergyApi implements EnergyApi {
   async getSiteSummaries(): Promise<SiteSummary[]> {
-    const body = await request<{ data?: ApiSiteSummary[] } | ApiSiteSummary[]>(
-      "/api/sites/summary",
+    const sitesBody = await request<SitesResponse>("/api/sites");
+    const sites = sitesBody.data ?? [];
+    const summaries = await Promise.all(
+      sites.map(async (site) => {
+        const summaryBody = await request<SummaryResponse>(
+          `/api/readings/summary?siteId=${encodeURIComponent(site.id)}`,
+        );
+        const totals = summaryBody.data.totals;
+        return {
+          siteId: site.id,
+          name: site.name,
+          currentPowerW: totals.powerW,
+          todayEnergyKwh: totals.energyKwh,
+          todayCostInr: totals.costInr,
+        };
+      }),
     );
-    const list = Array.isArray(body) ? body : (body.data ?? []);
-    return list.map((s) => ({
-      siteId: s.siteId,
-      name: s.name,
-      currentPowerKw: s.currentPowerKw,
-      todayEnergyKwh: s.todayEnergyKwh,
-      todayCostInr: s.todayCostInr,
-    }));
+    return summaries;
   }
 
-  async getRecentReadings(_siteId: string, limit: number): Promise<EnergyReading[]> {
-    const body = await request<ReadingsResponse & { data?: ApiReading[] }>(
-      `/api/readings/latest?limit=${encodeURIComponent(String(limit))}`,
+  async getRecentReadings(siteId: string, limit: number): Promise<EnergyReading[]> {
+    const body = await request<LatestResponse>(
+      `/api/readings/latest?siteId=${encodeURIComponent(siteId)}&limit=${encodeURIComponent(String(limit))}`,
     );
-    const readings: ApiReading[] = body.readings ?? body.data ?? [];
+    const readings = body.readings ?? body.data ?? [];
     return readings.map((r) => ({
       timestamp: r.timestamp,
-      powerKw: r.powerWatts / 1000,
+      powerW: r.powerWatts,
       energyKwh: r.energyKwh,
       costInr: undefined,
     }));
+  }
+
+  async getDataSource(): Promise<{ simulated: boolean; notice: string }> {
+    const body = await request<ConfigResponse>("/api/config");
+    return body.data.dataSource;
   }
 }
 

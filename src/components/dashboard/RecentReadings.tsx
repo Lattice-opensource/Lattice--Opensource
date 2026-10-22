@@ -15,7 +15,7 @@ export function RecentReadings({ readings }: RecentReadingsProps) {
         <thead>
           <tr className="border-b border-white/10 text-xs text-gray-400">
             <th scope="col" className="py-2 pr-4 font-medium">Time</th>
-            <th scope="col" className="py-2 pr-4 font-medium">Power (kW)</th>
+            <th scope="col" className="py-2 pr-4 font-medium">Power (W)</th>
             <th scope="col" className="py-2 pr-4 font-medium">Energy (kWh)</th>
             {hasCost ? <th scope="col" className="py-2 pr-4 font-medium">Cost (₹)</th> : null}
           </tr>
@@ -24,7 +24,7 @@ export function RecentReadings({ readings }: RecentReadingsProps) {
           {readings.map((r) => (
             <tr key={r.timestamp} className="border-b border-white/5">
               <td className="py-2 pr-4 text-gray-300">{new Date(r.timestamp).toLocaleString()}</td>
-              <td className="py-2 pr-4 text-white">{r.powerKw}</td>
+              <td className="py-2 pr-4 text-white">{r.powerW}</td>
               <td className="py-2 pr-4 text-white">{r.energyKwh}</td>
               {hasCost ? (
                 <td className="py-2 pr-4 text-emerald-400">{r.costInr ?? "—"}</td>

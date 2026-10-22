@@ -10,8 +10,8 @@ export function SiteSummaryCard({ site }: SiteSummaryCardProps) {
       <h3 className="text-sm font-semibold text-white">{site.name}</h3>
       <dl className="mt-4 space-y-2 text-sm">
         <div className="flex justify-between">
-          <dt className="text-gray-400">Current power</dt>
-          <dd className="font-medium text-white">{site.currentPowerKw} kW</dd>
+                <dt className="text-gray-400">Current power</dt>
+                <dd className="font-medium text-white">{site.currentPowerW} W</dd>
         </div>
         <div className="flex justify-between">
           <dt className="text-gray-400">Today energy</dt>

@@ -10,6 +10,10 @@ export class SampleEnergyApi implements EnergyApi {
     const readings = SAMPLE_READINGS[siteId] ?? [];
     return readings.slice(-limit);
   }
+
+  async getDataSource(): Promise<{ simulated: boolean; notice: string }> {
+    return { simulated: true, notice: "Sample data only. Not real sensor measurements." };
+  }
 }
 
 export const sampleEnergyApi = new SampleEnergyApi();
