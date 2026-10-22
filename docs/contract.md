@@ -107,9 +107,19 @@ Errors:
 
 No push transport in v1. Poll `GET /api/readings/latest` (suggested 5 s). The simulator guarantees a reading younger than 30 s, so the "live" UI moves.
 
+## Canonical response schema for `/api/readings/latest`
+
+`readings` is the **canonical** array. `data` and `meta` are retained for backward
+compatibility with earlier backend clients but new code should read `readings`,
+`count`, and `generatedAt`.
+
+Field naming: wire format uses `powerWatts` (watts) and `source: "simulated"|"real"`.
+The richer internal fields (`powerW`, `isSimulated`, `source: "simulator"|"device"|"import"`,
+`energyKwhTotal`, ...) are retained as additive fields on each reading.
+
 ## Frontend connection
 
-Base URL: `http://localhost:4000` in dev (configurable). All endpoints are under `/api`.
+Base URL: `http://localhost:8000` in dev (configurable). All endpoints are under `/api`.
 Set `CORS_ORIGINS` to include the frontend origin (e.g. `http://localhost:5173`).
 
 ```ts

@@ -113,6 +113,12 @@ export function aggregate(db: DatabaseSync, params: AggregateParams): AggregateP
     if (!dev) continue;
     if (params.roomId && dev.roomId !== params.roomId) continue;
     if (params.deviceId && r.deviceId !== params.deviceId) continue;
+    // For site-level aggregation, use the site meter only to avoid
+    // double-counting appliance readings.
+    if (params.groupBy === 'site') {
+      const isMeter = dev.roomId === null && dev.category === 'other';
+      if (!isMeter) continue;
+    }
 
     const { start, end } = bucketStartUtc(r.timestamp, params.bucket, siteTz);
     const bucketStart = toIso(start);
@@ -181,6 +187,7 @@ export function aggregate(db: DatabaseSync, params: AggregateParams): AggregateP
       powerWMax: round2(g.powerMax),
       energyKwh: round2(g.energyKwh),
       costInr: round2(g.costInr),
+      costIsEstimate: true,
       sampleCount: g.sampleCount,
       isSimulated: g.simulatedCount === g.sampleCount,
     });

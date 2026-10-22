@@ -207,6 +207,7 @@ export const AggregatePointSchema = z.object({
   powerWMax: z.number().min(0),
   energyKwh: z.number().min(0),
   costInr: z.number().min(0),
+  costIsEstimate: z.boolean().optional(),
   sampleCount: z.number().int().min(0),
   isSimulated: z.boolean(),
 });
@@ -218,6 +219,7 @@ export const SummarySchema = z.object({
     powerW: z.number().min(0),
     energyKwh: z.number().min(0),
     costInr: z.number().min(0),
+    costIsEstimate: z.boolean().optional(),
   }),
   byDevice: z.array(
     z.object({
