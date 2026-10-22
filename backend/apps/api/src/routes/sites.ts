@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { getDb } from '../db/index.js';
 import { listSites, getSite } from '../db/repositories/sites.js';
 import { computeSummary } from '../services/summary.js';
-import { round2 } from '../services/cost.js';
 import { parseOrThrow } from '../lib/validate.js';
 
 export async function registerSitesRoute(app: FastifyInstance): Promise<void> {
@@ -27,7 +26,7 @@ export async function registerSitesRoute(app: FastifyInstance): Promise<void> {
       return {
         siteId: s.id,
         name: s.name,
-        currentPowerKw: round2(summary.totals.powerW / 1000),
+        currentPowerW: summary.totals.powerW,
         todayEnergyKwh: summary.totals.energyKwh,
         todayCostInr: summary.totals.costInr,
       };

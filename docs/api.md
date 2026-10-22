@@ -12,7 +12,7 @@ cp .env.example .env          # edit as needed
 npm install
 npm run build                 # compile TS + copy schema.sql
 npm run seed                  # optional: (re)seed the DB (also runs on first start)
-npm run dev                   # tsx watch, http://127.0.0.1:4000
+npm run dev                   # tsx watch, http://127.0.0.1:8000
 ```
 
 Production-style run:
