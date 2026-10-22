@@ -231,6 +231,8 @@ export interface AggregatePoint {
   energyKwh: number;
   /** Estimated cost in INR for the energy in this bucket. */
   costInr: number;
+  /** True: costInr is an estimate based on the configured tariff, not a utility bill. */
+  costIsEstimate?: boolean;
   /** How many raw readings were folded into this bucket. */
   sampleCount: number;
   /** True when every contributing reading was simulated. */
@@ -248,6 +250,8 @@ export interface Summary {
     energyKwh: number;
     /** Estimated cost for the window, INR. */
     costInr: number;
+    /** True: costInr is an estimate based on the configured tariff. */
+    costIsEstimate?: boolean;
   };
   byDevice: Array<{
     deviceId: string;

@@ -57,6 +57,15 @@ export function computeSummary(db: DatabaseSync, params: SummaryParams): Summary
     });
   }
 
+  // Site totals use the site meter (main meter) when present, to avoid
+  // double-counting appliance readings. If no site meter exists (e.g. a
+  // real-hardware deployment with only appliance sensors), fall back to
+  // summing all devices (best effort) and document the limitation.
+  const siteMeterIds = new Set(
+    devices.filter((d) => d.roomId === null && d.category === 'other').map((d) => d.id),
+  );
+  const hasSiteMeter = siteMeterIds.size > 0;
+
   let totalEnergy = 0;
   let totalCost = 0;
   let simulatedReadings = 0;
@@ -77,8 +86,11 @@ export function computeSummary(db: DatabaseSync, params: SummaryParams): Summary
       realReadings += 1;
       realEnergy += ek;
     }
-    totalEnergy += ek;
-    totalCost += costForEnergy(tariff, ek);
+    // Only the site meter contributes to site totals.
+    if (!hasSiteMeter || siteMeterIds.has(r.deviceId)) {
+      totalEnergy += ek;
+      totalCost += costForEnergy(tariff, ek);
+    }
   }
 
   // current power from latest readings
@@ -87,6 +99,13 @@ export function computeSummary(db: DatabaseSync, params: SummaryParams): Summary
     if (dev) dev.powerW = r.powerW;
   }
 
+  // Site current power = site meter's latest power (avoid double counting).
+  const siteMeterPower = [...latestByDevice.entries()]
+    .filter(([did]) => siteMeterIds.has(did))
+    .reduce((acc, [, r]) => acc + r.powerW, 0);
+  const totalPower = hasSiteMeter
+    ? siteMeterPower
+    : [...byDeviceMap.values()].reduce((a, b) => a + b.powerW, 0);
   const byRoomMap = new Map<string, { roomId: string; roomName: string; powerW: number; energyKwh: number; costInr: number }>();
   for (const d of byDeviceMap.values()) {
     if (!d.roomId) continue;
@@ -103,8 +122,6 @@ export function computeSummary(db: DatabaseSync, params: SummaryParams): Summary
     byRoomMap.set(d.roomId, room);
   }
 
-  const totalPower = [...byDeviceMap.values()].reduce((a, b) => a + b.powerW, 0);
-
   return {
     siteId,
     window: { from: params.from, to: params.to },
@@ -112,6 +129,7 @@ export function computeSummary(db: DatabaseSync, params: SummaryParams): Summary
       powerW: round2(totalPower),
       energyKwh: round2(totalEnergy),
       costInr: round2(totalCost),
+      costIsEstimate: true,
     },
     byDevice: [...byDeviceMap.values()].map((d) => ({
       ...d,

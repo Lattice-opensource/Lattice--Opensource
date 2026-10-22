@@ -2,6 +2,8 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { getDb } from '../db/index.js';
 import { listReadings, latestPerDevice } from '../db/repositories/readings.js';
+import { getSite } from '../db/repositories/sites.js';
+import { startOfDayInTz } from '../lib/time.js';
 import { parseOrThrow } from '../lib/validate.js';
 import { computeSummary } from '../services/summary.js';
 import { aggregate, resolveTariff } from '../services/aggregate.js';
@@ -96,7 +98,12 @@ export async function registerReadingsRoute(app: FastifyInstance): Promise<void>
     );
     const db = getDb();
     const now = new Date();
-    const from = q.from ?? new Date(now.getTime() - 24 * 3600 * 1000).toISOString();
+    let from = q.from;
+    if (!from) {
+      const site = q.siteId ? getSite(db, q.siteId) : null;
+      const tz = site?.timezone ?? 'Asia/Kolkata';
+      from = startOfDayInTz(tz, now);
+    }
     const to = q.to ?? now.toISOString();
     if (Number.isNaN(Date.parse(from)) || Number.isNaN(Date.parse(to))) {
       reply.code(400).send({ error: { code: 'VALIDATION_ERROR', message: 'Invalid from/to timestamp', requestId: req.id } });
