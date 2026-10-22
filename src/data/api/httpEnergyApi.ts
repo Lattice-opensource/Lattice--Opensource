@@ -134,21 +134,23 @@ export class HttpEnergyApi implements EnergyApi {
     const canonical = body.data ?? [];
     if (canonical.length > 0) {
       return canonical.map((r) => ({
-        timestamp: r.timestamp,
-        powerW: r.powerW,
-        energyKwh: r.energyKwh ?? 0,
+        timestamp: r.timestamp ?? "",
+        powerW: Number.isFinite(r.powerW) ? r.powerW : 0,
+        energyKwh: Number.isFinite(r.energyKwh) ? (r.energyKwh as number) : 0,
         costInr: undefined,
-        isSimulated: r.isSimulated,
+        // Treat anything that is not explicitly marked real as simulated so that
+        // missing/malformed records are never presented as live hardware data.
+        isSimulated: r.isSimulated !== false,
         deviceId: r.deviceId,
       }));
     }
     const legacy = body.readings ?? [];
     return legacy.map((r) => ({
-      timestamp: r.timestamp,
-      powerW: r.powerWatts,
-      energyKwh: r.energyKwh,
+      timestamp: r.timestamp ?? "",
+      powerW: Number.isFinite(r.powerWatts) ? r.powerWatts : 0,
+      energyKwh: Number.isFinite(r.energyKwh) ? r.energyKwh : 0,
       costInr: undefined,
-      isSimulated: r.source === "simulated",
+      isSimulated: r.source !== "real",
       deviceId: r.deviceId,
     }));
   }
