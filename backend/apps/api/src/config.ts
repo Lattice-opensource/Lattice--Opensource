@@ -26,6 +26,13 @@ const EnvSchema = z.object({
   SEED_ON_START: z.string().optional(),
   ENABLE_DEV_ENDPOINTS: z.string().optional(),
   STALE_AFTER_SECONDS: z.coerce.number().int().min(60).max(86400).default(1800),
+  MQTT_ENABLED: z.string().optional(),
+  MQTT_BROKER_URL: z.string().optional(),
+  MQTT_USERNAME: z.string().optional(),
+  MQTT_PASSWORD: z.string().optional(),
+  MQTT_TOPIC_PREFIX: z.string().min(1).optional(),
+  MQTT_CLIENT_ID: z.string().min(1).optional(),
+  MQTT_QOS: z.coerce.number().int().min(0).max(2).optional(),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
@@ -67,6 +74,14 @@ export const isProduction = env.NODE_ENV === 'production';
 export const simulationEnabled = parseBool(env.SIMULATION_ENABLED, env.NODE_ENV !== 'production');
 export const devEndpointsEnabled = parseBool(env.ENABLE_DEV_ENDPOINTS, env.NODE_ENV !== 'production');
 export const seedOnStart = parseBool(env.SEED_ON_START, true);
+
+export const mqttEnabled = parseBool(env.MQTT_ENABLED, false);
+export const mqttBrokerUrl = env.MQTT_BROKER_URL;
+export const mqttUsername = env.MQTT_USERNAME;
+export const mqttPassword = env.MQTT_PASSWORD;
+export const mqttTopicPrefix = (env.MQTT_TOPIC_PREFIX ?? 'lattice/telemetry').replace(/\/$/, '');
+export const mqttClientId = env.MQTT_CLIENT_ID ?? 'lattice-api';
+export const mqttQos = (env.MQTT_QOS ?? 1) as 0 | 1 | 2;
 
 export const databasePath = env.DATABASE_PATH
   ? path.resolve(process.cwd(), env.DATABASE_PATH)

@@ -118,6 +118,46 @@ export function insertReading(
   );
 }
 
+export function insertMqttReading(
+  db: DatabaseSync,
+  r: {
+    id: string;
+    deviceId: string;
+    timestamp: string;
+    intervalStart: string;
+    intervalSeconds: number;
+    powerW: number;
+    energyKwh: number | null;
+    energyKwhTotal: number | null;
+    voltageV: number | null;
+    currentA: number | null;
+    isSimulated: boolean;
+    source: ReadingSource;
+  },
+): boolean {
+  const res = db
+    .prepare(
+      `INSERT OR IGNORE INTO readings
+       (id, device_id, timestamp, interval_start, interval_seconds, power_w, energy_kwh, energy_kwh_total, voltage_v, current_a, is_simulated, source)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    )
+    .run(
+      r.id,
+      r.deviceId,
+      r.timestamp,
+      r.intervalStart,
+      r.intervalSeconds,
+      r.powerW,
+      r.energyKwh,
+      r.energyKwhTotal,
+      r.voltageV,
+      r.currentA,
+      r.isSimulated ? 1 : 0,
+      r.source,
+    );
+  return Number(res.changes ?? 0) > 0;
+}
+
 export function latestPerDevice(
   db: DatabaseSync,
   filters: { siteId?: string; deviceId?: string } = {},

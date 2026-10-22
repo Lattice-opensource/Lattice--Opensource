@@ -2,7 +2,8 @@ import { buildApp } from './app.js';
 import { openDatabase, closeDatabase } from './db/index.js';
 import { seedDatabase } from './db/seed.js';
 import { startLiveWriter, stopLiveWriter } from './services/simulator.js';
-import { env, simulationEnabled } from './config.js';
+import { startMqttIngestion } from './services/mqtt.js';
+import { env, simulationEnabled, mqttEnabled, redactSecret } from './config.js';
 
 async function main(): Promise<void> {
   const db = openDatabase();
@@ -17,10 +18,14 @@ async function main(): Promise<void> {
       })
     : () => {};
 
+  const mqttHandle = startMqttIngestion(db);
+  console.log(`[lattice] mqtt: ${mqttEnabled ? 'enabled' : 'disabled'} (broker ${mqttEnabled ? (env.MQTT_BROKER_URL ?? '(unset)') : '(n/a)'}, password ${redactSecret(env.MQTT_PASSWORD)})`);
+
   const app = await buildApp();
   const close = async () => {
     liveStop();
     stopLiveWriter();
+    mqttHandle.stop();
     await app.close();
     closeDatabase();
   };

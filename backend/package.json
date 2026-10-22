@@ -18,5 +18,8 @@
     "test": "npm run test --workspaces --if-present",
     "seed": "npm run seed --workspace @lattice/api",
     "check": "npm run typecheck && npm run test"
+  },
+  "dependencies": {
+    "mqtt": "^5.16.1"
   }
 }
