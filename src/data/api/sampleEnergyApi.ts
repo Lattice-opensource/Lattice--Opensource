@@ -1,4 +1,4 @@
-import type { EnergyApi, EnergyReading, SiteSummary } from "./energyApi";
+import type { EnergyApi, EnergyReading, SiteSummary, DeviceSummary, AggregatePoint } from "./energyApi";
 import { SAMPLE_READINGS, SAMPLE_SITE_SUMMARIES } from "../sample/sampleEnergyData";
 
 export class SampleEnergyApi implements EnergyApi {
@@ -13,6 +13,14 @@ export class SampleEnergyApi implements EnergyApi {
 
   async getDataSource(): Promise<{ simulated: boolean; notice: string }> {
     return { simulated: true, notice: "Sample data only. Not real sensor measurements." };
+  }
+
+  async getDeviceSummaries(): Promise<DeviceSummary[]> {
+    return [];
+  }
+
+  async getAggregate(): Promise<AggregatePoint[]> {
+    return [];
   }
 }
 
