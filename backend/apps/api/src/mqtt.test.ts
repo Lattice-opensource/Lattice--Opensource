@@ -115,6 +115,22 @@ describe('ingestTelemetry', () => {
     expect(row.is_simulated).toBe(0);
     expect(row.source).toBe('device');
   });
+
+  it('converts currentMa to amps', () => {
+    const ts = new Date(Date.now() - 50000).toISOString();
+    const res = ingestTelemetry(db, { deviceId: 'dev_fridge_01', timestamp: ts, powerW: 80, currentMa: 350 });
+    expect(res.inserted).toBe(true);
+    const row = db.prepare('SELECT current_a FROM readings WHERE device_id=? AND timestamp=?').get('dev_fridge_01', new Date(ts).toISOString()) as any;
+    expect(row.current_a).toBeCloseTo(0.35, 5);
+  });
+
+  it('preserves currentA when provided', () => {
+    const ts = new Date(Date.now() - 60000).toISOString();
+    const res = ingestTelemetry(db, { deviceId: 'dev_geyser_01', timestamp: ts, powerW: 0, currentA: 1.25 });
+    expect(res.inserted).toBe(true);
+    const row = db.prepare('SELECT current_a FROM readings WHERE device_id=? AND timestamp=?').get('dev_geyser_01', new Date(ts).toISOString()) as any;
+    expect(row.current_a).toBe(1.25);
+  });
 });
 
 describe('startMqttIngestion', () => {

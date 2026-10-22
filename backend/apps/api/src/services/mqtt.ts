@@ -15,6 +15,7 @@ const TelemetrySchema = z.object({
   intervalSeconds: z.number().int().min(0).max(86400).optional(),
   voltageV: z.number().finite().min(0).max(1000).optional(),
   currentA: z.number().finite().min(0).max(1000).optional(),
+  currentMa: z.number().finite().min(0).max(1_000_000).optional(),
 });
 
 export type TelemetryPayload = z.infer<typeof TelemetrySchema>;
@@ -67,7 +68,12 @@ export function ingestTelemetry(
     energyKwh: v.data.energyKwh ?? null,
     energyKwhTotal: v.data.energyKwhTotal ?? null,
     voltageV: v.data.voltageV ?? null,
-    currentA: v.data.currentA ?? null,
+    currentA:
+      v.data.currentA !== undefined
+        ? v.data.currentA
+        : v.data.currentMa !== undefined
+          ? v.data.currentMa / 1000
+          : null,
     isSimulated: false,
     source: 'device',
   });
