@@ -1,0 +1,22 @@
+{
+  "name": "lattice",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Lattice - smart energy monitoring platform (backend + shared contracts)",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @lattice/api",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "seed": "npm run seed --workspace @lattice/api",
+    "check": "npm run typecheck && npm run test"
+  }
+}
