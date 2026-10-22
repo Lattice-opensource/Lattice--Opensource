@@ -173,8 +173,19 @@ export interface SummaryResult {
   };
 }
 
-export function deleteSimulatedOlderThan(db: DatabaseSync, cutoffIso: string): number {
-  const res = db.prepare('DELETE FROM readings WHERE is_simulated = 1 AND timestamp < ?').run(cutoffIso);
+export function deleteSimulatedOlderThan(
+  db: DatabaseSync,
+  cutoffIso: string,
+  maxIntervalSeconds?: number,
+): number {
+  if (maxIntervalSeconds === undefined) {
+    const res = db.prepare('DELETE FROM readings WHERE is_simulated = 1 AND timestamp < ?').run(cutoffIso);
+    return Number(res.changes ?? 0);
+  }
+  // Only prune fine-grained live samples; coarse historical backfill rows are kept.
+  const res = db
+    .prepare('DELETE FROM readings WHERE is_simulated = 1 AND timestamp < ? AND interval_seconds <= ?')
+    .run(cutoffIso, maxIntervalSeconds);
   return Number(res.changes ?? 0);
 }
 

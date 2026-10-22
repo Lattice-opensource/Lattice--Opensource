@@ -1,214 +1,230 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import { getEnergyApi } from "../data/getEnergyApi";
-import type { EnergyReading, SiteSummary, DeviceSummary, AggregatePoint } from "../data/api/energyApi";
+import { useDataSource } from "../data/useDataSource";
+import { useApiResource } from "../data/useApiResource";
+import type { SiteOverview } from "../data/api/energyApi";
 import { Card } from "../components/ui/Card";
 import { Spinner } from "../components/ui/Spinner";
 import { EmptyState } from "../components/ui/EmptyState";
 import { ErrorState } from "../components/ui/ErrorState";
-import { RecentReadings } from "../components/dashboard/RecentReadings";
-import { AreaChart } from "../components/dashboard/AreaChart";
-import { DeviceSummaryTable } from "../components/dashboard/DeviceSummaryTable";
+import { SitePowerChart } from "../components/dashboard/SitePowerChart";
+import { DeviceList } from "../components/dashboard/DeviceList";
+import { RoomCards } from "../components/dashboard/RoomCards";
+import { TopConsumers } from "../components/dashboard/TopConsumers";
 
-type LoadState =
-  | { status: "loading" }
-  | { status: "error"; message: string }
-  | {
-      status: "ready";
-      sites: SiteSummary[];
-      readings: EnergyReading[];
-      devices: DeviceSummary[];
-      aggregate: AggregatePoint[];
-      dataSource?: { simulated: boolean; notice: string };
-      serverTime?: string;
-    };
+const POLL_INTERVAL_MS = 10000;
 
 export function DashboardPage() {
-  const [state, setState] = useState<LoadState>({ status: "loading" });
-  const [reloadKey, setReloadKey] = useState(0);
+  const { setDataSource } = useDataSource();
 
-  const load = useCallback(async () => {
-    setState({ status: "loading" });
-    try {
-      const api = getEnergyApi();
-      const sites = await api.getSiteSummaries();
-      const siteId = sites[0]?.siteId;
-      const [readings, devices, dataSource] = await Promise.all([
-        siteId ? api.getRecentReadings(siteId, 12) : Promise.resolve([]),
-        api.getDeviceSummaries?.(siteId) ?? Promise.resolve([]),
-        api.getDataSource?.() ?? Promise.resolve(undefined),
-      ]);
+  const loader = useCallback(async (): Promise<SiteOverview> => {
+    const api = getEnergyApi();
+    const overview = await api.getSiteOverview?.();
+    if (!overview) throw new Error("Data provider does not support site overview.");
+    setDataSource(overview.dataSource);
+    return overview;
+  }, [setDataSource]);
 
-      const now = new Date();
-      const from = new Date(now.getTime() - 24 * 3600 * 1000).toISOString();
-      const to = now.toISOString();
-      const aggregate = (await api.getAggregate?.({ siteId, from, to, bucket: "hour" })) ?? [];
+  const { state, reload } = useApiResource<SiteOverview>(loader, POLL_INTERVAL_MS);
 
-      setState({
-        status: "ready",
-        sites,
-        readings,
-        devices,
-        aggregate,
-        dataSource,
-        serverTime: new Date().toISOString(),
-      });
-    } catch (err) {
-      setState({
-        status: "error",
-        message: err instanceof Error ? err.message : "Unknown error",
-      });
-    }
-  }, []);
+  if (state.status === "loading") {
+    return (
+      <div className="py-16">
+        <Spinner label="Loading dashboard" />
+      </div>
+    );
+  }
 
-  useEffect(() => {
-    void load();
-  }, [load, reloadKey]);
+  if (state.status === "error") {
+    return (
+      <div className="py-8">
+        <ErrorState message={state.message} onRetry={reload} />
+      </div>
+    );
+  }
 
-  useEffect(() => {
-    const id = window.setInterval(() => setReloadKey((k) => k + 1), 10000);
-    return () => window.clearInterval(id);
-  }, []);
+  const overview = state.data;
+  const { wholeSite, dataSource } = overview;
+  const meterBased = wholeSite.source === "meter";
+  const currencySymbol = overview.currency === "INR" ? "₹" : "";
 
   return (
-    <section className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-2">
-        <div>
-        <h1 className="text-2xl font-bold text-gray-900 md:text-3xl">Dashboard</h1>
-        <p className="mt-1 text-sm text-gray-500">
-            Overview of connected sites. Auto-refreshes every 10s.
+    <div className="space-y-5">
+      {state.error ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3">
+          <p className="text-xs text-ink/80">
+            <span className="font-semibold">Refresh failed:</span> {state.error} — showing the last
+            successful reading.
+          </p>
+          <button
+            type="button"
+            onClick={reload}
+            className="rounded-lg border border-amber-300 bg-white px-2.5 py-1 text-xs font-semibold text-warn"
+          >
+            Retry
+          </button>
+        </div>
+      ) : null}
+
+      {dataSource.simulated ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand/30 bg-brand-soft px-4 py-3">
+          <div>
+            <p className="text-sm font-semibold text-brand">Simulated data</p>
+            <p className="text-xs text-ink/70">{dataSource.notice}</p>
+          </div>
+          <p className="text-xs font-medium text-ink/70">
+            Not connected to real electrical hardware
           </p>
         </div>
-        {state.status === "ready" && state.serverTime ? (
-          <p className="text-xs text-gray-500">Updated {new Date(state.serverTime).toLocaleTimeString()}</p>
-        ) : null}
+      ) : null}
+
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-ink md:text-3xl">
+            {overview.siteName}
+          </h1>
+          <p className="mt-1 text-sm text-muted">
+            {overview.onlineDeviceCount} of {overview.deviceCount} devices reporting ·{" "}
+            {Math.round(wholeSite.powerW)} W live · {overview.rooms.length} rooms
+          </p>
+        </div>
+        <div className="text-right">
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+              dataSource.simulated
+                ? "bg-amber-50 text-warn ring-1 ring-amber-200"
+                : "bg-emerald-50 text-ok ring-1 ring-emerald-200"
+            }`}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />
+            {dataSource.simulated ? "simulated" : "live"}
+          </span>
+          <p className="mt-1 text-xs text-muted">
+            Updated{" "}
+            {new Date(overview.lastUpdated).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            })}
+          </p>
+        </div>
+      </header>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card eyebrow="01 · Estimated spend today">
+          <p className="text-4xl font-bold tracking-tight text-ink">
+            {currencySymbol}
+            {wholeSite.costInr.toFixed(0)}
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <span className="rounded-full bg-brand-soft px-2.5 py-1 text-xs font-semibold text-brand">
+              {Math.round(wholeSite.powerW)} W live
+            </span>
+            <span className="rounded-full bg-page px-2.5 py-1 text-xs font-semibold text-ink">
+              {wholeSite.energyKwh.toFixed(2)} kWh today
+            </span>
+            <span className="rounded-full bg-page px-2.5 py-1 text-xs font-semibold text-ink">
+              {meterBased ? "site meter" : "device sum"}
+            </span>
+          </div>
+          <p className="mt-4 text-xs text-muted">
+            {meterBased
+              ? "Total site load read from the site meter; appliance readings are not added on top."
+              : "Summed from individual devices; no site meter is reporting."}
+          </p>
+        </Card>
+
+        <Card eyebrow="02 · Usage insights">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-warn">Peak power today</p>
+              <p className="mt-1 text-2xl font-bold text-ink">
+                {Math.round(overview.peak.powerW)} W
+              </p>
+              <p className="mt-1 text-xs text-ink/70">
+                {overview.peak.at
+                  ? new Date(overview.peak.at).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "no data"}
+              </p>
+            </div>
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-ok">Average power</p>
+              <p className="mt-1 text-2xl font-bold text-ink">
+                {Math.round(overview.averagePowerW)} W
+              </p>
+              <p className="mt-1 text-xs text-ink/70">Average across today&apos;s readings</p>
+            </div>
+          </div>
+          <p className="mt-3 text-xs text-muted">
+            Waste and savings estimates are not shown: the API v1 contract has no baseline or
+            tariff-shift model to derive them from.
+          </p>
+        </Card>
       </div>
 
-      {state.status === "loading" ? (
-        <Spinner label="Loading dashboard" />
-      ) : state.status === "error" ? (
-        <ErrorState
-          message={state.message}
-          onRetry={() => setReloadKey((k) => k + 1)}
-        />
-      ) : state.sites.length === 0 ? (
-        <EmptyState
-          title="No sites available"
-          description="Connect a device or configure sample data to see readings."
-        />
-      ) : (
-        <>
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">
-                {state.sites[0]?.name ?? "Site"}
-              </h2>
-              <p className="text-sm text-gray-500">Whole-site energy overview</p>
-            </div>
-            <div className="text-right text-xs text-gray-500">
-              <p>{state.dataSource?.simulated ? "Simulated data" : "Live data"}</p>
-              <p>Updated {state.serverTime ? new Date(state.serverTime).toLocaleTimeString() : "—"}</p>
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {state.sites.map((site) => (
-              <div key={site.siteId} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                <p className="text-xs font-medium text-gray-500">Current power</p>
-                <p className="mt-1 text-2xl font-bold text-gray-900">{site.currentPowerW} W</p>
-              </div>
-            ))}
-            {state.sites.map((site) => (
-              <div key={site.siteId + "-e"} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                <p className="text-xs font-medium text-gray-500">Energy today</p>
-                <p className="mt-1 text-2xl font-bold text-gray-900">{site.todayEnergyKwh} kWh</p>
-              </div>
-            ))}
-            {state.sites.map((site) => (
-              <div key={site.siteId + "-c"} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                <p className="text-xs font-medium text-gray-500">Estimated cost today</p>
-                <p className="mt-1 text-2xl font-bold text-emerald-600">₹{site.todayCostInr}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex gap-2">
+      <Card
+        eyebrow="03 · Quick actions"
+        title="Device control"
+        action={
+          <span className="rounded-full bg-page px-2.5 py-1 text-[11px] font-semibold text-muted">
+            Unavailable
+          </span>
+        }
+      >
+        <div className="flex flex-wrap gap-2">
+          {["All on", "Night", "All off"].map((label) => (
             <button
+              key={label}
               type="button"
-              onClick={() => setReloadKey((k) => k + 1)}
-              className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-light"
+              disabled
+              aria-disabled="true"
+              title="Device control is not part of API v1 — buttons are disabled and change nothing."
+              className="cursor-not-allowed rounded-lg border border-line bg-page px-3 py-1.5 text-xs font-semibold text-muted"
             >
-              Refresh data
+              {label}
             </button>
-          </div>
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-muted">
+          API v1 exposes read-only endpoints, so these controls are disabled rather than
+          pretending to switch devices on or off.
+        </p>
+      </Card>
 
-          {state.dataSource?.simulated || state.dataSource === undefined ? (
-            <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs text-amber-300">
-              {state.dataSource?.notice ?? "Sample data only. Not real sensor measurements."}
-            </div>
-          ) : null}
+      <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr]">
+        <Card eyebrow="04 · Today's curve" title="Whole-site watts — line">
+          <SitePowerChart points={overview.series} timezone={overview.timezone} />
+          <p className="mt-2 text-xs text-muted">
+            {meterBased
+              ? "Site meter readings for today (local time)."
+              : "Summed device readings for today (local time)."}
+          </p>
+        </Card>
 
-          <div className="grid gap-4 lg:grid-cols-2">
-            <Card title="Power over time">
-              {state.aggregate.length === 0 ? (
-                <EmptyState title="No aggregate data" description="No historical data available." />
-              ) : (
-                <AreaChart points={state.aggregate} />
-              )}
-            </Card>
-            <Card title="Recent readings">
-              {state.readings.length === 0 ? (
-                <EmptyState title="No readings" description="No recent readings for the selected site." />
-              ) : (
-                <RecentReadings readings={state.readings} />
-              )}
-            </Card>
-          </div>
+        <Card
+          title={`Devices · ${overview.onlineDeviceCount} on`}
+          action={<span className="text-xs text-muted">{overview.deviceCount} total</span>}
+        >
+          {overview.devices.length === 0 ? (
+            <EmptyState title="No devices" description="No devices are reporting for this site." />
+          ) : (
+            <DeviceList devices={overview.devices} />
+          )}
+        </Card>
+      </div>
 
-          {state.devices.length > 0 ? (
-            <Card title="Device summary">
-              <DeviceSummaryTable devices={state.devices} />
-            </Card>
-          ) : null}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card eyebrow="05 · Rooms" title="Usage by room">
+          <RoomCards rooms={overview.rooms} />
+        </Card>
 
-          {state.devices.length > 0 ? (
-            <Card title="Rooms">
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {Array.from(
-                  state.devices.reduce((m, d) => {
-                    const key = d.roomName ?? "Unassigned";
-                    const g = m.get(key) ?? { room: key, powerW: 0, energyKwh: 0, costInr: 0, count: 0 };
-                    g.powerW += d.powerW;
-                    g.energyKwh += d.energyKwh;
-                    g.costInr += d.costInr;
-                    g.count += 1;
-                    m.set(key, g);
-                    return m;
-                  }, new Map<string, { room: string; powerW: number; energyKwh: number; costInr: number; count: number }>()),
-                ).map(([key, g]) => (
-                  <div key={key} className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                    <p className="text-sm font-semibold text-gray-900">{g.room}</p>
-                    <p className="mt-1 text-xs text-gray-500">{g.count} devices</p>
-                    <dl className="mt-2 space-y-1 text-xs">
-                      <div className="flex justify-between">
-                        <dt className="text-gray-500">Power</dt>
-                        <dd className="text-gray-900">{Math.round(g.powerW)} W</dd>
-                      </div>
-                      <div className="flex justify-between">
-                        <dt className="text-gray-500">Energy</dt>
-                        <dd className="text-gray-900">{g.energyKwh.toFixed(3)} kWh</dd>
-                      </div>
-                      <div className="flex justify-between">
-                        <dt className="text-gray-500">Cost</dt>
-                        <dd className="text-emerald-600">₹{g.costInr.toFixed(2)}</dd>
-                      </div>
-                    </dl>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          ) : null}
-        </>
-      )}
-    </section>
+        <Card eyebrow="06 · Highest consumers" title="By current power">
+          <TopConsumers devices={overview.devices} />
+        </Card>
+      </div>
+    </div>
   );
 }

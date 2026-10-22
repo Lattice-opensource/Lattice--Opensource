@@ -4,7 +4,15 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 
   --color-brand: #e11d48;
-  --color-brand-light: #f43f5e;
+  --color-brand-dark: #be123c;
+  --color-brand-soft: #fdf2f5;
+  --color-page: #f6f7f9;
+  --color-card: #ffffff;
+  --color-line: #e7e9ee;
+  --color-ink: #0f172a;
+  --color-muted: #6b7280;
+  --color-ok: #059669;
+  --color-warn: #b45309;
 }
 
 html {
@@ -14,9 +22,14 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background-color: #f8fafc;
-  color: #111827;
+  background-color: var(--color-page);
+  color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: #fecdd3;
+  color: #881337;
 }

@@ -4,16 +4,16 @@ interface ErrorStateProps {
   onRetry?: () => void;
 }
 
-export function ErrorState({ title = "Something went wrong", message, onRetry }: ErrorStateProps) {
+export function ErrorState({ title = "Unable to load data", message, onRetry }: ErrorStateProps) {
   return (
-    <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-6">
-      <p className="text-sm font-semibold text-red-700">{title}</p>
-      <p className="mt-1 text-xs text-gray-700">{message}</p>
+    <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-5">
+      <p className="text-sm font-semibold text-red-800">{title}</p>
+      <p className="mt-1 text-xs text-red-700">{message}</p>
       {onRetry ? (
         <button
           type="button"
           onClick={onRetry}
-          className="mt-3 rounded-lg border border-white/15 px-3 py-1.5 text-xs font-medium text-white hover:bg-white/5"
+          className="mt-3 rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
         >
           Retry
         </button>

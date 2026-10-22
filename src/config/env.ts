@@ -1,4 +1,6 @@
+const env = import.meta.env ?? ({} as Record<string, string | undefined>);
+
 export const config = {
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL ?? "",
-  useSampleData: import.meta.env.VITE_USE_SAMPLE_DATA !== "false",
+  apiBaseUrl: env.VITE_API_BASE_URL ?? "http://localhost:4000",
+  useSampleData: env.VITE_USE_SAMPLE_DATA !== "false",
 } as const;

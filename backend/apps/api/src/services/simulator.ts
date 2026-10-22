@@ -244,9 +244,10 @@ export function startLiveWriter(db: DatabaseSync, opts: LiveWriterOptions): () =
         updateDeviceLastSeen(db, p.id, tsIso, 'online');
       }
 
-      // retention prune
+      // retention prune: only the fine-grained live samples are pruned, the
+      // coarse historical backfill (SIMULATION_HISTORY_HOURS) is preserved.
       const cutoff = toIso(addSeconds(now, -opts.retentionSeconds));
-      deleteSimulatedOlderThan(db, cutoff);
+      deleteSimulatedOlderThan(db, cutoff, opts.liveIntervalSeconds);
     } catch (e) {
       console.error('live tick failed:', e);
     }

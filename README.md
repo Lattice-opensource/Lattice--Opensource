@@ -1,82 +1,95 @@
-# Lattice Frontend
+# Lattice — Smart Energy Monitoring
 
-Smart energy monitoring web app. New frontend-only foundation; no backend yet.
+Web app for monitoring household and small-site energy use, backed by a Fastify +
+SQLite API with a deterministic simulator.
 
 ## Stack
 
-- Vite + React 19 + TypeScript
-- Tailwind CSS v4
-- React Router v7
+- Frontend: Vite + React 19 + TypeScript + Tailwind CSS v4 + React Router v7
+- Backend: Fastify 5 + SQLite (`node:sqlite`) + Zod, in `backend/`
 
-Chosen to match the existing Lattice demo (`https://lattice-energy.vercel.app/`) which uses React + Vite + Tailwind. No backend is wired; data access goes through the `EnergyApi` interface in `src/data/api/energyApi.ts`, currently backed by clearly labeled sample data.
+## Run locally
 
-## Setup
+Backend (http://localhost:4000):
 
 ```bash
+cd backend
 npm install
+cp .env.example .env
+npm run build
 npm run dev
 ```
 
+Frontend (http://localhost:5173), from the repository root:
+
+```bash
+npm install
+cp .env.example .env
+npm run dev
+```
+
+Frontend environment (`.env` at the repository root):
+
+| Variable | Value | Notes |
+|---|---|---|
+| `VITE_API_BASE_URL` | `http://localhost:4000` | Backend base URL |
+| `VITE_USE_SAMPLE_DATA` | `false` | `true` renders the labelled sample provider instead of the API |
+
+Set `CORS_ORIGINS` in `backend/.env` to include the frontend origin
+(`http://localhost:5173` is the default).
+
 ## Scripts
 
-- `npm run dev` — start dev server
-- `npm run build` — typecheck + production build
-- `npm run preview` — preview production build
-- `npm run lint` — ESLint
-- `npm run typecheck` — TypeScript check
+Frontend: `npm run dev`, `npm run build`, `npm run preview`, `npm run lint`, `npm run typecheck`.
+
+Backend (inside `backend/`): `npm run dev`, `npm run build`, `npm run start`, `npm run seed`,
+`npm run test`, `npm run typecheck`.
 
 ## Structure
 
 ```
 src/
-  main.tsx                  app entry point
-  App.tsx                   routes
-  index.css                 global styles + theme tokens
-  components/layout/        shared layout shell, nav, top bar
-  components/ui/            reusable UI primitives (Card, Spinner, EmptyState, ErrorState)
-  components/dashboard/     dashboard-specific components
-  pages/                    route pages
-  data/api/                 data-access interface + sample implementation
-  data/sample/              clearly labeled sample data
-  data/getEnergyApi.ts      provider (swap implementation here)
-  config/env.ts             environment configuration
-  types/apiContract.ts      proposed API contract types
+  main.tsx                    app entry point
+  App.tsx                     routes
+  index.css                   theme tokens + base styles
+  components/layout/          app shell, top bar, navigation
+  components/ui/              Card, Spinner, EmptyState, ErrorState
+  components/dashboard/       site power chart, device list, room cards, top consumers
+  pages/                      Dashboard, Devices, Rooms
+  data/api/                   EnergyApi interface, HTTP client, sample client, normalisation
+  data/DataSourceContext.tsx  shares the simulated/real banner state with the header
+  data/getEnergyApi.ts        provider selection (sample vs HTTP)
+  config/env.ts               environment configuration
+  types/apiContract.ts        API contract types
 ```
-
-## Outstanding issues / next steps
-
-- API contract v0.1.0 only exposes `/api/health` and `/api/readings/latest`; site summaries, cost and device/circuit grouping need contract additions (team approval).
-- HTTP-backed `EnergyApi` implementation is not yet provided; sample provider remains default.
-- No test framework is configured; add tests when a runner is agreed.
-- Dashboard chart is a minimal SVG implementation; replace with a chart library if needed.
 
 ## Data access
 
-All energy data is accessed via `EnergyApi`. Backend field names must be agreed with the backend developer before replacing `SampleEnergyApi` with a real client. Update `getEnergyApi()` to return the real implementation.
+All energy data flows through the `EnergyApi` interface (`src/data/api/energyApi.ts`).
+`getEnergyApi()` returns the HTTP client when `VITE_USE_SAMPLE_DATA=false`, otherwise the
+clearly labelled sample provider. Dashboard components never import the HTTP client directly.
+
+`httpEnergyApi` normalises the API at one boundary:
+
+- Reads the canonical `data` array of `/api/readings/latest` (`powerW`, `energyKwh`,
+  `isSimulated`, `source: "simulator" | "device" | "import"`); the legacy `readings`
+  alias is only used as a fallback.
+- Never sums the site meter together with appliance devices. A device that is not
+  attached to a room and reports at least 90% of the appliance load is treated as the
+  site meter, and its readings are used as the whole-site figure.
+- Sums **interval** energy (`energyKwh`) over the local day; the cumulative
+  `energyKwhTotal` register is never used for totals.
 
 ## API contract
 
-`API_CONTRACT.md` (repo root) and `src/types/apiContract.ts` define the proposed frontend/backend contract (UTC timestamps, watts, `deviceId`, `source`). Differences from the UI-oriented `EnergyApi` types are documented in contract section 4 and require team approval before integration.
+`docs/contract.md` and `backend/packages/contracts` are the source of truth for the
+backend contract; `src/types/apiContract.ts` mirrors the frontend-facing types.
 
 ## Notes
 
 - `Lattice--Opensource/` is a separate reference repository and is git-ignored.
-- The existing demo deployment is reference only and is not modified.
-
----
-
-## Backend
-
-The backend lives in ./backend (Fastify + SQLite + deterministic simulator). See ackend/README.md-equivalent docs in docs/ and API_CONTRACT.md.
-
-`ash
-cd backend
-npm install
-cp .env.example .env
-npm run build
-npm run dev          # http://127.0.0.1:8000
-`
-
-Checks: 
-pm run typecheck, 
-pm run test (run inside ackend/).
+- The existing demo deployment (`https://lattice-energy.vercel.app/`) is reference only.
+- The simulator produces **simulated** data. The UI labels it prominently and never
+  presents it as a real hardware measurement.
+- API v1 is read-only: there is no device control endpoint, so control-style buttons
+  are rendered disabled with the reason stated.

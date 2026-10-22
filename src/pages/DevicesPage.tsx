@@ -1,53 +1,71 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import { getEnergyApi } from "../data/getEnergyApi";
-import type { DeviceSummary } from "../data/api/energyApi";
+import { useApiResource } from "../data/useApiResource";
+import type { DeviceSummary, EnergyReading } from "../data/api/energyApi";
 import { Card } from "../components/ui/Card";
 import { Spinner } from "../components/ui/Spinner";
 import { EmptyState } from "../components/ui/EmptyState";
 import { ErrorState } from "../components/ui/ErrorState";
 import { DeviceSummaryTable } from "../components/dashboard/DeviceSummaryTable";
+import { RecentReadings } from "../components/dashboard/RecentReadings";
+
+interface DevicesPayload {
+  devices: DeviceSummary[];
+  readings: EnergyReading[];
+  timezone: string;
+}
 
 export function DevicesPage() {
-  const [state, setState] = useState<
-    | { status: "loading" }
-    | { status: "error"; message: string }
-    | { status: "ready"; devices: DeviceSummary[] }
-  >({ status: "loading" });
-  const [reloadKey, setReloadKey] = useState(0);
-
-  const load = useCallback(async () => {
-    setState({ status: "loading" });
-    try {
-      const api = getEnergyApi();
-      const devices = (await api.getDeviceSummaries?.()) ?? [];
-      setState({ status: "ready", devices });
-    } catch (err) {
-      setState({ status: "error", message: err instanceof Error ? err.message : "Unknown error" });
-    }
+  const loader = useCallback(async (): Promise<DevicesPayload> => {
+    const api = getEnergyApi();
+    const overview = await api.getSiteOverview?.();
+    if (!overview) throw new Error("Data provider does not support site overview.");
+    const devices = (await api.getDeviceSummaries?.(overview.siteId)) ?? overview.devices;
+    const readings = await api.getRecentReadings(overview.siteId, 12);
+    return { devices, readings, timezone: overview.timezone };
   }, []);
 
-  useEffect(() => {
-    void load();
-  }, [load, reloadKey]);
+  const { state, reload } = useApiResource<DevicesPayload>(loader);
 
   return (
-    <section className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 md:text-3xl">Devices</h1>
-        <p className="mt-1 text-sm text-gray-500">Per-device power, energy and cost for the current window.</p>
-      </div>
+    <div className="space-y-5">
+      <header>
+        <h1 className="text-2xl font-bold tracking-tight text-ink md:text-3xl">Devices</h1>
+        <p className="mt-1 text-sm text-muted">
+          Per-device power, energy and cost for the current day.
+        </p>
+      </header>
 
       {state.status === "loading" ? (
-        <Spinner label="Loading devices" />
+        <div className="py-12">
+          <Spinner label="Loading devices" />
+        </div>
       ) : state.status === "error" ? (
-        <ErrorState message={state.message} onRetry={() => setReloadKey((k) => k + 1)} />
-      ) : state.devices.length === 0 ? (
-        <EmptyState title="No devices" description="No device data available." />
+        <ErrorState message={state.message} onRetry={reload} />
+      ) : state.data.devices.length === 0 ? (
+        <EmptyState title="No devices" description="No devices are reporting for this site." />
       ) : (
-        <Card title="Device summary">
-          <DeviceSummaryTable devices={state.devices} />
-        </Card>
+        <>
+          {state.error ? (
+            <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-xs text-ink/80">
+              <span className="font-semibold">Refresh failed:</span> {state.error} — showing the last
+              successful reading.
+            </div>
+          ) : null}
+
+          <Card title="Device summary" eyebrow="01 · Devices">
+            <DeviceSummaryTable devices={state.data.devices} />
+          </Card>
+
+          <Card title="Latest readings" eyebrow="02 · Readings">
+            {state.data.readings.length === 0 ? (
+              <EmptyState title="No readings" description="No recent readings are available." />
+            ) : (
+              <RecentReadings readings={state.data.readings} timezone={state.data.timezone} />
+            )}
+          </Card>
+        </>
       )}
-    </section>
+    </div>
   );
 }
