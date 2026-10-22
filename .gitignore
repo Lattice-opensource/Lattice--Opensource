@@ -1,35 +1,38 @@
 # Dependencies
 node_modules/
-.npm/
 
 # Build output
 dist/
-build/
+dist-ssr/
+
+# TypeScript build info
 *.tsbuildinfo
 
-# Environment / secrets -- NEVER commit real .env files
-.env
-.env.*
-!.env.example
-
-# Local database files (dev data source)
-data/
-*.db
-*.db-journal
-*.db-wal
-*.db-shm
-
 # Logs
-logs/
 *.log
 npm-debug.log*
 
 # Editor / OS
+.vscode/
+.idea/
 .DS_Store
 Thumbs.db
-.idea/
-.vscode/*
-!.vscode/extensions.json
 
-# Test output
-coverage/
+# Local env
+.env
+.env.*
+
+# Separate nested repository (reference only)
+Lattice--Opensource/
+
+# Backend (./backend)
+backend/node_modules/
+backend/**/dist/
+backend/data/
+backend/**/*.db
+backend/**/*.db-journal
+backend/**/*.db-wal
+backend/**/*.db-shm
+backend/.env
+backend/.env.*
+!backend/.env.example
