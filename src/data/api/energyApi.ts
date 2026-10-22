@@ -3,6 +3,7 @@ export interface EnergyReading {
   powerW: number;
   energyKwh: number;
   costInr?: number;
+  isSimulated?: boolean;
 }
 
 export interface SiteSummary {

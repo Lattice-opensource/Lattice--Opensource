@@ -2,13 +2,20 @@
 // Source of truth: API_CONTRACT.md (repository root).
 // Keep these in sync with the contract; changes require team approval.
 
-export type ReadingSource = "simulated" | "real";
+export type ReadingSource = "simulator" | "device" | "import";
 
 export interface ApiReading {
+  id: string;
   deviceId: string;
-  timestamp: string; // ISO 8601 UTC, e.g. "2026-10-22T03:30:00Z"
-  powerWatts: number; // instantaneous power in watts
-  energyKwh: number; // energy in kWh for the reading's measurement interval
+  timestamp: string; // ISO 8601 UTC
+  intervalStart: string;
+  intervalSeconds: number;
+  powerW: number; // instantaneous power in watts
+  energyKwh: number | null; // energy in kWh for the reading's measurement interval
+  energyKwhTotal: number | null;
+  voltageV: number | null;
+  currentA: number | null;
+  isSimulated: boolean;
   source: ReadingSource;
 }
 
@@ -20,9 +27,18 @@ export interface HealthResponse {
 }
 
 export interface ReadingsResponse {
-  readings: ApiReading[];
-  count: number;
-  generatedAt: string; // ISO 8601 UTC
+  data: ApiReading[];
+  meta: { serverTime: string; total?: number; limit?: number; offset?: number; hasMore?: boolean };
+  // Legacy fields retained for compatibility with /api/readings/latest
+  readings?: Array<{
+    deviceId: string;
+    timestamp: string;
+    powerWatts: number;
+    energyKwh: number;
+    source: "simulated" | "real";
+  }>;
+  count?: number;
+  generatedAt?: string;
 }
 
 export interface ApiSiteSummary {

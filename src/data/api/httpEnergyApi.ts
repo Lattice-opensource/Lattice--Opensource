@@ -42,15 +42,21 @@ interface SitesResponse {
 interface ReadingDto {
   deviceId: string;
   timestamp: string;
-  powerWatts: number;
-  energyKwh: number;
-  source: "simulated" | "real";
-  isSimulated?: boolean;
+  powerW: number;
+  energyKwh: number | null;
+  source: "simulator" | "device" | "import";
+  isSimulated: boolean;
 }
 
 interface LatestResponse {
-  readings?: ReadingDto[];
   data?: ReadingDto[];
+  readings?: Array<{
+    deviceId: string;
+    timestamp: string;
+    powerWatts: number;
+    energyKwh: number;
+    source: "simulated" | "real";
+  }>;
 }
 
 interface ConfigResponse {
@@ -83,13 +89,25 @@ export class HttpEnergyApi implements EnergyApi {
     const body = await request<LatestResponse>(
       `/api/readings/latest?siteId=${encodeURIComponent(siteId)}&limit=${encodeURIComponent(String(limit))}`,
     );
-    const readings = body.readings ?? body.data ?? [];
-    return readings.map((r) => ({
-      timestamp: r.timestamp,
-      powerW: r.powerWatts,
-      energyKwh: r.energyKwh,
-      costInr: undefined,
-    }));
+    const canonical = body.data ?? [];
+    const legacy = body.readings ?? [];
+    const readings =
+      canonical.length > 0
+        ? canonical.map((r) => ({
+            timestamp: r.timestamp,
+            powerW: r.powerW,
+            energyKwh: r.energyKwh ?? 0,
+            costInr: undefined,
+            isSimulated: r.isSimulated,
+          }))
+        : legacy.map((r) => ({
+            timestamp: r.timestamp,
+            powerW: r.powerWatts,
+            energyKwh: r.energyKwh,
+            costInr: undefined,
+            isSimulated: r.source === "simulated",
+          }));
+    return readings;
   }
 
   async getDeviceSummaries(siteId?: string): Promise<DeviceSummary[]> {
