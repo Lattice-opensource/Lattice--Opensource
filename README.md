@@ -40,7 +40,7 @@ Set `CORS_ORIGINS` in `backend/.env` to include the frontend origin
 
 ## Scripts
 
-Frontend: `npm run dev`, `npm run build`, `npm run preview`, `npm run lint`, `npm run typecheck`.
+Frontend: `npm run dev`, `npm run build`, `npm run preview`, `npm run lint`, `npm run typecheck`, `npm run test` (Vitest), `npm run test:watch`.
 
 Backend (inside `backend/`): `npm run dev`, `npm run build`, `npm run start`, `npm run seed`,
 `npm run test`, `npm run typecheck`.
