@@ -52,8 +52,8 @@ export function RoomsPage() {
   return (
     <section className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white md:text-3xl">Rooms</h1>
-        <p className="mt-1 text-sm text-gray-400">Energy usage grouped by room.</p>
+        <h1 className="text-2xl font-bold text-gray-900 md:text-3xl">Rooms</h1>
+        <p className="mt-1 text-sm text-gray-500">Energy usage grouped by room.</p>
       </div>
 
       {state.status === "loading" ? (
@@ -69,15 +69,15 @@ export function RoomsPage() {
               <dl className="space-y-1 text-sm">
                 <div className="flex justify-between">
                   <dt className="text-gray-400">Devices</dt>
-                  <dd className="text-white">{r.devices.length}</dd>
+                  <dd className="text-gray-900">{r.devices.length}</dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-gray-400">Power</dt>
-                  <dd className="text-white">{Math.round(r.powerW)} W</dd>
+                  <dd className="text-gray-900">{Math.round(r.powerW)} W</dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-gray-400">Energy</dt>
-                  <dd className="text-white">{r.energyKwh.toFixed(3)} kWh</dd>
+                  <dd className="text-gray-900">{r.energyKwh.toFixed(3)} kWh</dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-gray-400">Cost</dt>

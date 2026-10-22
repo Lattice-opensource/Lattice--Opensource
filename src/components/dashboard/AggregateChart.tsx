@@ -13,7 +13,7 @@ export function AggregateChart({ points, title = "Energy over time" }: Aggregate
   const barWidth = width / points.length - 4;
   return (
     <figure role="img" aria-label={title} className="w-full">
-      <figcaption className="mb-2 text-sm font-semibold text-white">{title}</figcaption>
+      <figcaption className="mb-2 text-sm font-semibold text-gray-900">{title}</figcaption>
       <svg viewBox={`0 0 ${width} ${height}`} className="h-44 w-full" preserveAspectRatio="none">
         {points.map((p, i) => {
           const h = (p.energyKwh / max) * (height - 20);

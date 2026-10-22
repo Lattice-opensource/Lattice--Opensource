@@ -17,7 +17,7 @@ export function ConsumptionChart({ readings, title = "Consumption over time" }: 
 
   return (
     <figure role="img" aria-label={title} className="w-full">
-      <figcaption className="mb-2 text-sm font-semibold text-white">{title}</figcaption>
+      <figcaption className="mb-2 text-sm font-semibold text-gray-900">{title}</figcaption>
       <svg viewBox={`0 0 ${width} ${height}`} className="h-40 w-full" preserveAspectRatio="none">
         {readings.map((r, i) => {
           const h = (r.energyKwh / max) * (height - 24);

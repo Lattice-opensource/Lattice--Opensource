@@ -6,9 +6,9 @@ interface ErrorStateProps {
 
 export function ErrorState({ title = "Something went wrong", message, onRetry }: ErrorStateProps) {
   return (
-    <div role="alert" className="rounded-xl border border-red-500/30 bg-red-500/10 p-6">
-      <p className="text-sm font-semibold text-red-300">{title}</p>
-      <p className="mt-1 text-xs text-gray-300">{message}</p>
+    <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-6">
+      <p className="text-sm font-semibold text-red-700">{title}</p>
+      <p className="mt-1 text-xs text-gray-700">{message}</p>
       {onRetry ? (
         <button
           type="button"

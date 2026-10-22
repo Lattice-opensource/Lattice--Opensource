@@ -33,8 +33,8 @@ export function DevicesPage() {
   return (
     <section className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white md:text-3xl">Devices</h1>
-        <p className="mt-1 text-sm text-gray-400">Per-device power, energy and cost for the current window.</p>
+        <h1 className="text-2xl font-bold text-gray-900 md:text-3xl">Devices</h1>
+        <p className="mt-1 text-sm text-gray-500">Per-device power, energy and cost for the current window.</p>
       </div>
 
       {state.status === "loading" ? (

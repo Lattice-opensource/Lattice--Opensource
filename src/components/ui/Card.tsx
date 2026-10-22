@@ -9,9 +9,9 @@ interface CardProps {
 export function Card({ title, children, className = "" }: CardProps) {
   return (
     <section
-      className={`rounded-2xl border border-white/10 bg-white/[0.03] p-5 ${className}`}
+      className={`rounded-2xl border border-gray-200 bg-white p-5 shadow-sm ${className}`}
     >
-      {title ? <h2 className="mb-4 text-sm font-semibold text-white">{title}</h2> : null}
+      {title ? <h2 className="mb-4 text-sm font-semibold text-gray-900">{title}</h2> : null}
       {children}
     </section>
   );

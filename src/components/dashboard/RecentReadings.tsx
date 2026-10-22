@@ -13,7 +13,7 @@ export function RecentReadings({ readings }: RecentReadingsProps) {
     <div className="overflow-x-auto">
       <table className="w-full text-left text-sm">
         <thead>
-          <tr className="border-b border-white/10 text-xs text-gray-400">
+          <tr className="border-b border-gray-200 text-xs text-gray-500">
             <th scope="col" className="py-2 pr-4 font-medium">Time</th>
             <th scope="col" className="py-2 pr-4 font-medium">Power (W)</th>
             <th scope="col" className="py-2 pr-4 font-medium">Energy (kWh)</th>
@@ -22,15 +22,15 @@ export function RecentReadings({ readings }: RecentReadingsProps) {
         </thead>
         <tbody>
           {readings.map((r) => (
-            <tr key={r.timestamp} className="border-b border-white/5">
-              <td className="py-2 pr-4 text-gray-300">{new Date(r.timestamp).toLocaleString()}</td>
-              <td className="py-2 pr-4 text-white">
+            <tr key={r.timestamp} className="border-b border-gray-100">
+              <td className="py-2 pr-4 text-gray-600">{new Date(r.timestamp).toLocaleString()}</td>
+              <td className="py-2 pr-4 text-gray-900">
                 {r.powerW}
-                {r.isSimulated ? <span className="ml-1 text-[10px] text-amber-300">(sim)</span> : null}
+                {r.isSimulated ? <span className="ml-1 text-[10px] text-amber-600">(sim)</span> : null}
               </td>
-              <td className="py-2 pr-4 text-white">{r.energyKwh}</td>
+              <td className="py-2 pr-4 text-gray-900">{r.energyKwh}</td>
               {hasCost ? (
-                <td className="py-2 pr-4 text-emerald-400">{r.costInr ?? "—"}</td>
+                <td className="py-2 pr-4 text-emerald-600">{r.costInr ?? "—"}</td>
               ) : null}
             </tr>
           ))}

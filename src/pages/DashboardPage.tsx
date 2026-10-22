@@ -5,11 +5,9 @@ import { Card } from "../components/ui/Card";
 import { Spinner } from "../components/ui/Spinner";
 import { EmptyState } from "../components/ui/EmptyState";
 import { ErrorState } from "../components/ui/ErrorState";
-import { SiteSummaryCard } from "../components/dashboard/SiteSummaryCard";
-import { ConsumptionChart } from "../components/dashboard/ConsumptionChart";
 import { RecentReadings } from "../components/dashboard/RecentReadings";
+import { AreaChart } from "../components/dashboard/AreaChart";
 import { DeviceSummaryTable } from "../components/dashboard/DeviceSummaryTable";
-import { AggregateChart } from "../components/dashboard/AggregateChart";
 
 type LoadState =
   | { status: "loading" }
@@ -75,8 +73,8 @@ export function DashboardPage() {
     <section className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-bold text-white md:text-3xl">Dashboard</h1>
-          <p className="mt-1 text-sm text-gray-400">
+        <h1 className="text-2xl font-bold text-gray-900 md:text-3xl">Dashboard</h1>
+        <p className="mt-1 text-sm text-gray-500">
             Overview of connected sites. Auto-refreshes every 10s.
           </p>
         </div>
@@ -99,40 +97,114 @@ export function DashboardPage() {
         />
       ) : (
         <>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">
+                {state.sites[0]?.name ?? "Site"}
+              </h2>
+              <p className="text-sm text-gray-500">Whole-site energy overview</p>
+            </div>
+            <div className="text-right text-xs text-gray-500">
+              <p>{state.dataSource?.simulated ? "Simulated data" : "Live data"}</p>
+              <p>Updated {state.serverTime ? new Date(state.serverTime).toLocaleTimeString() : "—"}</p>
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {state.sites.map((site) => (
+              <div key={site.siteId} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                <p className="text-xs font-medium text-gray-500">Current power</p>
+                <p className="mt-1 text-2xl font-bold text-gray-900">{site.currentPowerW} W</p>
+              </div>
+            ))}
+            {state.sites.map((site) => (
+              <div key={site.siteId + "-e"} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                <p className="text-xs font-medium text-gray-500">Energy today</p>
+                <p className="mt-1 text-2xl font-bold text-gray-900">{site.todayEnergyKwh} kWh</p>
+              </div>
+            ))}
+            {state.sites.map((site) => (
+              <div key={site.siteId + "-c"} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                <p className="text-xs font-medium text-gray-500">Estimated cost today</p>
+                <p className="mt-1 text-2xl font-bold text-emerald-600">₹{site.todayCostInr}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setReloadKey((k) => k + 1)}
+              className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-light"
+            >
+              Refresh data
+            </button>
+          </div>
+
           {state.dataSource?.simulated || state.dataSource === undefined ? (
             <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs text-amber-300">
               {state.dataSource?.notice ?? "Sample data only. Not real sensor measurements."}
             </div>
           ) : null}
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {state.sites.map((site) => (
-              <SiteSummaryCard key={site.siteId} site={site} />
-            ))}
-          </div>
-
-          <Card title="Consumption over time">
-            {state.readings.length === 0 ? (
-              <EmptyState title="No readings" description="No recent readings for the selected site." />
-            ) : (
-              <>
-                <ConsumptionChart readings={state.readings} />
-                <div className="mt-4">
-                  <RecentReadings readings={state.readings} />
-                </div>
-              </>
-            )}
-          </Card>
-
-          {state.aggregate.length > 0 ? (
-            <Card title="Energy by hour (last 24h)">
-              <AggregateChart points={state.aggregate} />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Card title="Power over time">
+              {state.aggregate.length === 0 ? (
+                <EmptyState title="No aggregate data" description="No historical data available." />
+              ) : (
+                <AreaChart points={state.aggregate} />
+              )}
             </Card>
-          ) : null}
+            <Card title="Recent readings">
+              {state.readings.length === 0 ? (
+                <EmptyState title="No readings" description="No recent readings for the selected site." />
+              ) : (
+                <RecentReadings readings={state.readings} />
+              )}
+            </Card>
+          </div>
 
           {state.devices.length > 0 ? (
             <Card title="Device summary">
               <DeviceSummaryTable devices={state.devices} />
+            </Card>
+          ) : null}
+
+          {state.devices.length > 0 ? (
+            <Card title="Rooms">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {Array.from(
+                  state.devices.reduce((m, d) => {
+                    const key = d.roomName ?? "Unassigned";
+                    const g = m.get(key) ?? { room: key, powerW: 0, energyKwh: 0, costInr: 0, count: 0 };
+                    g.powerW += d.powerW;
+                    g.energyKwh += d.energyKwh;
+                    g.costInr += d.costInr;
+                    g.count += 1;
+                    m.set(key, g);
+                    return m;
+                  }, new Map<string, { room: string; powerW: number; energyKwh: number; costInr: number; count: number }>()),
+                ).map(([key, g]) => (
+                  <div key={key} className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                    <p className="text-sm font-semibold text-gray-900">{g.room}</p>
+                    <p className="mt-1 text-xs text-gray-500">{g.count} devices</p>
+                    <dl className="mt-2 space-y-1 text-xs">
+                      <div className="flex justify-between">
+                        <dt className="text-gray-500">Power</dt>
+                        <dd className="text-gray-900">{Math.round(g.powerW)} W</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-gray-500">Energy</dt>
+                        <dd className="text-gray-900">{g.energyKwh.toFixed(3)} kWh</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-gray-500">Cost</dt>
+                        <dd className="text-emerald-600">₹{g.costInr.toFixed(2)}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                ))}
+              </div>
             </Card>
           ) : null}
         </>
