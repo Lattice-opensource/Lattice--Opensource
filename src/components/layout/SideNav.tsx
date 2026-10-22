@@ -1,6 +1,10 @@
 import { NavLink } from "react-router-dom";
 
-const navItems = [{ to: "/dashboard", label: "Dashboard" }];
+const navItems = [
+  { to: "/dashboard", label: "Dashboard" },
+  { to: "/devices", label: "Devices" },
+  { to: "/rooms", label: "Rooms" },
+];
 
 interface SideNavProps {
   open: boolean;
