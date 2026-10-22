@@ -1,0 +1,15 @@
+import type { EnergyApi, EnergyReading, SiteSummary } from "./energyApi";
+import { SAMPLE_READINGS, SAMPLE_SITE_SUMMARIES } from "../sample/sampleEnergyData";
+
+export class SampleEnergyApi implements EnergyApi {
+  async getSiteSummaries(): Promise<SiteSummary[]> {
+    return SAMPLE_SITE_SUMMARIES;
+  }
+
+  async getRecentReadings(siteId: string, limit: number): Promise<EnergyReading[]> {
+    const readings = SAMPLE_READINGS[siteId] ?? [];
+    return readings.slice(-limit);
+  }
+}
+
+export const sampleEnergyApi = new SampleEnergyApi();
