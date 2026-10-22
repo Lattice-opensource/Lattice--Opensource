@@ -160,8 +160,12 @@ export class HttpEnergyApi implements EnergyApi {
     return body.data.dataSource;
   }
 
-  async getDeviceSummaries(siteId?: string): Promise<DeviceSummary[]> {
-    const qs = siteId ? `?siteId=${encodeURIComponent(siteId)}` : "";
+  async getDeviceSummaries(siteId?: string, from?: string, to?: string): Promise<DeviceSummary[]> {
+    const q = new URLSearchParams();
+    if (siteId) q.set("siteId", siteId);
+    if (from) q.set("from", from);
+    if (to) q.set("to", to);
+    const qs = q.toString() ? `?${q.toString()}` : "";
     const body = await request<ItemResponse<SummaryDto>>(`/api/readings/summary${qs}`);
     return body.data.byDevice.map(toDeviceSummary);
   }

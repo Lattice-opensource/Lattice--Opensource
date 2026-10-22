@@ -92,7 +92,7 @@ export interface EnergyApi {
   getSiteSummaries(): Promise<SiteSummary[]>;
   getRecentReadings(siteId: string, limit: number): Promise<EnergyReading[]>;
   getDataSource?(): Promise<DataSourceInfo>;
-  getDeviceSummaries?(siteId?: string): Promise<DeviceSummary[]>;
+  getDeviceSummaries?(siteId?: string, from?: string, to?: string): Promise<DeviceSummary[]>;
   getAggregate?(params: { siteId?: string; from: string; to: string; bucket?: string }): Promise<AggregatePoint[]>;
   getSiteOverview?(): Promise<SiteOverview>;
 }

@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { getEnergyApi } from "../data/getEnergyApi";
 import { useDataSource } from "../data/useDataSource";
 import { useApiResource } from "../data/useApiResource";
@@ -11,11 +11,14 @@ import { SitePowerChart } from "../components/dashboard/SitePowerChart";
 import { DeviceList } from "../components/dashboard/DeviceList";
 import { RoomCards } from "../components/dashboard/RoomCards";
 import { TopConsumers } from "../components/dashboard/TopConsumers";
+import { ApplianceRanking, rankAppliances, type AppliancePeriod } from "../components/dashboard/ApplianceRanking";
+import { resolveWholeSite } from "../data/api/normalize";
 
 const POLL_INTERVAL_MS = 10000;
 
 export function DashboardPage() {
   const { setDataSource } = useDataSource();
+  const [appliancePeriod, setAppliancePeriod] = useState<AppliancePeriod>("today");
 
   const loader = useCallback(async (): Promise<SiteOverview> => {
     const api = getEnergyApi();
@@ -26,6 +29,42 @@ export function DashboardPage() {
   }, [setDataSource]);
 
   const { state, reload } = useApiResource<SiteOverview>(loader, POLL_INTERVAL_MS);
+
+  const applianceLoader = useCallback(async () => {
+    const api = getEnergyApi();
+    const overview = await api.getSiteOverview?.();
+    if (!overview) throw new Error("Data provider does not support site overview.");
+    const siteId = overview.siteId;
+
+    let devices = overview.devices;
+    let householdEnergy = overview.wholeSite.energyKwh;
+
+    if (appliancePeriod === "7d") {
+      const now = new Date();
+      const from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const to = now.toISOString();
+      const windowDevices = (await api.getDeviceSummaries?.(siteId, from, to)) ?? overview.devices;
+      const currentById = new Map(overview.devices.map((d) => [d.deviceId, d]));
+      devices = windowDevices.map((d) => ({
+        ...d,
+        powerW: currentById.get(d.deviceId)?.powerW ?? d.powerW,
+      }));
+      householdEnergy = resolveWholeSite(devices).energyKwh;
+    }
+
+    const appliances = devices.filter((d) => d.roomName !== null);
+    const applianceEnergy = appliances.reduce((s, d) => s + d.energyKwh, 0);
+    const coverageIncomplete =
+      householdEnergy > 0 && applianceEnergy < householdEnergy * 0.99;
+
+    return {
+      devices,
+      householdEnergy,
+      coverageIncomplete,
+    };
+  }, [appliancePeriod]);
+
+  const { state: applianceState } = useApiResource(applianceLoader);
 
   if (state.status === "loading") {
     return (
@@ -225,6 +264,22 @@ export function DashboardPage() {
           <TopConsumers devices={overview.devices} />
         </Card>
       </div>
+
+      {applianceState.status === "ready" ? (
+        <ApplianceRanking
+          items={rankAppliances(applianceState.data.devices, applianceState.data.householdEnergy)}
+          householdEnergyKwh={applianceState.data.householdEnergy}
+          coverageIncomplete={applianceState.data.coverageIncomplete}
+          period={appliancePeriod}
+          onPeriodChange={setAppliancePeriod}
+        />
+      ) : applianceState.status === "loading" ? (
+        <div className="py-6">
+          <Spinner label="Loading appliance insights" />
+        </div>
+      ) : (
+        <ErrorState message={applianceState.message} />
+      )}
     </div>
   );
 }
