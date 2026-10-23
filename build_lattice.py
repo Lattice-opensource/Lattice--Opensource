@@ -321,6 +321,17 @@ m_asm = MeshPart.meshFromShape(assembly, 0.5)
 m_asm.write(os.path.join(EXPORT, "Lattice_Hub_Assembly.stl"))
 print("STL exported")
 
+# 3MF export (primary exchange format - avoids STL tessellation artifacts)
+m_top3mf = MeshPart.meshFromShape(top_print_shape, 0.5)
+m_top3mf.write(os.path.join(EXPORT, "Top_Shell_PRINT.3mf"))
+m_top3mf.write(os.path.join(EXPORT, "Top_Shell.3mf"))
+m_bot3mf = MeshPart.meshFromShape(bottom_shell, 0.5)
+m_bot3mf.write(os.path.join(EXPORT, "Bottom_Shell_PRINT.3mf"))
+m_bot3mf.write(os.path.join(EXPORT, "Bottom_Shell.3mf"))
+m_asm3mf = MeshPart.meshFromShape(assembly, 0.5)
+m_asm3mf.write(os.path.join(EXPORT, "Lattice_Hub_Assembly.3mf"))
+print("3MF exported")
+
 print("Top vol", round(top_shell.Volume,1), "Bot vol", round(bottom_shell.Volume,1))
 print("Top solids", len(top_shell.Solids), "Bot solids", len(bottom_shell.Solids))
 bb = assembly.BoundBox
