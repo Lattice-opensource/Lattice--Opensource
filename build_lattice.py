@@ -151,47 +151,9 @@ top_shell = cut_box(top_shell, side_x, 0, 25, WT+2, HDMI_W, HDMI_H)
 dbg = Part.makeCylinder(3.0, WT+2, V(side_x-WT-1, -15, 32), V(1,0,0))
 top_shell = top_shell.cut(dbg)
 
-# display pocket (top) — sloped, no horizontal bottom face (avoids overhang when upside down)
-# Top opening at roof surface, bottom narrower, sides slope inward going down
-pock_w_top = DISP_W + DISP_BORDER * 2
-pock_d_top = DISP_D + DISP_BORDER * 2
-pock_w_bot = DISP_W
-pock_d_bot = DISP_D
-pock_depth = 2.0
-# Create tapered pocket via loft between top and bottom rectangles
-top_wire = Part.makePolygon([
-    V(-pock_w_top/2, -pock_d_top/2, OH-2),
-    V(pock_w_top/2, -pock_d_top/2, OH-2),
-    V(pock_w_top/2, pock_d_top/2, OH-2),
-    V(-pock_w_top/2, pock_d_top/2, OH-2),
-    V(-pock_w_top/2, -pock_d_top/2, OH-2),
-])
-bot_wire = Part.makePolygon([
-    V(-pock_w_bot/2, -pock_d_bot/2, OH-2-pock_depth),
-    V(pock_w_bot/2, -pock_d_bot/2, OH-2-pock_depth),
-    V(pock_w_bot/2, pock_d_bot/2, OH-2-pock_depth),
-    V(-pock_w_bot/2, pock_d_bot/2, OH-2-pock_depth),
-    V(-pock_w_bot/2, -pock_d_bot/2, OH-2-pock_depth),
-])
-# Loft faces to make a shell, then cap it to make a solid cut volume
-top_face = Part.makePolygon([V(-pock_w_top/2, -pock_d_top/2, OH-2), V(pock_w_top/2, -pock_d_top/2, OH-2), V(pock_w_top/2, pock_d_top/2, OH-2), V(-pock_w_top/2, pock_d_top/2, OH-2)]).thicken(0.1) if False else None
-# Simpler: create a box for the full pocket volume and subtract inner smaller box from bottom
-pocket_outer = Part.makeBox(pock_w_top, pock_d_top, pock_depth, V(-pock_w_top/2, -pock_d_top/2, OH-2-pock_depth))
-pocket_inner = Part.makeBox(pock_w_bot, pock_d_bot, pock_depth+1, V(-pock_w_bot/2, -pock_d_bot/2, OH-2-pock_depth-0.5))
-# Use loft: create faces between corresponding edges
-from FreeCAD import Base
-wires_top = [top_wire]
-wires_bot = [bot_wire]
-# Create lofted solid directly
-try:
-    pocket_solid = Part.makeLoft([top_wire, bot_wire], True)
-except Exception:
-    # Fallback: use a box cut with sloped sides via difference of two boxes
-    pocket_solid = Part.makeBox(pock_w_top, pock_d_top, pock_depth, V(-pock_w_top/2, -pock_d_top/2, OH-2-pock_depth))
-    inner = Part.makeBox(pock_w_bot, pock_d_bot, pock_depth+2, V(-pock_w_bot/2, -pock_d_bot/2, OH-2-pock_depth-1))
-    pocket_solid = pocket_solid.cut(inner)
-top_shell = top_shell.cut(pocket_solid)
-# display hole (through-cut, vertical — fine upside down)
+# display pocket (top) + hole (original version)
+pocket = rounded_box(DISP_W+DISP_BORDER*2, DISP_D+DISP_BORDER*2, 2.0, 3.0, OH-2.0)
+top_shell = top_shell.cut(pocket)
 hole = rounded_box(DISP_W, DISP_D, top_h+2, 2.0, SPLIT-1)
 top_shell = top_shell.cut(hole)
 
@@ -241,7 +203,7 @@ bottom_shell = bottom_shell.fuse(hook_b)
 
 # ---------- SNAP-FIT: pockets on top (receive hooks with clearance) ----------
 # Pockets cut into top shell's bottom wall, sized slightly larger than hooks
-# Right pocket (extends outward from inner wall to receive outward hook)
+# Right pocket
 pock_r = Part.makeBox(POCKET_DEPTH+SC, POCKET_WIDTH+2*SC, POCKET_HEIGHT+SC, V(77.8, -POCKET_WIDTH/2-SC, SPLIT-0.5-SC))
 top_shell = top_shell.cut(pock_r)
 # Left pocket
