@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# Lattice Hub enclosure CAD builder (FreeCAD) - printable revision v2
-# Fixes: screw holes start at z=0 (not below build plate), snap-fit verified
+# Lattice Hub enclosure CAD builder - HARD RESET port regions
+# Clean simple boolean through-cuts only. No chamfers, no lamina fusions, no residual geometry.
 import FreeCAD, Part, Mesh, MeshPart, Import, os
 try:
     import FreeCADGui
@@ -75,23 +75,25 @@ G_ASM = make_group("03_Assembly")
 rear_y = OD/2
 side_x = OW/2
 
-# ---------- BOTTOM SHELL ----------
+# ---------- BOTTOM SHELL ---------- (clean base)
 bottom_outer = rounded_box(OW, OD, SPLIT, CR, 0)
 inner_b = rounded_box(OW-2*WT, OD-2*WT, SPLIT-WT, max(CR-WT,1.0), WT)
 bottom_shell = bottom_outer.cut(inner_b)
 
-# ---------- TOP SHELL ----------
+# ---------- TOP SHELL ---------- (clean base)
 top_h = OH - SPLIT
 top_outer = rounded_box(OW, OD, top_h, CR, SPLIT)
 inner_t = rounded_box(OW-2*WT, OD-2*WT, top_h-WT, max(CR-WT,1.0), SPLIT)
 top_shell = top_outer.cut(inner_t)
 
-# ---------- BOTTOM SHELL FEATURES ----------
+# ---------- BOTTOM SHELL FEATURES ---------- (clean cuts only)
+
 def cut_box(shell, x,y,z,w,d,h):
+    """Simple clean through-cut. No chamfers, no residual geometry."""
     b = Part.makeBox(w,d,h, V(x-w/2, y-d/2, z-h/2))
     return shell.cut(b)
 
-# rear ports (bottom row, z=13)
+# rear ports (bottom row, z=13) - simple through cuts
 for x in [-52,-22,8]:
     bottom_shell = cut_box(bottom_shell, x, rear_y, 13, RJ45_W, WT+2, RJ45_H)
 for x in [34,48]:
@@ -140,8 +142,9 @@ for (sx,sy) in screw_pts:
     hole = Part.makeCylinder(1.6, SPLIT+1, V(sx,sy,0), V(0,0,1))
     bottom_shell = bottom_shell.cut(hole)
 
-# ---------- TOP SHELL FEATURES ----------
-# rear ports (top row, z=23)
+# ---------- TOP SHELL FEATURES ---------- (clean cuts only)
+
+# rear ports (top row, z=23) - simple through cuts
 for x in [34,52]:
     top_shell = cut_box(top_shell, x, rear_y, 23, USBA_W, WT+2, USBA_H)
 top_shell = cut_box(top_shell, 62, rear_y, 23, USBC_W, WT+2, USBC_H)
@@ -151,7 +154,7 @@ top_shell = cut_box(top_shell, side_x, 0, 25, WT+2, HDMI_W, HDMI_H)
 dbg = Part.makeCylinder(3.0, WT+2, V(side_x-WT-1, -15, 32), V(1,0,0))
 top_shell = top_shell.cut(dbg)
 
-# display pocket (top) + hole (original version)
+# display pocket (top) + hole
 pocket = rounded_box(DISP_W+DISP_BORDER*2, DISP_D+DISP_BORDER*2, 2.0, 3.0, OH-2.0)
 top_shell = top_shell.cut(pocket)
 hole = rounded_box(DISP_W, DISP_D, top_h+2, 2.0, SPLIT-1)
@@ -202,7 +205,6 @@ bottom_shell = bottom_shell.fuse(tab_b)
 bottom_shell = bottom_shell.fuse(hook_b)
 
 # ---------- SNAP-FIT: pockets on top (receive hooks with clearance) ----------
-# Pockets cut into top shell's bottom wall, sized slightly larger than hooks
 # Right pocket
 pock_r = Part.makeBox(POCKET_DEPTH+SC, POCKET_WIDTH+2*SC, POCKET_HEIGHT+SC, V(77.8, -POCKET_WIDTH/2-SC, SPLIT-0.5-SC))
 top_shell = top_shell.cut(pock_r)
@@ -237,7 +239,7 @@ box_feat("DISPLAY_PLACEHOLDER", DISP_W, DISP_D, DISP_T, -DISP_W/2, -DISP_D/2, OH
 box_feat("POWER_VOLUME_PLACEHOLDER", PWR_W, PWR_D, PWR_H, 45-PWR_W/2, 38-PWR_D/2, 8)
 box_feat("SPEAKER_VOLUME_PLACEHOLDER", SPK_W, SPK_D, SPK_H, -SPK_W/2, -55, 7)
 
-# ---------- CONNECTOR CLEARANCE VOLUMES ----------
+# ---------- CONNECTOR CLEARANCE VOLUMES (internal only, not in shell STL) ----------
 g_conn = make_group("Connector_Volumes")
 def conn_vol(name,x,z,w,h,depth=25):
     b = Part.makeBox(w,depth,h, V(x-w/2, rear_y-depth+WT, z-h/2))
