@@ -39,9 +39,9 @@ export default function Business() {
               <a href="https://lattice-smart-energy.vercel.app" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-white/15 px-6 py-3.5 text-sm font-semibold text-gray-200 hover:border-white/30">Try demo</a>
             </div>
             <div className="mt-8 flex items-center gap-6 text-sm">
-              <span className="flex items-center gap-1.5 text-gray-300"><ShieldCheck className="w-4 h-4 text-brand-light" /> SOC 2 ready</span>
+              <span className="flex items-center gap-1.5 text-gray-300"><ShieldCheck className="w-4 h-4 text-brand-light" /> Role-based access</span>
               <span className="flex items-center gap-1.5 text-gray-300"><BarChart3 className="w-4 h-4 text-brand-light" /> API access</span>
-              <span className="flex items-center gap-1.5 text-gray-300"><Zap className="w-4 h-4 text-brand-light" /> 99.9% uptime</span>
+              <span className="flex items-center gap-1.5 text-gray-300"><Zap className="w-4 h-4 text-brand-light" /> Priority support</span>
             </div>
           </div>
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-8">
@@ -57,7 +57,7 @@ export default function Business() {
             </div>
             <div className="mt-6 rounded-xl p-4 flex items-center gap-3" style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <p className="text-sm font-bold text-emerald-300">Live — 128 sites reporting</p>
+              <p className="text-sm font-bold text-emerald-300">Live demo available</p>
             </div>
           </div>
         </div>

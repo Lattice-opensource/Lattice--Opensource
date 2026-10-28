@@ -5,7 +5,7 @@ import Logo from '../components/Logo.jsx';
 import { supabase, isSupabaseConfigured } from '../lib/supabase.js';
 
 export default function ContactPage() {
-  const [form, setForm] = useState({ name: '', email: '', interest: 'Home monitoring', message: '' });
+  const [form, setForm] = useState({ name: '', email: '', interest: 'Enterprise deployment', message: '' });
   const [status, setStatus] = useState({ loading: false, error: '', success: false });
 
   const onChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -119,8 +119,9 @@ export default function ContactPage() {
                 onChange={onChange}
                 className="w-full rounded-xl border border-white/10 bg-ink px-4 py-3 text-sm text-white focus:border-brand/60 focus:outline-none"
               >
-                <option>Home monitoring</option>
-                <option>Enterprise / multi-site</option>
+                <option>Enterprise deployment</option>
+                <option>Multi-site portfolio</option>
+                <option>Integration / API</option>
                 <option>Partnership</option>
                 <option>Something else</option>
               </select>

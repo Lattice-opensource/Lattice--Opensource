@@ -54,9 +54,9 @@ export default function Embed() {
         </div>
 
         <div className="mt-10 grid md:grid-cols-3 gap-4 text-sm">
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5"><p className="font-bold">For Individuals</p><p className="text-gray-400 mt-1">Room & appliance breakdown, ₹ cost, alerts, private by design.</p></div>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5"><p className="font-bold">For Enterprises</p><p className="text-gray-400 mt-1">Multi-site portfolio, KPIs, API access, role-based access, SLA.</p></div>
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5"><p className="font-bold">For Enterprises</p><p className="text-gray-400 mt-1">Multi-site, KPIs, API, SLA, dedicated support.</p></div>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5"><p className="font-bold">Pricing</p><p className="text-gray-400 mt-1">Free, ₹99 Home Pro (popular), ₹249 Family, Enterprise custom.</p></div>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5"><p className="font-bold">Pricing</p><p className="text-gray-400 mt-1">Enterprise — custom, quote-based, per building.</p></div>
         </div>
 
         <p className="mt-8 text-center text-xs text-gray-500">Embed this page in PowerPoint → Web Viewer → paste this URL. Full site also works iframed.</p>
