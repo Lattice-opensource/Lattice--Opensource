@@ -60,6 +60,14 @@ export default function Hero() {
             >
               See what you get
             </a>
+            <a
+              href="https://lattice-smart-energy.vercel.app"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-white/15 px-6 py-3.5 text-[15px] font-semibold text-gray-300 hover:border-white/40 hover:text-white transition-colors"
+            >
+              Try out the demo
+            </a>
           </motion.div>
           <motion.div
             initial={{ opacity: 0 }}
