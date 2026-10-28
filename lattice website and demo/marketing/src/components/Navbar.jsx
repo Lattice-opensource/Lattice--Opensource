@@ -62,6 +62,14 @@ export default function Navbar() {
           >
             Home experience
           </a>
+          <a
+            href="https://lattice-smart-energy.vercel.app"
+            target="_blank"
+            rel="noreferrer"
+            className="hidden md:inline-flex items-center gap-1.5 rounded-full border border-white/15 px-4 py-2 text-[13px] font-semibold text-gray-300 hover:border-white/40 hover:text-white transition-colors"
+          >
+            Try out the demo
+          </a>
           <button
             onClick={toggleTheme}
             aria-label="Toggle theme"
