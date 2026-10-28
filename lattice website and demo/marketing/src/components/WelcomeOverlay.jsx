@@ -48,7 +48,9 @@ export default function WelcomeOverlay() {
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseleave', onLeave);
 
+    let t = 0;
     const animate = () => {
+      t += 0.015;
       ctx.clearRect(0, 0, w, h);
       const radius = 140;
       const strength = 0.35;
@@ -58,10 +60,13 @@ export default function WelcomeOverlay() {
         const dist = Math.sqrt(dx * dx + dy * dy);
         let tx = d.ox;
         let ty = d.oy;
+        // gentle continuous wave so the matrix always moves
+        tx += Math.sin(t + d.oy * 0.02) * 2.5;
+        ty += Math.cos(t + d.ox * 0.02) * 2.5;
         if (dist < radius && dist > 0) {
           const force = (1 - dist / radius) * strength;
-          tx = d.ox + (dx / dist) * force * radius * 0.6;
-          ty = d.oy + (dy / dist) * force * radius * 0.6;
+          tx = d.ox + (dx / dist) * force * radius * 0.6 + Math.sin(t + d.oy * 0.02) * 2.5;
+          ty = d.oy + (dy / dist) * force * radius * 0.6 + Math.cos(t + d.ox * 0.02) * 2.5;
         }
         // spring back
         d.vx += (tx - d.x) * 0.12;
