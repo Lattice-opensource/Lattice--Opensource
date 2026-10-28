@@ -7,6 +7,7 @@ import ContactPage from './pages/ContactPage.jsx';
 import Embed from './pages/Embed.jsx';
 import Business from './pages/Business.jsx';
 import AboutPage from './pages/AboutPage.jsx';
+import NotFound from './pages/NotFound.jsx';
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/embed" element={<Embed />} />
           <Route path="/pitch" element={<Embed />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </MotionConfig>
     </BrowserRouter>
