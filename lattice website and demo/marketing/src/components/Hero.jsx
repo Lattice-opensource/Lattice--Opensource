@@ -7,10 +7,12 @@ export default function Hero() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
   const visualY = useTransform(scrollYProgress, [0, 1], [0, 60]);
   const visualOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0.6]);
+  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 0.96]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.8, 1], [1, 1, 0.6]);
 
   return (
     <section id="top" ref={ref} className="pt-32 pb-20 px-5 overflow-hidden">
-      <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-14 items-center">
+      <motion.div style={{ scale: heroScale, opacity: heroOpacity }} className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-14 items-center">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -138,7 +140,7 @@ export default function Hero() {
             One centralized layer across your energy infrastructure.
           </motion.div>
         </motion.div>
-      </div>
+      </motion.div>
     </section>
   );
 }

@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-ink text-gray-200 antialiased;
+  /* DotGrid now handles background, keep fallback */
+  background: #0B0F19;
+}
+
+/* Hide native cursor on desktop where custom cursor is active — keep for touch */
+@media (hover: hover) and (pointer: fine) {
+  body.custom-cursor-active {
+    cursor: none;
+  }
+  body.custom-cursor-active a,
+  body.custom-cursor-active button,
+  body.custom-cursor-active [role="button"] {
+    cursor: none;
+  }
+}
+
+::selection {
+  background: rgba(225, 29, 72, 0.35);
+  color: #fff;
+}

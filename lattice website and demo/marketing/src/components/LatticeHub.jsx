@@ -84,8 +84,9 @@ export default function LatticeHub() {
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#0B0F19');
-    scene.fog = new THREE.Fog('#0B0F19', 8, 22);
+    const isLight = document.documentElement.classList.contains('light');
+    scene.background = new THREE.Color(isLight ? '#FAFAFB' : '#0B0F19');
+    scene.fog = new THREE.Fog(isLight ? '#FAFAFB' : '#0B0F19', 8, 22);
 
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
     camera.position.set(4, 2.5, 6);

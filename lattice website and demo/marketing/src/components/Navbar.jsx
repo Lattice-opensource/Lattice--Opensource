@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ArrowRight } from 'lucide-react';
+import { Menu, X, ArrowRight, Sun, Moon } from 'lucide-react';
 import Logo from './Logo.jsx';
 
 const links = [
@@ -15,6 +15,14 @@ const links = [
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [light, setLight] = useState(() => document.documentElement.classList.contains('light'));
+  const toggleTheme = () => {
+    const next = !light;
+    setLight(next);
+    if (next) document.documentElement.classList.add('light');
+    else document.documentElement.classList.remove('light');
+    try { localStorage.setItem('lattice-theme', next ? 'light' : 'dark'); } catch (e) {}
+  };
   const location = useLocation();
 
   useEffect(() => {
@@ -47,6 +55,20 @@ export default function Navbar() {
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
+          <a
+            href="/home"
+            onClick={() => { try { sessionStorage.removeItem('lattice-audience'); } catch (e) {} }}
+            className="text-[13px] font-medium text-gray-400 hover:text-white transition-colors"
+          >
+            Home experience
+          </a>
+          <button
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-gray-300 hover:text-white hover:border-white/30 transition-colors"
+          >
+            {light ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+          </button>
           <Link
             to="/contact"
             className="inline-flex items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-[13px] font-bold text-white hover:bg-brand-light transition-colors"
