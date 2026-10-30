@@ -7,8 +7,8 @@
   --color-brand-dark: #be123c;
   --color-brand-light: #f43f5e;
   --color-brand-soft: #fdf2f5;
-  --color-page: #f6f7f9;
-  --color-card: #ffffff;
+  --color-page: transparent;
+  --color-card: rgba(255, 255, 255, 0.62);
   --color-line: #e7e9ee;
   --color-ink: #0f172a;
   --color-muted: #6b7280;
@@ -21,7 +21,7 @@
 
 html.dark {
   --color-page: #0b1220;
-  --color-card: #111827;
+  --color-card: rgba(255, 255, 255, 0.08);
   --color-line: #1f2937;
   --color-ink: #e5e7eb;
   --color-muted: #9ca3af;
@@ -36,21 +36,22 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background-color: var(--color-page);
+  background: linear-gradient(135deg, #000000 0%, #1a0010 45%, #ff1493 100%);
+  background-attachment: fixed;
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-image:
-    radial-gradient(60rem 40rem at 85% -10%, rgba(225, 29, 72, 0.08), transparent 60%),
-    radial-gradient(50rem 35rem at -10% 30%, rgba(225, 29, 72, 0.05), transparent 60%);
-  background-attachment: fixed;
+}
+
+.bg-card {
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 html.dark body {
-  background-image:
-    radial-gradient(60rem 40rem at 85% -10%, rgba(225, 29, 72, 0.12), transparent 60%),
-    radial-gradient(50rem 35rem at -10% 30%, rgba(225, 29, 72, 0.06), transparent 60%);
+  background: linear-gradient(135deg, #000000 0%, #1a0010 45%, #ff1493 100%);
+  background-attachment: fixed;
 }
 
 ::selection {
