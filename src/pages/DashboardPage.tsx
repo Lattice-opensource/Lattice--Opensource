@@ -264,7 +264,7 @@ export function DashboardPage() {
         <ErrorState message={applianceState.message} />
       )}
 
-      <Card eyebrow="08 � Detailed insights" title="Building performance">
+      <Card eyebrow="08 - Detailed insights" title="Building performance">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl border border-line bg-page/60 p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted">Peak power</p>
@@ -321,3 +321,4 @@ export function DashboardPage() {
     </div>
   );
 }
+
