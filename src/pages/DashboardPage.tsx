@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
 import { getEnergyApi } from "../data/getEnergyApi";
-import { useDataSource } from "../data/useDataSource";
 import { useApiResource } from "../data/useApiResource";
 import type { SiteOverview } from "../data/api/energyApi";
 import { Card } from "../components/ui/Card";
@@ -17,16 +16,14 @@ import { resolveWholeSite } from "../data/api/normalize";
 const POLL_INTERVAL_MS = 10000;
 
 export function DashboardPage() {
-  const { setDataSource } = useDataSource();
   const [appliancePeriod, setAppliancePeriod] = useState<AppliancePeriod>("today");
 
   const loader = useCallback(async (): Promise<SiteOverview> => {
     const api = getEnergyApi();
     const overview = await api.getSiteOverview?.();
     if (!overview) throw new Error("Data provider does not support site overview.");
-    setDataSource(overview.dataSource);
     return overview;
-  }, [setDataSource]);
+  }, []);
 
   const { state, reload } = useApiResource<SiteOverview>(loader, POLL_INTERVAL_MS);
 

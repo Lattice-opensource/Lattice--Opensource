@@ -12,7 +12,14 @@ const sections = [
       { to: "/dashboard", label: "Dashboard" },
       { to: "/rooms", label: "Zones" },
       { to: "/devices", label: "Equipment" },
+      { to: "/desk", label: "My Desk" },
       { to: "/insights", label: "Insights & Actions" },
+    ],
+  },
+  {
+    title: "Workspace",
+    items: [
+      { to: "/admin", label: "Admin Console" },
     ],
   },
   {
