@@ -60,6 +60,14 @@ export default function Hero() {
               Book a Demo <ArrowRight className="w-4 h-4" />
             </a>
             <a
+              href="https://office-worktree.vercel.app"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-white/15 px-6 py-3.5 text-[15px] font-semibold text-gray-200 hover:border-white/30 hover:text-white transition-colors"
+            >
+              Try the live demo <ArrowRight className="w-4 h-4" />
+            </a>
+            <a
               href="#product"
               className="inline-flex items-center gap-2 rounded-full border border-white/15 px-6 py-3.5 text-[15px] font-semibold text-gray-300 hover:border-white/40 hover:text-white transition-colors"
             >
