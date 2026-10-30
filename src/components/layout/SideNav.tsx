@@ -49,7 +49,7 @@ export function SideNav({ open, onClose }: SideNavProps) {
         />
       ) : null}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-line bg-card transition-transform md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-line bg-card/60 backdrop-blur-xl transition-transform md:static md:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -86,7 +86,7 @@ export function SideNav({ open, onClose }: SideNavProps) {
                     onClick={onClose}
                     className={({ isActive }) =>
                       `block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                        isActive ? "bg-brand/10 text-brand" : "text-muted hover:bg-page hover:text-ink"
+                        isActive ? "bg-white/20 text-brand backdrop-blur" : "text-muted hover:bg-white/10 hover:text-ink"
                       }`
                     }
                   >
