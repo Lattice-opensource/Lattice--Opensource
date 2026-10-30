@@ -40,9 +40,7 @@ export function RecentReadings({ readings, timezone }: RecentReadingsProps) {
               <td className="py-2.5 pr-4 text-ink">{r.deviceId ?? "—"}</td>
               <td className="py-2.5 pr-4 tabular-nums text-ink">
                 {Math.round(r.powerW)}
-                {r.isSimulated ? (
-                  <span className="ml-1 text-[10px] font-medium text-warn">sim</span>
-                ) : null}
+
               </td>
               <td className="py-2.5 pr-4 tabular-nums text-ink">{r.energyKwh.toFixed(4)}</td>
               {hasCost ? (

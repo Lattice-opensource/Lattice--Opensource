@@ -2,10 +2,9 @@ import { NavLinks } from "./NavLinks";
 
 interface TopBarProps {
   onMenuClick: () => void;
-  simulated: boolean;
 }
 
-export function TopBar({ onMenuClick, simulated }: TopBarProps) {
+export function TopBar({ onMenuClick }: TopBarProps) {
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-card/95 backdrop-blur">
       <div className="flex h-16 items-center justify-between gap-4 px-4 md:px-8">
@@ -44,15 +43,9 @@ export function TopBar({ onMenuClick, simulated }: TopBarProps) {
 
         <div className="flex items-center gap-3">
           <NavLinks />
-          {simulated ? (
-            <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-warn ring-1 ring-amber-200">
-              Simulated data
-            </span>
-          ) : (
-            <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-ok ring-1 ring-emerald-200">
-              Live data
-            </span>
-          )}
+          <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-ok ring-1 ring-emerald-200">
+            Live data
+          </span>
         </div>
       </div>
     </header>

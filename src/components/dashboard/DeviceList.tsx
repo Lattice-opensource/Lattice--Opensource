@@ -34,7 +34,7 @@ export function DeviceList({ devices, limit }: DeviceListProps) {
           </div>
           <div className="text-right">
             <p className="text-sm font-semibold tabular-nums text-ink">{Math.round(device.powerW)} W</p>
-            {device.isSimulated ? <p className="text-[10px] font-medium text-warn">simulated</p> : null}
+
           </div>
         </li>
       ))}

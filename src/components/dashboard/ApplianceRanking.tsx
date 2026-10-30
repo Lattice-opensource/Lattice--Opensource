@@ -100,7 +100,7 @@ export function ApplianceRanking({
                   <div className="mt-1 flex items-center justify-between text-[11px] text-muted">
                     <span>
                       {item.roomName ?? "Site level"} · {Math.round(item.powerW)} W
-                      {item.isSimulated ? " · simulated" : ""}
+
                     </span>
                     <span className="font-semibold text-ink">{item.share.toFixed(1)}%</span>
                   </div>

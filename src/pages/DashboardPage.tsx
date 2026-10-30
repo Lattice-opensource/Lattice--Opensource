@@ -83,7 +83,7 @@ export function DashboardPage() {
   }
 
   const overview = state.data;
-  const { wholeSite, dataSource } = overview;
+  const { wholeSite } = overview;
   const meterBased = wholeSite.source === "meter";
   const currencySymbol = overview.currency === "INR" ? "₹" : "";
 
@@ -105,17 +105,6 @@ export function DashboardPage() {
         </div>
       ) : null}
 
-      {dataSource.simulated ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand/30 bg-brand-soft px-4 py-3">
-          <div>
-            <p className="text-sm font-semibold text-brand">Simulated data</p>
-            <p className="text-xs text-ink/70">{dataSource.notice}</p>
-          </div>
-          <p className="text-xs font-medium text-ink/70">
-            Not connected to real electrical hardware
-          </p>
-        </div>
-      ) : null}
 
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
@@ -128,15 +117,9 @@ export function DashboardPage() {
           </p>
         </div>
         <div className="text-right">
-          <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-              dataSource.simulated
-                ? "bg-amber-50 text-warn ring-1 ring-amber-200"
-                : "bg-emerald-50 text-ok ring-1 ring-emerald-200"
-            }`}
-          >
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-ok ring-1 ring-emerald-200">
             <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />
-            {dataSource.simulated ? "simulated" : "live"}
+            live
           </span>
           <p className="mt-1 text-xs text-muted">
             Updated{" "}
