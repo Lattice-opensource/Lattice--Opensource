@@ -7,7 +7,7 @@ interface TopBarProps {
 export function TopBar({ onMenuClick }: TopBarProps) {
   const { theme, toggle } = useTheme();
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-card/60 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 border-b border-line bg-transparent backdrop-blur-xl">
       <div className="flex h-16 items-center justify-between gap-4 px-4 md:px-8">
         <div className="flex items-center gap-3">
           <button

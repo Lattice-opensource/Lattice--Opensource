@@ -17,7 +17,7 @@ export function NavLinks({ stacked = false, onNavigate }: NavLinksProps) {
             onClick={onNavigate}
             className={({ isActive }) =>
               `block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                isActive ? "bg-white/20 text-brand backdrop-blur" : "text-muted hover:bg-white/10 hover:text-ink"
+                isActive ? "bg-transparent text-brand" : "text-muted hover:bg-transparent hover:text-ink"
               }`
             }
           >
@@ -36,7 +36,7 @@ export function NavLinks({ stacked = false, onNavigate }: NavLinksProps) {
           to={item.to}
           className={({ isActive }) =>
             `rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-              isActive ? "bg-white/20 text-brand backdrop-blur" : "text-muted hover:bg-white/10 hover:text-ink"
+              isActive ? "bg-transparent text-brand" : "text-muted hover:bg-transparent hover:text-ink"
             }`
           }
         >
