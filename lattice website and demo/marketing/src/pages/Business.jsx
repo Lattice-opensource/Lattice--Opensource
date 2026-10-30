@@ -36,7 +36,7 @@ export default function Business() {
             <p className="mt-4 text-lg text-gray-400 leading-relaxed">Retail chains, offices, campuses, and manufacturers use Lattice to cut energy waste site-by-site — with numbers your CFO can trust. Fleet-wide rollouts, custom reporting, and SLA-backed uptime.</p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link to="/contact" className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3.5 text-sm font-bold text-white hover:bg-brand-light">Contact sales <ArrowRight className="w-4 h-4" /></Link>
-              <a href="https://lattice-smart-energy.vercel.app" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-white/15 px-6 py-3.5 text-sm font-semibold text-gray-200 hover:border-white/30">Try demo</a>
+              <a href="https://office-worktree.vercel.app" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-white/15 px-6 py-3.5 text-sm font-semibold text-gray-200 hover:border-white/30">Try demo</a>
             </div>
             <div className="mt-8 flex items-center gap-6 text-sm">
               <span className="flex items-center gap-1.5 text-gray-300"><ShieldCheck className="w-4 h-4 text-brand-light" /> Role-based access</span>
