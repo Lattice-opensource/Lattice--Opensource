@@ -50,7 +50,10 @@ export default function Enterprise() {
                 </li>
               ))}
             </ul>
-            <a href="#contact" className="mt-9 inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3.5 text-[15px] font-bold text-white hover:bg-brand-light transition-colors">Talk to sales</a>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <a href="#contact" className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3.5 text-[15px] font-bold text-white hover:bg-brand-light transition-colors">Talk to sales</a>
+              <a href="https://office-worktree.vercel.app" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-white/15 px-6 py-3.5 text-[15px] font-bold text-gray-200 hover:border-white/30 transition-colors">Try demo</a>
+            </div>
           </motion.div>
 
           <div className="lg:col-span-3 grid sm:grid-cols-2 gap-5">
