@@ -15,6 +15,20 @@
   --color-warn: #b45309;
 }
 
+html.dark {
+  --color-page: #0b1220;
+  --color-card: #111827;
+  --color-line: #1f2937;
+  --color-ink: #e5e7eb;
+  --color-muted: #9ca3af;
+  --color-brand-soft: #1f1216;
+}
+
+html.dark body {
+  background-color: var(--color-page);
+  color: var(--color-ink);
+}
+
 html {
   scroll-behavior: smooth;
 }

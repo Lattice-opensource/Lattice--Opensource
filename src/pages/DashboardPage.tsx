@@ -9,7 +9,7 @@ import { EmptyState } from "../components/ui/EmptyState";
 import { ErrorState } from "../components/ui/ErrorState";
 import { SitePowerChart } from "../components/dashboard/SitePowerChart";
 import { DeviceList } from "../components/dashboard/DeviceList";
-import { RoomCards } from "../components/dashboard/RoomCards";
+import { ZoneDonut } from "../components/dashboard/ZoneDonut";
 import { TopConsumers } from "../components/dashboard/TopConsumers";
 import { ApplianceRanking, rankAppliances, type AppliancePeriod } from "../components/dashboard/ApplianceRanking";
 import { resolveWholeSite } from "../data/api/normalize";
@@ -240,7 +240,7 @@ export function DashboardPage() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card eyebrow="05 · Zones" title="Usage by zone">
-          <RoomCards rooms={overview.rooms} />
+          <ZoneDonut rooms={overview.rooms} />
         </Card>
 
         <Card eyebrow="06 · Highest consumers" title="By current power">
@@ -263,6 +263,61 @@ export function DashboardPage() {
       ) : (
         <ErrorState message={applianceState.message} />
       )}
+
+      <Card eyebrow="08 � Detailed insights" title="Building performance">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-xl border border-line bg-page/60 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">Peak power</p>
+            <p className="mt-1 text-2xl font-bold text-ink">{Math.round(overview.peak.powerW)} W</p>
+            <p className="mt-1 text-xs text-muted">
+              {overview.peak.at ? new Date(overview.peak.at).toLocaleString() : "no data"}
+            </p>
+          </div>
+          <div className="rounded-xl border border-line bg-page/60 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">Average power</p>
+            <p className="mt-1 text-2xl font-bold text-ink">{Math.round(overview.averagePowerW)} W</p>
+            <p className="mt-1 text-xs text-muted">Across today's readings</p>
+          </div>
+          <div className="rounded-xl border border-line bg-page/60 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">Total energy</p>
+            <p className="mt-1 text-2xl font-bold text-ink">{wholeSite.energyKwh.toFixed(1)} kWh</p>
+            <p className="mt-1 text-xs text-muted">Estimated spend {currencySymbol}{wholeSite.costInr.toFixed(0)}</p>
+          </div>
+          <div className="rounded-xl border border-line bg-page/60 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">Zones / equipment</p>
+            <p className="mt-1 text-2xl font-bold text-ink">
+              {overview.rooms.length} / {overview.deviceCount}
+            </p>
+            <p className="mt-1 text-xs text-muted">{overview.onlineDeviceCount} equipment reporting</p>
+          </div>
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-xl border border-line bg-page/60 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">Whole-site source</p>
+            <p className="mt-1 text-sm font-semibold text-ink">
+              {wholeSite.source === "meter" ? "Building meter" : "Summed equipment"}
+            </p>
+            <p className="mt-1 text-xs text-muted">
+              {wholeSite.source === "meter"
+                ? "Total load read from the building meter; equipment readings are not added on top."
+                : "No building meter is reporting; totals are summed from equipment."}
+            </p>
+          </div>
+          <div className="rounded-xl border border-line bg-page/60 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">Data coverage</p>
+            <p className="mt-1 text-sm font-semibold text-ink">
+              {applianceState.status === "ready"
+                ? `${applianceState.data.coverageIncomplete ? "Partial" : "Complete"} monitored load`
+                : "Loading coverage"}
+            </p>
+            <p className="mt-1 text-xs text-muted">
+              {applianceState.status === "ready"
+                ? `Monitored equipment accounts for ${applianceState.data.householdEnergy.toFixed(1)} kWh of the building total.`
+                : "Calculating monitored equipment coverage."}
+            </p>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }

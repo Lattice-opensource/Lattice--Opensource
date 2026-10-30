@@ -1,10 +1,11 @@
-import { NavLinks } from "./NavLinks";
+import { useTheme } from "../../data/ThemeContext";
 
 interface TopBarProps {
   onMenuClick: () => void;
 }
 
 export function TopBar({ onMenuClick }: TopBarProps) {
+  const { theme, toggle } = useTheme();
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-card/95 backdrop-blur">
       <div className="flex h-16 items-center justify-between gap-4 px-4 md:px-8">
@@ -42,7 +43,14 @@ export function TopBar({ onMenuClick }: TopBarProps) {
         </div>
 
         <div className="flex items-center gap-3">
-          <NavLinks />
+          <button
+            type="button"
+            onClick={toggle}
+            aria-label="Toggle dark mode"
+            className="rounded-full border border-line bg-page px-2.5 py-1 text-[11px] font-semibold text-ink hover:bg-card"
+          >
+            {theme === "dark" ? "Light mode" : "Dark mode"}
+          </button>
           <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-ok ring-1 ring-emerald-200">
             Live data
           </span>
