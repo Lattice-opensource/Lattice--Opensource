@@ -44,7 +44,7 @@ export function ApplianceRanking({
           </p>
           <h2 className="text-base font-semibold text-ink">Ranked by energy use</h2>
           <p className="mt-1 text-xs text-muted">
-            Share of household consumption, highest first.
+            Share of building consumption, highest first.
           </p>
         </div>
         <div
@@ -116,12 +116,12 @@ export function ApplianceRanking({
               </span>{" "}
               is the highest-consuming monitored appliance for this period and accounts for{" "}
               <span className="font-semibold text-ink">{items[0].share.toFixed(0)}%</span> of
-              household energy use.
+              building energy use.
             </p>
             <p className="mt-1">
-              Household total: {formatKwh(householdEnergyKwh)} kWh
+              Building total: {formatKwh(householdEnergyKwh)} kWh
               {coverageIncomplete
-                ? " · breakdown covers only monitored appliances; the full household total may include unmonitored load."
+                ? " · breakdown covers only monitored appliances; the full building total may include unmonitored load."
                 : "."}
             </p>
           </div>

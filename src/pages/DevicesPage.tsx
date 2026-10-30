@@ -30,7 +30,7 @@ export function DevicesPage() {
   return (
     <div className="space-y-5">
       <header>
-        <h1 className="text-2xl font-bold tracking-tight text-ink md:text-3xl">Devices</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-ink md:text-3xl">Equipment</h1>
         <p className="mt-1 text-sm text-muted">
           Per-device power, energy and cost for the current day.
         </p>
@@ -43,7 +43,7 @@ export function DevicesPage() {
       ) : state.status === "error" ? (
         <ErrorState message={state.message} onRetry={reload} />
       ) : state.data.devices.length === 0 ? (
-        <EmptyState title="No devices" description="No devices are reporting for this site." />
+        <EmptyState title="No equipment" description="No equipment is reporting for this building." />
       ) : (
         <>
           {state.error ? (
@@ -53,7 +53,7 @@ export function DevicesPage() {
             </div>
           ) : null}
 
-          <Card title="Device summary" eyebrow="01 · Devices">
+          <Card title="Equipment summary" eyebrow="01 · Devices">
             <DeviceSummaryTable devices={state.data.devices} />
           </Card>
 

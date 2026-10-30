@@ -28,52 +28,53 @@ export interface DeviceProfile {
 export const SITE_ID = 'site_home_01';
 
 export const ROOMS: Array<{ id: string; siteId: string; name: string }> = [
-  { id: 'room_living_01', siteId: SITE_ID, name: 'Living Room' },
-  { id: 'room_bed_01', siteId: SITE_ID, name: 'Bedroom' },
-  { id: 'room_kitchen_01', siteId: SITE_ID, name: 'Kitchen' },
-  { id: 'room_bath_01', siteId: SITE_ID, name: 'Bathroom' },
-  { id: 'room_garage_01', siteId: SITE_ID, name: 'Garage' },
+  { id: 'room_lobby_01', siteId: SITE_ID, name: 'Ground Floor Lobby' },
+  { id: 'room_office1_01', siteId: SITE_ID, name: 'Floor 1 Open Office' },
+  { id: 'room_office2_01', siteId: SITE_ID, name: 'Floor 2 Open Office' },
+  { id: 'room_server_01', siteId: SITE_ID, name: 'Server Room' },
+  { id: 'room_conf_01', siteId: SITE_ID, name: 'Conference Wing' },
+  { id: 'room_util_01', siteId: SITE_ID, name: 'Parking & Utilities' },
 ];
 
 export const DEVICE_PROFILES: DeviceProfile[] = [
   {
-    id: 'dev_bed_ac_01', siteId: SITE_ID, roomId: 'room_bed_01', roomName: 'Bedroom',
-    name: 'Bedroom AC', category: 'hvac', model: 'Voltas 1.5T Inverter', ratedPowerW: 1500,
-    isSimulated: true, onWindows: [[13, 17], [21, 24], [0, 6]], baseW: 1100, standbyW: 12, variance: 0.12, offDuty: 0.05,
+    id: 'dev_bed_ac_01', siteId: SITE_ID, roomId: 'room_office1_01', roomName: 'Floor 1 Open Office',
+    name: 'Central Chiller Plant', category: 'hvac', model: 'Carrier 30XA-150', ratedPowerW: 60000,
+    isSimulated: true, onWindows: [[7, 19]], baseW: 45000, standbyW: 2000, variance: 0.08, offDuty: 0.9,
   },
   {
-    id: 'dev_living_ac_01', siteId: SITE_ID, roomId: 'room_living_01', roomName: 'Living Room',
-    name: 'Living Room AC', category: 'hvac', model: 'Daikin 2T', ratedPowerW: 1800,
-    isSimulated: true, onWindows: [[12, 16], [18, 23]], baseW: 1500, standbyW: 15, variance: 0.1, offDuty: 0.04,
+    id: 'dev_living_ac_01', siteId: SITE_ID, roomId: 'room_office2_01', roomName: 'Floor 2 Open Office',
+    name: 'Floor 2 AHU', category: 'hvac', model: 'Trane Voyager', ratedPowerW: 15000,
+    isSimulated: true, onWindows: [[7, 19]], baseW: 12000, standbyW: 500, variance: 0.1, offDuty: 0.85,
   },
   {
-    id: 'dev_fridge_01', siteId: SITE_ID, roomId: 'room_kitchen_01', roomName: 'Kitchen',
-    name: 'Refrigerator', category: 'kitchen', model: 'LG 260L', ratedPowerW: 150,
-    isSimulated: true, onWindows: [], baseW: 130, standbyW: 0, variance: 0.08, offDuty: 0.35,
+    id: 'dev_fridge_01', siteId: SITE_ID, roomId: 'room_server_01', roomName: 'Server Room',
+    name: 'Server Room Cooling + UPS', category: 'hvac', model: 'Vertiv Liebert', ratedPowerW: 18000,
+    isSimulated: true, onWindows: [], baseW: 15000, standbyW: 14000, variance: 0.05, offDuty: 1,
   },
   {
-    id: 'dev_tv_01', siteId: SITE_ID, roomId: 'room_living_01', roomName: 'Living Room',
-    name: 'Television', category: 'electronics', model: 'Samsung 55"', ratedPowerW: 120,
-    isSimulated: true, onWindows: [[18, 23]], baseW: 110, standbyW: 2, variance: 0.05, offDuty: 0.02,
+    id: 'dev_tv_01', siteId: SITE_ID, roomId: 'room_office1_01', roomName: 'Floor 1 Open Office',
+    name: 'Workstation Cluster', category: 'electronics', model: 'Dell OptiPlex Fleet', ratedPowerW: 8000,
+    isSimulated: true, onWindows: [[8, 19]], baseW: 5000, standbyW: 300, variance: 0.12, offDuty: 0.1,
   },
   {
-    id: 'dev_fan_01', siteId: SITE_ID, roomId: 'room_bed_01', roomName: 'Bedroom',
-    name: 'Ceiling Fan', category: 'appliance', model: 'Havells 1200mm', ratedPowerW: 75,
-    isSimulated: true, onWindows: [[21, 24], [0, 7]], baseW: 68, standbyW: 0, variance: 0.04, offDuty: 0.05,
+    id: 'dev_fan_01', siteId: SITE_ID, roomId: 'room_office1_01', roomName: 'Floor 1 Open Office',
+    name: 'Lighting Panel Floor 1', category: 'lighting', model: 'Philips LED Grid', ratedPowerW: 4000,
+    isSimulated: true, onWindows: [[7, 20]], baseW: 3000, standbyW: 200, variance: 0.06, offDuty: 0.05,
   },
   {
-    id: 'dev_induction_01', siteId: SITE_ID, roomId: 'room_kitchen_01', roomName: 'Kitchen',
-    name: 'Induction Cooktop', category: 'kitchen', model: 'Prestige PIC', ratedPowerW: 2000,
-    isSimulated: true, onWindows: [[7, 9], [12, 14], [19, 21]], baseW: 1600, standbyW: 0, variance: 0.15, offDuty: 0.02,
+    id: 'dev_induction_01', siteId: SITE_ID, roomId: 'room_util_01', roomName: 'Parking & Utilities',
+    name: 'Elevator Bank', category: 'appliance', model: 'Otis Gen2', ratedPowerW: 12000,
+    isSimulated: true, onWindows: [[7, 20]], baseW: 8000, standbyW: 500, variance: 0.2, offDuty: 0.15,
   },
   {
-    id: 'dev_geyser_01', siteId: SITE_ID, roomId: 'room_bath_01', roomName: 'Bathroom',
-    name: 'Water Heater', category: 'appliance', model: 'Bajaj 25L', ratedPowerW: 2000,
-    isSimulated: true, onWindows: [[6, 8], [20, 22]], baseW: 1900, standbyW: 0, variance: 0.06, offDuty: 0.01,
+    id: 'dev_geyser_01', siteId: SITE_ID, roomId: 'room_util_01', roomName: 'Parking & Utilities',
+    name: 'Water Pumps & Utilities', category: 'appliance', model: 'Grundfos CR', ratedPowerW: 6000,
+    isSimulated: true, onWindows: [[6, 22]], baseW: 4000, standbyW: 500, variance: 0.1, offDuty: 0.2,
   },
   {
     id: 'dev_main_meter_01', siteId: SITE_ID, roomId: null, roomName: null,
-    name: 'Main Meter', category: 'other', model: 'Smart Meter v2', ratedPowerW: null,
+    name: 'Main Building Meter', category: 'other', model: 'Smart Meter v3', ratedPowerW: null,
     isSimulated: true, onWindows: [], baseW: 0, standbyW: 0, variance: 0, offDuty: 0,
   },
 ];
@@ -148,7 +149,7 @@ export function backfillHistory(db: DatabaseSync, opts: BackfillOptions): void {
       powers.set(p.id, computePower(p, ts));
     }
     const sumOthers = [...powers.values()].reduce((a, b) => a + b, 0);
-    powers.set('dev_main_meter_01', round(sumOthers + 40 + sumOthers * 0.025, 2));
+    powers.set('dev_main_meter_01', round(sumOthers + 500 + sumOthers * 0.03, 2));
 
     for (const p of DEVICE_PROFILES) {
       const powerW = round(powers.get(p.id)!, 2);
@@ -214,7 +215,7 @@ export function startLiveWriter(db: DatabaseSync, opts: LiveWriterOptions): () =
         powers.set(p.id, computePower(p, now));
       }
       const sumOthers = [...powers.values()].reduce((a, b) => a + b, 0);
-      powers.set('dev_main_meter_01', round(sumOthers + 40 + sumOthers * 0.025, 2));
+      powers.set('dev_main_meter_01', round(sumOthers + 500 + sumOthers * 0.03, 2));
 
       for (const p of DEVICE_PROFILES) {
         const powerW = round(powers.get(p.id)!, 2);
@@ -267,7 +268,7 @@ export function upsertSimulatedDevices(db: DatabaseSync, seed: number): void {
   void seed;
   upsertSite(db, {
     id: SITE_ID,
-    name: 'Lattice Home',
+    name: 'Lattice Office Tower',
     timezone: 'Asia/Kolkata',
     currency: 'INR',
     tariffJson: JSON.stringify({

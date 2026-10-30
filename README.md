@@ -1,6 +1,6 @@
 # Lattice — Smart Energy Monitoring
 
-Web app for monitoring household and small-site energy use, backed by a Fastify +
+Web app for monitoring large office building energy use, backed by a Fastify +
 SQLite API with a deterministic simulator.
 
 ## Stack
@@ -10,7 +10,7 @@ SQLite API with a deterministic simulator.
 
 ## Run locally
 
-Backend (http://localhost:4000):
+Backend (http://localhost:8000):
 
 ```bash
 cd backend
@@ -32,7 +32,7 @@ Frontend environment (`.env` at the repository root):
 
 | Variable | Value | Notes |
 |---|---|---|
-| `VITE_API_BASE_URL` | `http://localhost:4000` | Backend base URL |
+| `VITE_API_BASE_URL` | `http://localhost:8000` | Backend base URL |
 | `VITE_USE_SAMPLE_DATA` | `false` | `true` renders the labelled sample provider instead of the API |
 
 Set `CORS_ORIGINS` in `backend/.env` to include the frontend origin

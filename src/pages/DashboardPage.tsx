@@ -124,7 +124,7 @@ export function DashboardPage() {
           </h1>
           <p className="mt-1 text-sm text-muted">
             {overview.onlineDeviceCount} of {overview.deviceCount} devices reporting ·{" "}
-            {Math.round(wholeSite.powerW)} W live · {overview.rooms.length} rooms
+            {Math.round(wholeSite.powerW)} W live · {overview.rooms.length} zones
           </p>
         </div>
         <div className="text-right">
@@ -244,11 +244,11 @@ export function DashboardPage() {
         </Card>
 
         <Card
-          title={`Devices · ${overview.onlineDeviceCount} on`}
+          title={`Equipment · ${overview.onlineDeviceCount} on`}
           action={<span className="text-xs text-muted">{overview.deviceCount} total</span>}
         >
           {overview.devices.length === 0 ? (
-            <EmptyState title="No devices" description="No devices are reporting for this site." />
+            <EmptyState title="No devices" description="No equipment is reporting for this building." />
           ) : (
             <DeviceList devices={overview.devices} />
           )}
@@ -256,7 +256,7 @@ export function DashboardPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card eyebrow="05 · Rooms" title="Usage by room">
+        <Card eyebrow="05 · Zones" title="Usage by zone">
           <RoomCards rooms={overview.rooms} />
         </Card>
 

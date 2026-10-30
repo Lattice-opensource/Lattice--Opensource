@@ -3,7 +3,7 @@ import { getDb, isDbOpen } from '../db/index.js';
 import { APP_VERSION } from '../config.js';
 
 export async function registerHealthRoute(app: FastifyInstance): Promise<void> {
-  app.get('/api/health', async (req, reply) => {
+  const handler = async (req: any, reply: any) => {
     const start = Date.now();
     let dbStatus: 'up' | 'down' = 'down';
     try {
@@ -27,5 +27,7 @@ export async function registerHealthRoute(app: FastifyInstance): Promise<void> {
     });
     void start;
     void req;
-  });
+  };
+  app.get('/api/health', handler);
+  app.get('/health', handler);
 }

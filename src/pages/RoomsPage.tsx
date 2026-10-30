@@ -21,7 +21,7 @@ export function RoomsPage() {
   return (
     <div className="space-y-5">
       <header>
-        <h1 className="text-2xl font-bold tracking-tight text-ink md:text-3xl">Rooms</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-ink md:text-3xl">Zones</h1>
         <p className="mt-1 text-sm text-muted">Energy usage grouped by room for the current day.</p>
       </header>
 
@@ -32,9 +32,9 @@ export function RoomsPage() {
       ) : state.status === "error" ? (
         <ErrorState message={state.message} onRetry={reload} />
       ) : state.data.length === 0 ? (
-        <EmptyState title="No rooms" description="No room data is available for this site." />
+        <EmptyState title="No zones" description="No zone data is available for this building." />
       ) : (
-        <Card title="Usage by room" eyebrow="01 · Rooms">
+        <Card title="Usage by zone" eyebrow="01 · Rooms">
           <RoomCards rooms={state.data} />
         </Card>
       )}

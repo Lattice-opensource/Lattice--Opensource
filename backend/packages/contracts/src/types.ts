@@ -28,7 +28,7 @@
  * 6. `source` records provenance: 'simulator' | 'device' | 'import'.
  */
 
-/** A physical site: a home, a shop, a branch. */
+/** A physical site: a large office building, campus, or branch. */
 export interface Site {
   id: string;
   name: string;
