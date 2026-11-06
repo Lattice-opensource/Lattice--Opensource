@@ -26,6 +26,23 @@ export interface EnergyReadingDto {
   isSimulated: boolean;
 }
 
+export interface BuildingAlert {
+  id: string;
+  building_id: string;
+  circuit_id: string | null;
+  alert_type: string;
+  severity: "Low" | "Medium" | "High";
+  description: string;
+  timestamp: string;
+  resolution_status: "open" | "acknowledged" | "resolved";
+  value: number | null;
+  threshold: number | null;
+  is_simulated: boolean;
+  roomId: string | null;
+  floorId: string | null;
+  level: "room" | "circuit" | "building";
+}
+
 export interface AggregatedEnergyDto {
   powerW: number | null;
   energyKwh: number;
@@ -60,6 +77,9 @@ export const buildingApi = {
     if (to) q.set("to", to);
     return request<{ data: { roomId: string; window: { from: string; to: string } } & AggregatedEnergyDto }>(`/api/rooms/${roomId}/energy?${q.toString()}`);
   },
+
+  buildingAlerts: (buildingId: string) =>
+    request<{ data: BuildingAlert[]; meta: { available?: boolean; error?: string } }>(`/api/buildings/${buildingId}/alerts`),
 
   applianceEnergy: (applianceId: string, from?: string, to?: string) => {
     const q = new URLSearchParams();

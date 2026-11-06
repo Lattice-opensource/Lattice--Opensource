@@ -1,5 +1,7 @@
-import { useState, useMemo } from "react";
-import { DEMO_BUILDING, STATUS_META, type DemoRoom, type RoomStatus } from "./sampleData";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { config } from "../../config/env";
+import { buildingApi } from "./data/buildingApi";
+import { DEMO_BUILDING, DEMO_ALERTS, STATUS_META, type DemoRoom, type RoomStatus, type DemoAlert } from "./sampleData";
 import { BlueprintViewer, type RoomPolygon } from "./components/BlueprintViewer";
 import { ApplianceManager } from "./components/ApplianceManager";
 import { Card } from "../../components/ui/Card";
@@ -19,6 +21,8 @@ export function BuildingDashboardPage() {
   const [floorId, setFloorId] = useState(building.floors[0].id);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [range, setRange] = useState("today");
+  const [alerts, setAlerts] = useState<DemoAlert[]>(DEMO_ALERTS);
+  const [alertsAvailable, setAlertsAvailable] = useState(true);
   const [appliancesByRoom, setAppliancesByRoom] = useState<Record<string, DemoRoom["appliances"]>>(() => {
     const m: Record<string, DemoRoom["appliances"]> = {};
     for (const f of DEMO_BUILDING.floors) for (const r of f.rooms) m[r.id] = [...r.appliances];
@@ -26,6 +30,37 @@ export function BuildingDashboardPage() {
   });
 
   const floor = building.floors.find((f) => f.id === floorId) || building.floors[0];
+
+  const fetchAlerts = useCallback(async () => {
+    if (config.useSampleData) return;
+    try {
+      const res = await buildingApi.buildingAlerts(building.id);
+      const mapped: DemoAlert[] = (res.data || []).map((a) => ({
+        id: a.id,
+        building_id: a.building_id,
+        circuit_id: a.circuit_id,
+        alert_type: a.alert_type,
+        severity: a.severity,
+        description: a.description,
+        timestamp: a.timestamp,
+        resolution_status: a.resolution_status,
+        roomId: a.roomId,
+        level: a.level,
+      }));
+      setAlerts(mapped);
+      setAlertsAvailable(res.meta?.available !== false);
+    } catch {
+      setAlertsAvailable(false);
+    }
+  }, [building.id]);
+
+  useEffect(() => {
+    if (config.useSampleData) return;
+    void fetchAlerts();
+    const t = setInterval(() => void fetchAlerts(), 15000);
+    return () => clearInterval(t);
+  }, [fetchAlerts]);
+  const alertCountByRoom = (roomId: string) => alerts.filter((a) => a.roomId === roomId && a.resolution_status === "open").length;
   const rooms: RoomPolygon[] = floor.rooms.map((r) => ({
     id: r.id,
     name: r.name,
@@ -34,7 +69,7 @@ export function BuildingDashboardPage() {
     status: r.status,
     color: STATUS_COLOR[r.status],
     powerW: r.powerW,
-    alertCount: r.alertCount,
+    alertCount: alertCountByRoom(r.id) || r.alertCount,
   }));
 
   const selectedRoom: DemoRoom | null = floor.rooms.find((r) => r.id === selectedRoomId) || null;
@@ -142,15 +177,21 @@ export function BuildingDashboardPage() {
           </Card>
 
           <Card title="Active alerts" eyebrow="04 · Alerts">
-            {floor.rooms.filter((r) => r.alertCount > 0).length === 0 ? (
-              <p className="text-sm text-muted">No active alerts on this floor.</p>
+            {!alertsAvailable ? (
+              <p className="text-sm text-muted">Alert service unavailable.</p>
+            ) : alerts.filter((a) => a.resolution_status === "open").length === 0 ? (
+              <p className="text-sm text-muted">No active alerts.</p>
             ) : (
               <ul className="space-y-1">
-                {floor.rooms.filter((r) => r.alertCount > 0).map((r) => (
-                  <li key={r.id}>
-                    <button type="button" onClick={() => setSelectedRoomId(r.id)} className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-page">
-                      <span className="text-ink">{r.name}</span>
-                      <span className="rounded-full bg-brand/10 px-2 py-0.5 text-xs font-medium text-brand">{r.alertCount}</span>
+                {alerts.filter((a) => a.resolution_status === "open").map((a) => (
+                  <li key={a.id}>
+                    <button type="button" onClick={() => { if (a.roomId) setSelectedRoomId(a.roomId); }} className="w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-page">
+                      <div className="flex items-center justify-between">
+                        <span className="text-ink">{a.severity}</span>
+                        <span className="text-xs text-muted">{new Date(a.timestamp).toLocaleString()}</span>
+                      </div>
+                      <p className="mt-0.5 text-xs text-muted">{a.description}</p>
+                      <p className="mt-0.5 text-[10px] text-muted">{a.level} · {a.resolution_status}</p>
                     </button>
                   </li>
                 ))}

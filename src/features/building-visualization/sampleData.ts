@@ -147,6 +147,25 @@ export const DEMO_BUILDING: DemoBuilding = {
   ],
 };
 
+export interface DemoAlert {
+  id: string;
+  building_id: string;
+  circuit_id: string | null;
+  alert_type: string;
+  severity: "Low" | "Medium" | "High";
+  description: string;
+  timestamp: string;
+  resolution_status: "open" | "acknowledged" | "resolved";
+  roomId: string | null;
+  level: "room" | "circuit" | "building";
+}
+
+export const DEMO_ALERTS: DemoAlert[] = [
+  { id: "al1", building_id: "bld-1", circuit_id: "c1", alert_type: "historical_baseline", severity: "Medium", description: "Bedroom consumption exceeded baseline by 150%", timestamp: "2026-10-22T10:00:00Z", resolution_status: "open", roomId: "r3", level: "room" },
+  { id: "al2", building_id: "bld-1", circuit_id: null, alert_type: "fixed_threshold", severity: "High", description: "Office power exceeded critical threshold", timestamp: "2026-10-22T09:30:00Z", resolution_status: "open", roomId: "r5", level: "room" },
+  { id: "al3", building_id: "bld-1", circuit_id: null, alert_type: "sudden_change", severity: "Low", description: "Unusual consumption change detected", timestamp: "2026-10-22T08:00:00Z", resolution_status: "resolved", roomId: null, level: "building" },
+];
+
 export const STATUS_META: Record<RoomStatus, { label: string; color: string; icon: string }> = {
   normal: { label: "Normal", color: "#059669", icon: "●" },
   higher: { label: "Higher than expected", color: "#b45309", icon: "▲" },
