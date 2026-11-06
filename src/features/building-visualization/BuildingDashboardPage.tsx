@@ -4,7 +4,9 @@ import { buildingApi } from "./data/buildingApi";
 import { DEMO_BUILDING, DEMO_ALERTS, STATUS_META, type DemoRoom, type RoomStatus, type DemoAlert } from "./sampleData";
 import { BlueprintViewer, type RoomPolygon } from "./components/BlueprintViewer";
 import { ApplianceManager } from "./components/ApplianceManager";
+import { RoomEnergyChart } from "./components/RoomEnergyChart";
 import { Card } from "../../components/ui/Card";
+import { Spinner } from "../../components/ui/Spinner";
 
 import { EmptyState } from "../../components/ui/EmptyState";
 
@@ -20,9 +22,11 @@ export function BuildingDashboardPage() {
   const building = DEMO_BUILDING;
   const [floorId, setFloorId] = useState(building.floors[0].id);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const [selectedApplianceId, setSelectedApplianceId] = useState<string | null>(null);
   const [range, setRange] = useState("today");
   const [alerts, setAlerts] = useState<DemoAlert[]>(DEMO_ALERTS);
   const [alertsAvailable, setAlertsAvailable] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [appliancesByRoom, setAppliancesByRoom] = useState<Record<string, DemoRoom["appliances"]>>(() => {
     const m: Record<string, DemoRoom["appliances"]> = {};
     for (const f of DEMO_BUILDING.floors) for (const r of f.rooms) m[r.id] = [...r.appliances];
@@ -74,12 +78,13 @@ export function BuildingDashboardPage() {
 
   const selectedRoom: DemoRoom | null = floor.rooms.find((r) => r.id === selectedRoomId) || null;
 
+  const rangeFactor = range === "week" ? 7 : range === "month" ? 30 : 1;
   const totals = useMemo(() => {
     const power = floor.rooms.reduce((a, r) => a + (r.powerW ?? 0), 0);
-    const energy = floor.rooms.reduce((a, r) => a + (r.energyKwh ?? 0), 0);
+    const energy = floor.rooms.reduce((a, r) => a + (r.energyKwh ?? 0), 0) * rangeFactor;
     const alerts = floor.rooms.reduce((a, r) => a + r.alertCount, 0);
     return { power, energy, alerts };
-  }, [floor]);
+  }, [floor, rangeFactor]);
 
   return (
     <div className="space-y-4">
@@ -101,7 +106,7 @@ export function BuildingDashboardPage() {
           </select>
           <select
             value={floorId}
-            onChange={(e) => setFloorId(e.target.value)}
+            onChange={(e) => { setLoading(true); setFloorId(e.target.value); setSelectedRoomId(null); setSelectedApplianceId(null); setTimeout(() => setLoading(false), 200); }}
             className="rounded-lg border border-line bg-card px-3 py-2 text-sm text-ink"
             aria-label="Floor selector"
           >
@@ -201,27 +206,34 @@ export function BuildingDashboardPage() {
         </aside>
 
         {/* Center */}
-        <section>
-          <Card title={floor.name} eyebrow="05 · Floor plan">
-            <BlueprintViewer
-              blueprintUrl={floor.blueprintUrl}
-              rooms={rooms}
-              selectedRoomId={selectedRoomId}
-              drawing={false}
-              draftPoints={[]}
-              onSelectRoom={setSelectedRoomId}
-              onCanvasClick={() => {}}
-              onCanvasDoubleClick={() => {}}
-              onFinishDraw={() => {}}
-              onCancelDraw={() => {}}
-            />
-            <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted">
-              {Object.entries(STATUS_META).map(([k, v]) => (
-                <span key={k} className="flex items-center gap-1">
-                  <span style={{ color: v.color }} aria-hidden="true">{v.icon}</span> {v.label}
-                </span>
-              ))}
-            </div>
+        <section className="space-y-4">
+          {loading ? (
+            <div className="py-12"><Spinner label="Loading floor" /></div>
+          ) : (
+            <Card title={floor.name} eyebrow="05 · Floor plan">
+              <BlueprintViewer
+                blueprintUrl={floor.blueprintUrl}
+                rooms={rooms}
+                selectedRoomId={selectedRoomId}
+                drawing={false}
+                draftPoints={[]}
+                onSelectRoom={setSelectedRoomId}
+                onCanvasClick={() => {}}
+                onCanvasDoubleClick={() => {}}
+                onFinishDraw={() => {}}
+                onCancelDraw={() => {}}
+              />
+              <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted">
+                {Object.entries(STATUS_META).map(([k, v]) => (
+                  <span key={k} className="flex items-center gap-1">
+                    <span style={{ color: v.color }} aria-hidden="true">{v.icon}</span> {v.label}
+                  </span>
+                ))}
+              </div>
+            </Card>
+          )}
+          <Card title="Consumption by room" eyebrow="06 · Chart">
+            <RoomEnergyChart rooms={floor.rooms} />
           </Card>
         </section>
 
@@ -247,9 +259,26 @@ export function BuildingDashboardPage() {
                   onAdd={(a) => setAppliancesByRoom((prev) => ({ ...prev, [selectedRoom.id]: [...(prev[selectedRoom.id] || []), a] }))}
                   onRemove={(id) => setAppliancesByRoom((prev) => ({ ...prev, [selectedRoom.id]: (prev[selectedRoom.id] || []).filter((a) => a.id !== id) }))}
                   onEdit={(a) => setAppliancesByRoom((prev) => ({ ...prev, [selectedRoom.id]: (prev[selectedRoom.id] || []).map((x) => (x.id === a.id ? a : x)) }))}
+                  onSelect={setSelectedApplianceId}
                 />
                 {selectedRoom.powerW != null ? <p className="mt-2 text-[10px] text-muted">Room-level reading shown separately from rated power. Appliance consumption shown only when individually monitored.</p> : null}
               </Card>
+
+              {selectedApplianceId ? (() => {
+                const a = (appliancesByRoom[selectedRoom.id] || []).find((x) => x.id === selectedApplianceId);
+                if (!a) return null;
+                return (
+                  <Card title={a.name} eyebrow="08 · Appliance details">
+                    <dl className="space-y-1 text-sm">
+                      <div className="flex justify-between"><dt className="text-muted">Type</dt><dd className="text-ink">{a.type}</dd></div>
+                      <div className="flex justify-between"><dt className="text-muted">Rated power</dt><dd className="text-ink">{a.ratedPowerW != null ? `${a.ratedPowerW} W` : "—"}</dd></div>
+                      <div className="flex justify-between"><dt className="text-muted">Measured power</dt><dd className="text-ink">{a.powerW != null ? `${Math.round(a.powerW)} W` : "No data (not individually monitored)"}</dd></div>
+                      <div className="flex justify-between"><dt className="text-muted">Energy</dt><dd className="text-ink">{a.energyKwh != null ? `${a.energyKwh.toFixed(2)} kWh` : "—"}</dd></div>
+                    </dl>
+                    <p className="mt-2 text-[10px] text-muted">Source/confidence identified by monitoring method. Rated power is not measured consumption.</p>
+                  </Card>
+                );
+              })() : null}
             </>
           ) : (
             <Card title="Room details" eyebrow="06 · Details">

@@ -21,9 +21,10 @@ interface Props {
   onAdd: (a: DemoAppliance) => void;
   onRemove: (id: string) => void;
   onEdit: (a: DemoAppliance) => void;
+  onSelect?: (id: string) => void;
 }
 
-export function ApplianceManager({ appliances, onAdd, onRemove, onEdit }: Props) {
+export function ApplianceManager({ appliances, onAdd, onRemove, onEdit, onSelect }: Props) {
   const [name, setName] = useState("");
   const [type, setType] = useState("other");
   const [manufacturer, setManufacturer] = useState("");
@@ -92,7 +93,7 @@ export function ApplianceManager({ appliances, onAdd, onRemove, onEdit }: Props)
         {appliances.map((a) => (
           <li key={a.id} className="rounded-lg border border-line px-3 py-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-ink">{a.name}</span>
+              <button type="button" onClick={() => onSelect?.(a.id)} className="text-sm font-medium text-ink hover:text-brand">{a.name}</button>
               <span className="text-xs text-muted">{a.type.replace(/_/g, " ")}</span>
             </div>
             <div className="mt-1 text-xs text-muted">
