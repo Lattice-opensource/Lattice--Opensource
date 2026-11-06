@@ -1,0 +1,13 @@
+[
+  {
+    "id": 1,
+    "site_id": "site_home_01",
+    "device_id": "dev_bed_ac_01",
+    "alert_type": "max_consumption",
+    "severity": "warning",
+    "message": "Bedroom AC exceeded 3000 W threshold",
+    "value": 3200.0,
+    "threshold": 3000.0,
+    "is_simulated": true
+  }
+]
