@@ -26,6 +26,18 @@ class AlertSettings(BaseSettings):
         description="Power level (W) above which a max-consumption alert fires.",
     )
 
+    # --- Maximum consumption threshold for readings (kWh per reading) ---
+    max_consumption_threshold_kwh: float = Field(
+        default=1.0,
+        description="Consumption (kWh) above which a fixed-threshold alert fires.",
+    )
+
+    # --- Minimum history for baseline detection ---
+    min_history_readings: int = Field(
+        default=3,
+        description="Minimum number of historical readings required for baseline detection.",
+    )
+
     # --- Historical baseline multiplier ---
     historical_baseline_multiplier: float = Field(
         default=1.5,

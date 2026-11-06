@@ -96,3 +96,29 @@ def test_unique_alert_ids():
         assert a1.id != a2.id
     finally:
         db.close()
+
+
+def test_dedup_prevents_duplicate():
+    _clean()
+    from datetime import datetime, timezone
+    from repositories.alerts import create_alert_if_new
+
+    db = SessionLocal()
+    try:
+        ts = datetime.now(timezone.utc)
+        data = {
+            "building_id": "b1",
+            "circuit_id": "c1",
+            "alert_type": "fixed_threshold",
+            "severity": "High",
+            "description": "dup test",
+            "timestamp": ts,
+        }
+        a1 = create_alert_if_new(db, data)
+        assert a1 is not None
+        a2 = create_alert_if_new(db, data)
+        assert a2 is None  # duplicate suppressed
+        count = db.query(Alert).filter(Alert.building_id == "b1").count()
+        assert count == 1
+    finally:
+        db.close()
