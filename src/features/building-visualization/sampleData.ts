@@ -52,7 +52,7 @@ export const DEMO_BUILDING: DemoBuilding = {
       id: "f1",
       name: "Ground Floor",
       level: 0,
-      blueprintUrl: null,
+      blueprintUrl: "/demo/floor1.svg",
       rooms: [
         {
           id: "r1",
@@ -124,7 +124,7 @@ export const DEMO_BUILDING: DemoBuilding = {
       id: "f2",
       name: "First Floor",
       level: 1,
-      blueprintUrl: null,
+      blueprintUrl: "/demo/floor2.svg",
       rooms: [
         {
           id: "r5",

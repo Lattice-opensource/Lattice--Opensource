@@ -14,6 +14,16 @@ CREATE TABLE IF NOT EXISTS rooms (
   id TEXT PRIMARY KEY,
   site_id TEXT NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
+  building_id TEXT REFERENCES buildings(id) ON DELETE SET NULL,
+  floor_id TEXT REFERENCES floors(id) ON DELETE SET NULL,
+  circuit_id TEXT REFERENCES circuits(id) ON DELETE SET NULL,
+  x REAL,
+  y REAL,
+  width REAL,
+  height REAL,
+  boundary TEXT,
+  area_sqm REAL,
+  room_type TEXT,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
