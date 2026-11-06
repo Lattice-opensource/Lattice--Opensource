@@ -15,6 +15,20 @@ export function openDatabase(filePath: string = databasePath): DatabaseSync {
   // In dev (tsx) it is read from src/db/schema.sql next to this source file.
   const schema = readFileSync(new URL('./schema.sql', import.meta.url), 'utf8');
   instance.exec(schema);
+  // Backward-compatible column additions for existing databases.
+  const alterStatements = [
+    'ALTER TABLE rooms ADD COLUMN building_id TEXT REFERENCES buildings(id) ON DELETE SET NULL',
+    'ALTER TABLE rooms ADD COLUMN floor_id TEXT REFERENCES floors(id) ON DELETE SET NULL',
+    'ALTER TABLE rooms ADD COLUMN circuit_id TEXT REFERENCES circuits(id) ON DELETE SET NULL',
+    'ALTER TABLE devices ADD COLUMN appliance_id TEXT REFERENCES appliances(id) ON DELETE SET NULL',
+  ];
+  for (const stmt of alterStatements) {
+    try {
+      instance.exec(stmt);
+    } catch {
+      // Column already exists; ignore.
+    }
+  }
   db = instance;
   return instance;
 }

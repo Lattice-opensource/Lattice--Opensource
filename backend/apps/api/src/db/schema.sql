@@ -55,3 +55,77 @@ CREATE TABLE IF NOT EXISTS readings (
 CREATE INDEX IF NOT EXISTS idx_readings_device_ts ON readings(device_id, timestamp);
 CREATE INDEX IF NOT EXISTS idx_readings_ts ON readings(timestamp);
 CREATE INDEX IF NOT EXISTS idx_readings_sim ON readings(is_simulated);
+
+-- Lattice Building Visualization tables (additive, idempotent)
+
+CREATE TABLE IF NOT EXISTS buildings (
+  id TEXT PRIMARY KEY,
+  site_id TEXT NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  address TEXT,
+  description TEXT,
+  floor_count INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_buildings_site ON buildings(site_id);
+
+CREATE TABLE IF NOT EXISTS floors (
+  id TEXT PRIMARY KEY,
+  building_id TEXT NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,
+  level INTEGER NOT NULL DEFAULT 0,
+  name TEXT NOT NULL,
+  blueprint_ref TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_floors_building ON floors(building_id);
+
+CREATE TABLE IF NOT EXISTS meters (
+  id TEXT PRIMARY KEY,
+  site_id TEXT NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL DEFAULT 'electricity',
+  unit TEXT NOT NULL DEFAULT 'kWh',
+  data_source TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_meters_site ON meters(site_id);
+
+CREATE TABLE IF NOT EXISTS circuits (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  floor_id TEXT REFERENCES floors(id) ON DELETE SET NULL,
+  meter_id TEXT REFERENCES meters(id) ON DELETE SET NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_circuits_floor ON circuits(floor_id);
+CREATE INDEX IF NOT EXISTS idx_circuits_meter ON circuits(meter_id);
+
+CREATE TABLE IF NOT EXISTS appliances (
+  id TEXT PRIMARY KEY,
+  room_id TEXT REFERENCES rooms(id) ON DELETE SET NULL,
+  circuit_id TEXT REFERENCES circuits(id) ON DELETE SET NULL,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL DEFAULT 'other',
+  manufacturer TEXT,
+  model TEXT,
+  rated_power_w REAL,
+  monitoring_method TEXT NOT NULL DEFAULT 'none',
+  status TEXT NOT NULL DEFAULT 'unknown',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_appliances_room ON appliances(room_id);
+CREATE INDEX IF NOT EXISTS idx_appliances_circuit ON appliances(circuit_id);
+
+CREATE TABLE IF NOT EXISTS blueprints (
+  id TEXT PRIMARY KEY,
+  floor_id TEXT NOT NULL REFERENCES floors(id) ON DELETE CASCADE,
+  storage_path TEXT NOT NULL,
+  mime_type TEXT,
+  uploaded_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_blueprints_floor ON blueprints(floor_id);
