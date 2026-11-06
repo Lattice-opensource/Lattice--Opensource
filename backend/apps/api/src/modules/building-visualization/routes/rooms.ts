@@ -27,18 +27,7 @@ export async function registerRoomRoutes(app: FastifyInstance): Promise<void> {
     reply.send({ data: rooms, meta: { serverTime: toIso(new Date()), total: rooms.length } });
   });
 
-  app.get('/api/rooms/:id', async (req, reply) => {
-    const id = (req.params as { id: string }).id;
-    const db = getDb();
-    const room = getRoom(db, id);
-    if (!room) {
-      reply.code(404).send({ error: { code: 'NOT_FOUND', message: 'Room not found', requestId: req.id } });
-      return;
-    }
-    reply.send({ data: room, meta: { serverTime: toIso(new Date()) } });
-  });
-
-  app.put('/api/rooms/:id', async (req, reply) => {
+  app.put('/api/rooms/:id/mapping', async (req, reply) => {
     const id = (req.params as { id: string }).id;
     const db = getDb();
     const cur = getRoom(db, id);
