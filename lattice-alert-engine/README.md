@@ -30,8 +30,15 @@ uvicorn main:app --reload --port 8010
 ## Configuration
 See `docs/configuration.md` and `.env.example`. All thresholds are env-configurable.
 
+## Sample data
+Load simulated readings and run detection:
+```bash
+python sample-data/load_sample_data.py
+```
+See `docs/sample-data.md` for scenarios and expected outcomes. The loader is idempotent.
+
 ## Status
-Structure + configuration only. No detection functionality implemented yet. Awaiting approval.
+Structure + configuration + detection engine + alert service + REST API + sample data implemented. Awaiting approval.
 
 ## Rules
 - Isolated from existing Lattice OS modules.
