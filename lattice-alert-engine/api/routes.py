@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from config.database import get_db
 from models.alert import Alert, ALLOWED_SEVERITIES, STATUS_OPEN
 from models.reading import Reading
+from services.alert_service import generate_alerts, resolve_alert, acknowledge_alert
 
 router = APIRouter(prefix="/api", tags=["alert-engine"])
 
@@ -67,6 +68,47 @@ def create_reading(payload: ReadingCreate, db: Session = Depends(get_db)) -> dic
 def list_alerts(db: Session = Depends(get_db)) -> dict:
     rows = db.query(Alert).order_by(Alert.timestamp.desc()).limit(500).all()
     return {"data": [_alert_to_dict(a) for a in rows], "meta": {"serverTime": datetime.now(timezone.utc).isoformat(), "total": len(rows)}}
+
+
+class ReadingInput(BaseModel):
+    building_id: str
+    circuit_id: str
+    consumption_kwh: float = Field(ge=0)
+    timestamp: datetime | None = None
+    history: list[float] | None = None
+    previous_kwh: float | None = None
+    is_simulated: bool = False
+
+
+@router.post("/alerts/generate", status_code=201)
+def generate(payload: ReadingInput, db: Session = Depends(get_db)) -> dict:
+    results = generate_alerts(
+        db,
+        building_id=payload.building_id,
+        circuit_id=payload.circuit_id,
+        consumption_kwh=payload.consumption_kwh,
+        reading_timestamp=payload.timestamp,
+        history=payload.history,
+        previous_kwh=payload.previous_kwh,
+        is_simulated=payload.is_simulated,
+    )
+    return {"data": [r.to_dict() for r in results], "meta": {"serverTime": datetime.now(timezone.utc).isoformat(), "total": len(results)}}
+
+
+@router.post("/alerts/{alert_id}/resolve")
+def resolve(alert_id: str, db: Session = Depends(get_db)) -> dict:
+    alert = resolve_alert(db, alert_id)
+    if alert is None:
+        raise HTTPException(status_code=404, detail="Alert not found")
+    return _alert_to_dict(alert)
+
+
+@router.post("/alerts/{alert_id}/acknowledge")
+def acknowledge(alert_id: str, db: Session = Depends(get_db)) -> dict:
+    alert = acknowledge_alert(db, alert_id)
+    if alert is None:
+        raise HTTPException(status_code=404, detail="Alert not found")
+    return _alert_to_dict(alert)
 
 
 @router.post("/alerts", status_code=201)
