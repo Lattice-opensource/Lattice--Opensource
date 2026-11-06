@@ -5,7 +5,6 @@ import { DatabaseSync } from 'node:sqlite';
 import { getDb } from '../../../db/index.js';
 import { createBlueprint, deleteBlueprint, listBlueprints } from '../repositories/blueprints.js';
 import { getFloor } from '../repositories/floors.js';
-import { getBuilding } from '../repositories/buildings.js';
 import { parseMultipart } from '../../../lib/multipart.js';
 import { VISUALIZATION_CONFIG } from '../config/index.js';
 import { toIso } from '../../../lib/time.js';
