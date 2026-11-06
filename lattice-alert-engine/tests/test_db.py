@@ -1,0 +1,98 @@
+"""Tests for database creation, insertion and retrieval."""
+
+import os
+import tempfile
+from pathlib import Path
+
+_TMP = Path(tempfile.mkdtemp()) / "alert_test.db"
+os.environ["ALERT_DATABASE_URL"] = f"sqlite:///{_TMP}"
+
+from config.database import Base, engine, SessionLocal, init_db  # noqa: E402
+from models.alert import Alert, ALLOWED_SEVERITIES  # noqa: E402
+from models.reading import Reading  # noqa: E402
+
+init_db()
+
+
+def _clean():
+    from sqlalchemy.orm import Session
+
+    db: Session = SessionLocal()
+    try:
+        db.query(Alert).delete()
+        db.query(Reading).delete()
+        db.commit()
+    finally:
+        db.close()
+
+
+def test_database_creation():
+    from sqlalchemy import inspect
+
+    insp = inspect(engine)
+    tables = insp.get_table_names()
+    assert "readings" in tables
+    assert "alerts" in tables
+
+
+def test_reading_insert_and_retrieve():
+    _clean()
+    db = SessionLocal()
+    try:
+        r = Reading(building_id="b1", circuit_id="c1", consumption_kwh=1.23)
+        db.add(r)
+        db.commit()
+        db.refresh(r)
+        rid = r.id
+        assert rid is not None
+
+        fetched = db.query(Reading).filter(Reading.id == rid).first()
+        assert fetched is not None
+        assert fetched.building_id == "b1"
+        assert fetched.circuit_id == "c1"
+        assert abs(fetched.consumption_kwh - 1.23) < 1e-9
+        assert fetched.timestamp is not None
+        assert fetched.timestamp.tzinfo is not None
+    finally:
+        db.close()
+
+
+def test_alert_insert_and_retrieve():
+    _clean()
+    db = SessionLocal()
+    try:
+        a = Alert(
+            building_id="b1",
+            circuit_id="c1",
+            alert_type="max_consumption",
+            severity="High",
+            description="test alert",
+            value=4200.0,
+            threshold=3000.0,
+        )
+        db.add(a)
+        db.commit()
+        db.refresh(a)
+        aid = a.id
+        assert aid is not None
+
+        fetched = db.query(Alert).filter(Alert.id == aid).first()
+        assert fetched is not None
+        assert fetched.severity in ALLOWED_SEVERITIES
+        assert fetched.resolution_status == "open"
+        assert fetched.timestamp.tzinfo is not None
+    finally:
+        db.close()
+
+
+def test_unique_alert_ids():
+    _clean()
+    db = SessionLocal()
+    try:
+        a1 = Alert(building_id="b1", alert_type="t", severity="Low", description="d1")
+        a2 = Alert(building_id="b1", alert_type="t", severity="Low", description="d2")
+        db.add_all([a1, a2])
+        db.commit()
+        assert a1.id != a2.id
+    finally:
+        db.close()

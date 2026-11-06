@@ -1,12 +1,11 @@
 """Lattice Alert Engine - FastAPI application entry point."""
 
-from config.database import Base, engine
+from fastapi import FastAPI
+
+from config.database import init_db
 from api.routes import router
 
-# Create tables on startup (dev convenience).
-Base.metadata.create_all(bind=engine)
-
-from fastapi import FastAPI
+init_db()
 
 app = FastAPI(title="Lattice Alert Engine", version="0.1.0")
 app.include_router(router)

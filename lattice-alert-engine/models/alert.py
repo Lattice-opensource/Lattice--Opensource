@@ -1,10 +1,22 @@
 """Alert database model."""
 
-from datetime import datetime
+import uuid
+from datetime import datetime, timezone
 
 from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String, func
 
 from config.database import Base
+
+# Allowed severity values
+SEVERITY_LOW = "Low"
+SEVERITY_MEDIUM = "Medium"
+SEVERITY_HIGH = "High"
+ALLOWED_SEVERITIES = (SEVERITY_LOW, SEVERITY_MEDIUM, SEVERITY_HIGH)
+
+# Resolution status values
+STATUS_OPEN = "open"
+STATUS_ACKNOWLEDGED = "acknowledged"
+STATUS_RESOLVED = "resolved"
 
 
 class Alert(Base):
@@ -12,15 +24,16 @@ class Alert(Base):
 
     __tablename__ = "alerts"
 
-    id = Column(Integer, primary_key=True, index=True)
-    site_id = Column(String, index=True, nullable=True)
-    device_id = Column(String, index=True, nullable=True)
-    alert_type = Column(String, nullable=False)
-    severity = Column(String, nullable=False)  # info | warning | critical
-    message = Column(String, nullable=False)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
+    building_id = Column(String, nullable=False, index=True)
+    circuit_id = Column(String, nullable=True, index=True)
+    alert_type = Column(String, nullable=False, index=True)
+    severity = Column(String, nullable=False, index=True)
+    description = Column(String, nullable=False)
+    timestamp = Column(DateTime(timezone=True), nullable=False, index=True, default=lambda: datetime.now(timezone.utc))
+    resolution_status = Column(String, nullable=False, default=STATUS_OPEN, index=True)
     value = Column(Float, nullable=True)
     threshold = Column(Float, nullable=True)
     is_simulated = Column(Boolean, default=False)
-    created_at = Column(DateTime, server_default=func.now())
-    acknowledged_at = Column(DateTime, nullable=True)
-    resolved_at = Column(DateTime, nullable=True)
+    acknowledged_at = Column(DateTime(timezone=True), nullable=True)
+    resolved_at = Column(DateTime(timezone=True), nullable=True)
