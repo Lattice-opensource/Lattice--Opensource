@@ -1,6 +1,6 @@
 import type { DatabaseSync } from 'node:sqlite';
 import type { RoomVisualization } from '../models/types.js';
-import { toIso } from '../../lib/time.js';
+import { toIso } from '../../../lib/time.js';
 
 interface Row {
   id: string; site_id: string; name: string; building_id: string | null; floor_id: string | null;
@@ -27,6 +27,6 @@ export function updateRoomMapping(db: DatabaseSync, roomId: string, patch: { bui
     .run(patch.buildingId ?? cur.building_id, patch.floorId ?? cur.floor_id, patch.circuitId ?? cur.circuit_id,
          patch.x ?? cur.x, patch.y ?? cur.y, patch.width ?? cur.width, patch.height ?? cur.height,
          patch.boundary ?? cur.boundary, patch.areaSqm ?? cur.area_sqm, patch.roomType ?? cur.room_type, now, roomId);
-  const r = db.prepare('SELECT * FROM rooms WHERE id = ?').get(roomId) as Row;
+  const r = db.prepare('SELECT * FROM rooms WHERE id = ?').get(roomId) as unknown as Row;
   return toRoom(r);
 }

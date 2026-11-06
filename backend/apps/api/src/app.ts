@@ -10,6 +10,7 @@ import { registerRoomsRoute } from './routes/rooms.js';
 import { registerDevicesRoute } from './routes/devices.js';
 import { registerReadingsRoute } from './routes/readings.js';
 import { registerDevRoute } from './routes/dev.js';
+import { registerBuildingVisualizationRoutes } from './modules/building-visualization/routes/index.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -83,6 +84,8 @@ export async function buildApp(): Promise<FastifyInstance> {
   await registerRoomsRoute(app);
   await registerDevicesRoute(app);
   await registerReadingsRoute(app);
+  await registerBuildingVisualizationRoutes(app);
+
   if (devEndpointsEnabled) {
     await registerDevRoute(app);
   }

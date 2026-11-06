@@ -52,7 +52,11 @@ describe('building-visualization data models', () => {
   it('links room to floor via updateRoomMapping', async () => {
     const db = getDb();
     const { updateRoomMapping, listRoomsByFloor } = await import('./repositories/rooms.js');
-    const r = updateRoomMapping(db, 'room1', { floorId: (await import('./repositories/floors.js')).listFloors(db, (await import('./repositories/buildings.js')).listBuildings(db,'site1')[0].id)[0].id, roomType: 'office', areaSqm: 25 });
+    const buildingsMod = await import('./repositories/buildings.js');
+    const floorsMod = await import('./repositories/floors.js');
+    const b = buildingsMod.listBuildings(db, 'site1')[0]!;
+    const f = floorsMod.listFloors(db, b.id)[0]!;
+    const r = updateRoomMapping(db, 'room1', { floorId: f.id, roomType: 'office', areaSqm: 25 });
     expect(r).not.toBeNull();
     expect(r!.roomType).toBe('office');
   });

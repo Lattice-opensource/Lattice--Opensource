@@ -1,7 +1,7 @@
 import type { DatabaseSync } from 'node:sqlite';
 import type { Floor } from '../models/types.js';
-import { toIso } from '../../lib/time.js';
-import { makeId } from '../../lib/ids.js';
+import { toIso } from '../../../lib/time.js';
+import { makeId } from '../../../lib/ids.js';
 
 interface Row { id: string; building_id: string; level: number; name: string; blueprint_ref: string | null; created_at: string; updated_at: string; }
 function toFloor(r: Row): Floor { return { id: r.id, buildingId: r.building_id, level: r.level, name: r.name, blueprintRef: r.blueprint_ref, createdAt: r.created_at, updatedAt: r.updated_at }; }

@@ -1,7 +1,7 @@
 import type { DatabaseSync } from 'node:sqlite';
 import type { Circuit } from '../models/types.js';
-import { toIso } from '../../lib/time.js';
-import { makeId } from '../../lib/ids.js';
+import { toIso } from '../../../lib/time.js';
+import { makeId } from '../../../lib/ids.js';
 
 interface Row { id: string; name: string; floor_id: string | null; meter_id: string | null; created_at: string; updated_at: string; }
 function toCircuit(r: Row): Circuit { return { id: r.id, name: r.name, floorId: r.floor_id, meterId: r.meter_id, createdAt: r.created_at, updatedAt: r.updated_at }; }

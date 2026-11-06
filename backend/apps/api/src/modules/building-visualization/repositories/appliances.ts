@@ -1,7 +1,7 @@
 import type { DatabaseSync } from 'node:sqlite';
 import type { Appliance } from '../models/types.js';
-import { toIso } from '../../lib/time.js';
-import { makeId } from '../../lib/ids.js';
+import { toIso } from '../../../lib/time.js';
+import { makeId } from '../../../lib/ids.js';
 
 interface Row { id: string; room_id: string | null; circuit_id: string | null; name: string; type: string; manufacturer: string | null; model: string | null; rated_power_w: number | null; monitoring_method: string; status: string; created_at: string; updated_at: string; }
 function toAppliance(r: Row): Appliance { return { id: r.id, roomId: r.room_id, circuitId: r.circuit_id, name: r.name, type: r.type, manufacturer: r.manufacturer, model: r.model, ratedPowerW: r.rated_power_w, monitoringMethod: r.monitoring_method as Appliance['monitoringMethod'], status: r.status as Appliance['status'], createdAt: r.created_at, updatedAt: r.updated_at }; }

@@ -1,7 +1,7 @@
 import type { DatabaseSync } from 'node:sqlite';
 import type { Building } from '../models/types.js';
-import { toIso } from '../../lib/time.js';
-import { makeId } from '../../lib/ids.js';
+import { toIso } from '../../../lib/time.js';
+import { makeId } from '../../../lib/ids.js';
 
 interface Row {
   id: string; site_id: string; name: string; address: string | null; description: string | null;

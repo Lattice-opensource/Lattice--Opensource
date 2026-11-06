@@ -1,7 +1,7 @@
 import type { DatabaseSync } from 'node:sqlite';
 import type { Meter } from '../models/types.js';
-import { toIso } from '../../lib/time.js';
-import { makeId } from '../../lib/ids.js';
+import { toIso } from '../../../lib/time.js';
+import { makeId } from '../../../lib/ids.js';
 
 interface Row { id: string; site_id: string; name: string; type: string; unit: string; data_source: string | null; created_at: string; updated_at: string; }
 function toMeter(r: Row): Meter { return { id: r.id, siteId: r.site_id, name: r.name, type: r.type, unit: r.unit, dataSource: r.data_source, createdAt: r.created_at, updatedAt: r.updated_at }; }
