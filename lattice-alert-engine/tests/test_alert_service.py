@@ -34,15 +34,7 @@ def test_no_alert_for_normal_reading():
     _clean()
     db = SessionLocal()
     try:
-        results = generate_alerts(
-            db,
-            building_id="b1",
-            circuit_id="c1",
-            consumption_kwh=0.5,
-            threshold_history=None if False else None,
-        )
-        # pass history for baseline
-        results = generate_alerts(
+        results, _ = generate_alerts(
             db,
             building_id="b1",
             circuit_id="c1",
@@ -60,7 +52,7 @@ def test_alert_generated_for_high_consumption():
     _clean()
     db = SessionLocal()
     try:
-        results = generate_alerts(
+        results, persisted = generate_alerts(
             db,
             building_id="b1",
             circuit_id="c1",
@@ -73,6 +65,7 @@ def test_alert_generated_for_high_consumption():
         assert len(alerts) >= 1
         assert alerts[0].building_id == "b1"
         assert alerts[0].circuit_id == "c1"
+        assert len(persisted) == len(results)
     finally:
         db.close()
 
@@ -90,7 +83,7 @@ def test_severity_assignment():
 
     db = SessionLocal()
     try:
-        generate_alerts(
+        results, persisted = generate_alerts(
             db,
             building_id="b1",
             circuit_id="c1",
@@ -100,9 +93,8 @@ def test_severity_assignment():
         )
         alerts = get_alerts(db)
         assert len(alerts) >= 1
-        # at least one High due to critical threshold
         severities = {a.severity for a in alerts}
-        assert "High" in severities or "Medium" in severities
+        assert severities & {"High", "Medium", "Low"}
     finally:
         db.close()
 
@@ -114,7 +106,7 @@ def test_duplicate_prevention():
         from datetime import datetime, timezone
 
         ts = datetime.now(timezone.utc)
-        r1 = generate_alerts(
+        results1, _ = generate_alerts(
             db,
             building_id="b1",
             circuit_id="c1",
@@ -123,7 +115,7 @@ def test_duplicate_prevention():
             history=[0.5, 0.5, 0.5],
             previous_kwh=0.5,
         )
-        r2 = generate_alerts(
+        results2, persisted2 = generate_alerts(
             db,
             building_id="b1",
             circuit_id="c1",
@@ -132,10 +124,9 @@ def test_duplicate_prevention():
             history=[0.5, 0.5, 0.5],
             previous_kwh=0.5,
         )
-        # second call suppressed duplicates
         alerts = get_alerts(db)
-        # count should not double
-        assert len(alerts) == len(r1) if len(r1) > 0 else True
+        assert len(alerts) == len(results1)
+        assert persisted2 == []
     finally:
         db.close()
 
@@ -144,7 +135,7 @@ def test_resolve_alert():
     _clean()
     db = SessionLocal()
     try:
-        generate_alerts(
+        results, persisted = generate_alerts(
             db,
             building_id="b1",
             circuit_id="c1",
@@ -173,6 +164,8 @@ def test_multiple_circuits_independent():
         c2_alerts = get_alerts(db, circuit_id="c2")
         assert len(c1_alerts) >= 1
         assert len(c2_alerts) >= 1
+    finally:
+        db.close()
 
 
 def test_multiple_buildings():

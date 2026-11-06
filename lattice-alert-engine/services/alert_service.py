@@ -11,6 +11,8 @@ from repositories.alerts import create_alert_if_new
 from services.detection import DetectionResult, run_all_detections
 
 
+from typing import Tuple
+
 def generate_alerts(
     db: Session,
     *,
@@ -21,10 +23,10 @@ def generate_alerts(
     history: Optional[List[float]] = None,
     previous_kwh: Optional[float] = None,
     is_simulated: bool = False,
-) -> List[DetectionResult]:
+) -> Tuple[List[DetectionResult], List[Alert]]:
     """Run all detection methods and persist deduplicated alerts.
 
-    Returns the list of detection results (may be empty for normal readings).
+    Returns (detection_results, persisted_alerts).
     """
     settings = get_settings()
     ts = reading_timestamp
@@ -44,6 +46,7 @@ def generate_alerts(
         change_percent_threshold=settings.sudden_change_percent,
     )
 
+    persisted: List[Alert] = []
     for r in results:
         if r.measured_value >= settings.critical_threshold_w:
             severity = "High"
@@ -53,7 +56,7 @@ def generate_alerts(
             severity = "Low"
         else:
             severity = "Low"
-        create_alert_if_new(
+        alert = create_alert_if_new(
             db,
             {
                 "building_id": r.building_id,
@@ -67,7 +70,33 @@ def generate_alerts(
                 "timestamp": ts,
             },
         )
-    return results
+        if alert is not None:
+            persisted.append(alert)
+    return results, persisted
+
+
+def process_reading(
+    db: Session,
+    *,
+    building_id: str,
+    circuit_id: str,
+    consumption_kwh: float,
+    reading_timestamp=None,
+    history: Optional[List[float]] = None,
+    previous_kwh: Optional[float] = None,
+    is_simulated: bool = False,
+):
+    """Convenience wrapper: run detection + persist, return (results, alerts)."""
+    return generate_alerts(
+        db,
+        building_id=building_id,
+        circuit_id=circuit_id,
+        consumption_kwh=consumption_kwh,
+        reading_timestamp=reading_timestamp,
+        history=history,
+        previous_kwh=previous_kwh,
+        is_simulated=is_simulated,
+    )
 
 
 def get_alerts(db: Session, building_id: str | None = None, circuit_id: str | None = None) -> List[Alert]:
