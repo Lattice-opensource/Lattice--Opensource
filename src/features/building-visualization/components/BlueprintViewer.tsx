@@ -19,7 +19,7 @@ interface BlueprintViewerProps {
 export function BlueprintViewer({
   blueprintUrl,
   rooms,
-  selectedRoomId,
+  selectedRoomId: _selectedRoomId,
   drawing,
   draftPoints,
   onSelectRoom,
@@ -120,13 +120,18 @@ export function BlueprintViewer({
             <rect x={0} y={0} width={1} height={1} fill="#f6f7f9" stroke="#e7e9ee" />
           )}
           {rooms.map((r) => {
-            const selected = r.id === selectedRoomId;
+            const fill = r.color || "#059669";
             return (
               <g key={r.id} onClick={(e) => { e.stopPropagation(); onSelectRoom(r.id); }} style={{ cursor: 'pointer' }}>
-                <path d={pointsToPath(r.points)} fill={selected ? 'rgba(225,29,72,0.25)' : 'rgba(5,150,105,0.15)'} stroke={selected ? '#e11d48' : '#059669'} strokeWidth={0.005} />
-                <text x={r.points[0]?.x ?? 0} y={r.points[0]?.y ?? 0} fontSize={0.03} fill="#0f172a" fontWeight="bold">
+                <path d={pointsToPath(r.points)} fill={fill + "33"} stroke={fill} strokeWidth={0.005} />
+                <text x={r.points[0]?.x ?? 0} y={(r.points[0]?.y ?? 0) + 0.025} fontSize={0.025} fill="#0f172a" fontWeight="bold">
                   {r.name}
                 </text>
+                {r.alertCount ? (
+                  <text x={(r.points[0]?.x ?? 0) + 0.02} y={r.points[0]?.y ?? 0} fontSize={0.025} fill="#e11d48">
+                    ⚠{r.alertCount}
+                  </text>
+                ) : null}
               </g>
             );
           })}
