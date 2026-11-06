@@ -113,6 +113,9 @@ CREATE TABLE IF NOT EXISTS appliances (
   manufacturer TEXT,
   model TEXT,
   rated_power_w REAL,
+  device_id TEXT REFERENCES devices(id) ON DELETE SET NULL,
+  position_x REAL,
+  position_y REAL,
   monitoring_method TEXT NOT NULL DEFAULT 'none',
   status TEXT NOT NULL DEFAULT 'unknown',
   created_at TEXT NOT NULL,
@@ -129,3 +132,18 @@ CREATE TABLE IF NOT EXISTS blueprints (
   uploaded_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_blueprints_floor ON blueprints(floor_id);
+-- Energy integration layer (Building Visualization)
+
+CREATE TABLE IF NOT EXISTS energy_readings (
+  id TEXT PRIMARY KEY,
+  entity_type TEXT NOT NULL,
+  entity_id TEXT NOT NULL,
+  timestamp TEXT NOT NULL,
+  power_w REAL,
+  energy_kwh REAL,
+  measurement_source TEXT NOT NULL DEFAULT 'measured',
+  is_simulated INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_energy_readings_entity ON energy_readings(entity_type, entity_id, timestamp);
+CREATE INDEX IF NOT EXISTS idx_energy_readings_ts ON energy_readings(timestamp);

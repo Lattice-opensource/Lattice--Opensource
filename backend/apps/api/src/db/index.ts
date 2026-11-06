@@ -21,6 +21,9 @@ export function openDatabase(filePath: string = databasePath): DatabaseSync {
     'ALTER TABLE rooms ADD COLUMN floor_id TEXT REFERENCES floors(id) ON DELETE SET NULL',
     'ALTER TABLE rooms ADD COLUMN circuit_id TEXT REFERENCES circuits(id) ON DELETE SET NULL',
     'ALTER TABLE devices ADD COLUMN appliance_id TEXT REFERENCES appliances(id) ON DELETE SET NULL',
+    'ALTER TABLE appliances ADD COLUMN device_id TEXT REFERENCES devices(id) ON DELETE SET NULL',
+    'ALTER TABLE appliances ADD COLUMN position_x REAL',
+    'ALTER TABLE appliances ADD COLUMN position_y REAL',
   ];
   for (const stmt of alterStatements) {
     try {

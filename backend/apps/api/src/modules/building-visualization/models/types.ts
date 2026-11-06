@@ -44,13 +44,16 @@ export interface Appliance {
   id: string;
   roomId: string | null;
   circuitId: string | null;
+  deviceId: string | null;
   name: string;
   type: string;
   manufacturer: string | null;
   model: string | null;
   ratedPowerW: number | null;
-  monitoringMethod: 'none' | 'device' | 'circuit' | 'room';
+  monitoringMethod: 'none' | 'device' | 'circuit' | 'room' | 'smart_plug' | 'manual' | 'estimated';
   status: 'unknown' | 'online' | 'offline' | 'stale';
+  positionX: number | null;
+  positionY: number | null;
   createdAt: string;
   updatedAt: string;
 }
