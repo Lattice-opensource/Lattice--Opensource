@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { DEMO_BUILDING, STATUS_META, type DemoRoom, type RoomStatus } from "./sampleData";
 import { BlueprintViewer, type RoomPolygon } from "./components/BlueprintViewer";
+import { ApplianceManager } from "./components/ApplianceManager";
 import { Card } from "../../components/ui/Card";
 
 import { EmptyState } from "../../components/ui/EmptyState";
@@ -18,6 +19,11 @@ export function BuildingDashboardPage() {
   const [floorId, setFloorId] = useState(building.floors[0].id);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [range, setRange] = useState("today");
+  const [appliancesByRoom, setAppliancesByRoom] = useState<Record<string, DemoRoom["appliances"]>>(() => {
+    const m: Record<string, DemoRoom["appliances"]> = {};
+    for (const f of DEMO_BUILDING.floors) for (const r of f.rooms) m[r.id] = [...r.appliances];
+    return m;
+  });
 
   const floor = building.floors.find((f) => f.id === floorId) || building.floors[0];
   const rooms: RoomPolygon[] = floor.rooms.map((r) => ({
@@ -195,25 +201,13 @@ export function BuildingDashboardPage() {
                 </dl>
               </Card>
               <Card title="Appliances" eyebrow="07 · Appliances">
-                {selectedRoom.appliances.length === 0 ? (
-                  <p className="text-sm text-muted">No appliances registered. {selectedRoom.powerW != null ? "Room-level reading only." : ""}</p>
-                ) : (
-                  <ul className="space-y-2">
-                    {selectedRoom.appliances.map((a) => (
-                      <li key={a.id} className="rounded-lg border border-line px-3 py-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-ink">{a.name}</span>
-                          <span className="text-xs text-muted">{a.type}</span>
-                        </div>
-                        <div className="mt-1 flex justify-between text-xs text-muted">
-                          <span>Power: {a.powerW != null ? `${Math.round(a.powerW)} W` : "No data"}</span>
-                          <span>Energy: {a.energyKwh != null ? `${a.energyKwh.toFixed(2)} kWh` : "—"}</span>
-                        </div>
-                        {a.isSimulated ? <p className="mt-1 text-[10px] text-muted">Simulated demo data</p> : null}
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                <ApplianceManager
+                  appliances={appliancesByRoom[selectedRoom.id] || []}
+                  onAdd={(a) => setAppliancesByRoom((prev) => ({ ...prev, [selectedRoom.id]: [...(prev[selectedRoom.id] || []), a] }))}
+                  onRemove={(id) => setAppliancesByRoom((prev) => ({ ...prev, [selectedRoom.id]: (prev[selectedRoom.id] || []).filter((a) => a.id !== id) }))}
+                  onEdit={(a) => setAppliancesByRoom((prev) => ({ ...prev, [selectedRoom.id]: (prev[selectedRoom.id] || []).map((x) => (x.id === a.id ? a : x)) }))}
+                />
+                {selectedRoom.powerW != null ? <p className="mt-2 text-[10px] text-muted">Room-level reading shown separately from rated power. Appliance consumption shown only when individually monitored.</p> : null}
               </Card>
             </>
           ) : (
