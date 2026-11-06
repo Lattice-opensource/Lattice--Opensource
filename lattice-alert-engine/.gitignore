@@ -1,0 +1,20 @@
+# Lattice Alert Engine — local ignores
+# (Complements the repository root .gitignore; does not override it.)
+
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+coverage/
+logs/
+*.log
+.DS_Store
+Thumbs.db
