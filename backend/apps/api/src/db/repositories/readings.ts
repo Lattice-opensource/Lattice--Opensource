@@ -38,6 +38,9 @@ export interface ReadingFilters {
   deviceId?: string;
   roomId?: string;
   siteId?: string;
+  buildingId?: string;
+  floorId?: string;
+  circuitId?: string;
   from?: string;
   to?: string;
   limit?: number;
@@ -47,6 +50,7 @@ export interface ReadingFilters {
 
 export function listReadings(db: DatabaseSync, f: ReadingFilters = {}): { rows: Reading[]; total: number } {
   const joins: string[] = ['JOIN devices d ON d.id = r.device_id'];
+  if (f.buildingId || f.floorId) joins.push('LEFT JOIN rooms rm ON rm.id = d.room_id');
   const where: string[] = [];
   const params: unknown[] = [];
   if (f.deviceId) {
@@ -60,6 +64,18 @@ export function listReadings(db: DatabaseSync, f: ReadingFilters = {}): { rows: 
   if (f.siteId) {
     where.push('d.site_id = ?');
     params.push(f.siteId);
+  }
+  if (f.circuitId) {
+    where.push('d.circuit_id = ?');
+    params.push(f.circuitId);
+  }
+  if (f.buildingId) {
+    where.push('rm.building_id = ?');
+    params.push(f.buildingId);
+  }
+  if (f.floorId) {
+    where.push('rm.floor_id = ?');
+    params.push(f.floorId);
   }
   if (f.from) {
     where.push('r.timestamp >= ?');
@@ -231,11 +247,15 @@ export function deleteSimulatedOlderThan(
 
 export function listAllReadings(db: DatabaseSync, f: ReadingFilters = {}): Reading[] {
   const joins = ['JOIN devices d ON d.id = r.device_id'];
+  if (f.buildingId || f.floorId) joins.push('LEFT JOIN rooms rm ON rm.id = d.room_id');
   const where: string[] = [];
   const params: unknown[] = [];
   if (f.deviceId) { where.push('r.device_id = ?'); params.push(f.deviceId); }
   if (f.roomId) { where.push('d.room_id = ?'); params.push(f.roomId); }
   if (f.siteId) { where.push('d.site_id = ?'); params.push(f.siteId); }
+  if (f.circuitId) { where.push('d.circuit_id = ?'); params.push(f.circuitId); }
+  if (f.buildingId) { where.push('rm.building_id = ?'); params.push(f.buildingId); }
+  if (f.floorId) { where.push('rm.floor_id = ?'); params.push(f.floorId); }
   if (f.from) { where.push('r.timestamp >= ?'); params.push(f.from); }
   if (f.to) { where.push('r.timestamp <= ?'); params.push(f.to); }
   const whereSql = where.length ? 'WHERE ' + where.join(' AND ') : '';

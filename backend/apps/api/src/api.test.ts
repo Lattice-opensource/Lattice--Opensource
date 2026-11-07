@@ -1,10 +1,26 @@
 import { beforeAll, afterAll, describe, it, expect } from 'vitest';
-import { openDatabase, closeDatabase } from './db/index.js';
+import { openDatabase, closeDatabase, getDb } from './db/index.js';
 import { seedDatabase } from './db/seed.js';
 import { buildApp } from './app.js';
 import { startLiveWriter, stopLiveWriter } from './services/simulator.js';
 import { env } from './config.js';
 import type { FastifyInstance } from 'fastify';
+import { upsertBuilding } from './db/repositories/hierarchy.js';
+import {
+  AggregatePointSchema,
+  HealthResponseSchema,
+  ItemResponseSchema,
+  LatestReadingsResponseSchema,
+  ListResponseSchema,
+  RoomSchema,
+  SeedResultSchema,
+  SiteConfigSchema,
+  SiteSchema,
+  SiteSummarySchema,
+  SummarySchema,
+  DeviceSchema,
+  ReadingSchema,
+} from '@lattice/contracts/schema';
 
 let app: FastifyInstance;
 
@@ -120,5 +136,81 @@ describe('dev endpoints', () => {
     const res = await app.inject({ method: 'POST', url: '/api/dev/reset' });
     expect(res.statusCode).toBe(200);
     expect(res.json().data.seeded).toBe(true);
+  });
+});
+
+describe('shared contract schemas', () => {
+  it('validates every implemented success response against the authoritative contract', async () => {
+    const now = new Date().toISOString();
+    const from = new Date(Date.now() - 3600_000).toISOString();
+    const responses: Array<[unknown, unknown]> = [
+      [HealthResponseSchema, (await app.inject({ method: 'GET', url: '/api/health' })).json()],
+      [ListResponseSchema(SiteSchema), (await app.inject({ method: 'GET', url: '/api/sites' })).json()],
+      [ListResponseSchema(SiteSummarySchema), (await app.inject({ method: 'GET', url: '/api/sites/summary' })).json()],
+      [ItemResponseSchema(SiteSchema), (await app.inject({ method: 'GET', url: '/api/sites/site_home_01' })).json()],
+      [ListResponseSchema(RoomSchema), (await app.inject({ method: 'GET', url: '/api/rooms' })).json()],
+      [ItemResponseSchema(RoomSchema), (await app.inject({ method: 'GET', url: '/api/rooms/room_bed_01' })).json()],
+      [ListResponseSchema(DeviceSchema), (await app.inject({ method: 'GET', url: '/api/devices' })).json()],
+      [ItemResponseSchema(DeviceSchema), (await app.inject({ method: 'GET', url: '/api/devices/dev_bed_ac_01' })).json()],
+      [ListResponseSchema(ReadingSchema), (await app.inject({ method: 'GET', url: '/api/readings?limit=5' })).json()],
+      [LatestReadingsResponseSchema, (await app.inject({ method: 'GET', url: '/api/readings/latest' })).json()],
+      [ItemResponseSchema(SummarySchema), (await app.inject({ method: 'GET', url: '/api/readings/summary' })).json()],
+      [ListResponseSchema(AggregatePointSchema), (await app.inject({ method: 'GET', url: `/api/readings/aggregate?from=${encodeURIComponent(from)}&to=${encodeURIComponent(now)}` })).json()],
+      [ItemResponseSchema(SiteConfigSchema), (await app.inject({ method: 'GET', url: '/api/config' })).json()],
+      [ItemResponseSchema(SeedResultSchema), (await app.inject({ method: 'POST', url: '/api/dev/seed', payload: {} })).json()],
+      [ItemResponseSchema(SeedResultSchema), (await app.inject({ method: 'POST', url: '/api/dev/reset' })).json()],
+    ];
+
+    for (const [schema, body] of responses) {
+      const result = (schema as { safeParse(value: unknown): { success: boolean; error?: unknown } }).safeParse(body);
+      expect(result.success, JSON.stringify(result.error)).toBe(true);
+    }
+  });
+});
+
+describe('campus hierarchy seed', () => {
+  it('links campus spaces, circuits, and devices without changing reading ownership', () => {
+    const db = getDb();
+    const row = db.prepare(`
+      SELECT b.name AS building, f.name AS floor, r.name AS space, c.name AS circuit, d.name AS device
+      FROM devices d
+      JOIN circuits c ON c.id = d.circuit_id
+      JOIN rooms r ON r.id = d.room_id
+      JOIN floors f ON f.id = r.floor_id
+      JOIN buildings b ON b.id = r.building_id
+      WHERE d.id = 'dev_living_ac_01'
+    `).get() as { building: string; floor: string; space: string; circuit: string; device: string } | undefined;
+    expect(row).toMatchObject({ building: 'Academic Block', space: 'Computer Laboratory', device: 'Computer Lab HVAC' });
+    expect(row?.floor).toBeTruthy();
+    expect(row?.circuit).toContain('Computer Laboratory');
+  });
+});
+
+describe('campus hierarchy API', () => {
+  it('retrieves parent-child hierarchy and filters devices by circuit', async () => {
+    const buildings = await app.inject({ method: 'GET', url: '/api/buildings?siteId=site_home_01' });
+    const buildingId = buildings.json().data[0].id;
+    const floors = await app.inject({ method: 'GET', url: `/api/floors?buildingId=${buildingId}` });
+    const floorId = floors.json().data[0].id;
+    const rooms = await app.inject({ method: 'GET', url: `/api/rooms?floorId=${floorId}` });
+    const roomId = rooms.json().data[0].id;
+    const circuits = await app.inject({ method: 'GET', url: `/api/circuits?roomId=${roomId}` });
+    const circuitId = circuits.json().data[0].id;
+    const devices = await app.inject({ method: 'GET', url: `/api/devices?circuitId=${circuitId}` });
+    expect(floors.json().data.every((floor: { buildingId: string }) => floor.buildingId === buildingId)).toBe(true);
+    expect(rooms.json().data.every((room: { floorId: string }) => room.floorId === floorId)).toBe(true);
+    expect(circuits.json().data.every((circuit: { roomId: string }) => circuit.roomId === roomId)).toBe(true);
+    expect(devices.json().data.every((device: { circuitId: string }) => device.circuitId === circuitId)).toBe(true);
+  });
+
+  it('returns empty collections for valid parents and 404 for missing parents', async () => {
+    upsertBuilding(getDb(), { id: 'building_empty_01', siteId: 'site_home_01', name: 'Empty Building' });
+    const empty = await app.inject({ method: 'GET', url: '/api/floors?buildingId=building_empty_01' });
+    expect(empty.statusCode).toBe(200);
+    expect(empty.json().data).toEqual([]);
+    for (const url of ['/api/floors?buildingId=missing', '/api/rooms?floorId=missing', '/api/circuits?roomId=missing', '/api/devices?circuitId=missing']) {
+      const response = await app.inject({ method: 'GET', url });
+      expect(response.statusCode).toBe(404);
+    }
   });
 });

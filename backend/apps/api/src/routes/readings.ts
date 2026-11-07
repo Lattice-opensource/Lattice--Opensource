@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { getDb } from '../db/index.js';
 import { listReadings, latestPerDevice } from '../db/repositories/readings.js';
 import { getSite } from '../db/repositories/sites.js';
+import { getBuilding, getFloor, getCircuit } from '../db/repositories/hierarchy.js';
+import { getRoom } from '../db/repositories/rooms.js';
 import { startOfDayInTz } from '../lib/time.js';
 import { parseOrThrow } from '../lib/validate.js';
 import { computeSummary } from '../services/summary.js';
@@ -12,6 +14,9 @@ const ReadingsQuery = z.object({
   deviceId: z.string().min(1).max(64).optional(),
   roomId: z.string().min(1).max(64).optional(),
   siteId: z.string().min(1).max(64).optional(),
+  buildingId: z.string().min(1).max(64).optional(),
+  floorId: z.string().min(1).max(64).optional(),
+  circuitId: z.string().min(1).max(64).optional(),
   from: z.string().refine((v) => !Number.isNaN(Date.parse(v)), 'invalid ISO-8601 timestamp').optional(),
   to: z.string().refine((v) => !Number.isNaN(Date.parse(v)), 'invalid ISO-8601 timestamp').optional(),
   limit: z.coerce.number().int().min(1).max(1000).default(200),
@@ -29,6 +34,9 @@ export async function registerReadingsRoute(app: FastifyInstance): Promise<void>
       deviceId: q.deviceId,
       roomId: q.roomId,
       siteId: q.siteId,
+      buildingId: q.buildingId,
+      floorId: q.floorId,
+      circuitId: q.circuitId,
       from: q.from,
       to: q.to,
       limit: q.limit,
@@ -91,12 +99,20 @@ export async function registerReadingsRoute(app: FastifyInstance): Promise<void>
     const q = parseOrThrow(
       z.object({
         siteId: z.string().min(1).max(64).optional(),
+        buildingId: z.string().min(1).max(64).optional(),
+        floorId: z.string().min(1).max(64).optional(),
+        roomId: z.string().min(1).max(64).optional(),
+        circuitId: z.string().min(1).max(64).optional(),
         from: z.string().optional(),
         to: z.string().optional(),
       }),
       req.query,
     );
     const db = getDb();
+    if (q.buildingId && !getBuilding(db, q.buildingId)) return reply.code(404).send({ error: { code: 'NOT_FOUND', message: `Unknown building: ${q.buildingId}`, requestId: req.id } });
+    if (q.floorId && !getFloor(db, q.floorId)) return reply.code(404).send({ error: { code: 'NOT_FOUND', message: `Unknown floor: ${q.floorId}`, requestId: req.id } });
+    if (q.roomId && !getRoom(db, q.roomId)) return reply.code(404).send({ error: { code: 'NOT_FOUND', message: `Unknown room: ${q.roomId}`, requestId: req.id } });
+    if (q.circuitId && !getCircuit(db, q.circuitId)) return reply.code(404).send({ error: { code: 'NOT_FOUND', message: `Unknown circuit: ${q.circuitId}`, requestId: req.id } });
     const now = new Date();
     let from = q.from;
     if (!from) {
@@ -109,7 +125,7 @@ export async function registerReadingsRoute(app: FastifyInstance): Promise<void>
       reply.code(400).send({ error: { code: 'VALIDATION_ERROR', message: 'Invalid from/to timestamp', requestId: req.id } });
       return;
     }
-    const summary = computeSummary(db, { siteId: q.siteId, from, to });
+    const summary = computeSummary(db, { siteId: q.siteId, buildingId: q.buildingId, floorId: q.floorId, roomId: q.roomId, circuitId: q.circuitId, from, to });
     reply.send({ data: summary, meta: { serverTime: new Date().toISOString() } });
   });
 
@@ -117,7 +133,10 @@ export async function registerReadingsRoute(app: FastifyInstance): Promise<void>
     const q = parseOrThrow(
       z.object({
         siteId: z.string().min(1).max(64).optional(),
+        buildingId: z.string().min(1).max(64).optional(),
+        floorId: z.string().min(1).max(64).optional(),
         roomId: z.string().min(1).max(64).optional(),
+        circuitId: z.string().min(1).max(64).optional(),
         deviceId: z.string().min(1).max(64).optional(),
         from: z.string(),
         to: z.string(),
@@ -131,11 +150,18 @@ export async function registerReadingsRoute(app: FastifyInstance): Promise<void>
       return;
     }
     const db = getDb();
+    if (q.buildingId && !getBuilding(db, q.buildingId)) return reply.code(404).send({ error: { code: 'NOT_FOUND', message: `Unknown building: ${q.buildingId}`, requestId: req.id } });
+    if (q.floorId && !getFloor(db, q.floorId)) return reply.code(404).send({ error: { code: 'NOT_FOUND', message: `Unknown floor: ${q.floorId}`, requestId: req.id } });
+    if (q.roomId && !getRoom(db, q.roomId)) return reply.code(404).send({ error: { code: 'NOT_FOUND', message: `Unknown room: ${q.roomId}`, requestId: req.id } });
+    if (q.circuitId && !getCircuit(db, q.circuitId)) return reply.code(404).send({ error: { code: 'NOT_FOUND', message: `Unknown circuit: ${q.circuitId}`, requestId: req.id } });
     const siteId = q.siteId ?? 'site_home_01';
     const tariff = resolveTariff(db, siteId);
     const points = aggregate(db, {
       siteId: q.siteId,
+      buildingId: q.buildingId,
+      floorId: q.floorId,
       roomId: q.roomId,
+      circuitId: q.circuitId,
       deviceId: q.deviceId,
       from: q.from,
       to: q.to,

@@ -44,6 +44,36 @@ export interface Site {
 export interface Room {
   id: string;
   siteId: string;
+  buildingId: string | null;
+  floorId: string | null;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Building {
+  id: string;
+  siteId: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Floor {
+  id: string;
+  buildingId: string;
+  name: string;
+  level: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Circuit {
+  id: string;
+  siteId: string;
+  buildingId: string | null;
+  floorId: string | null;
+  roomId: string | null;
   name: string;
   createdAt: string;
   updatedAt: string;
@@ -79,6 +109,7 @@ export interface Device {
   id: string;
   siteId: string;
   roomId: string | null;
+  circuitId: string | null;
   /** Denormalised for convenience so the UI can label without a second lookup. */
   roomName: string | null;
   name: string;
@@ -202,12 +233,57 @@ export interface ErrorResponse {
 
 export interface HealthResponse {
   status: 'ok' | 'degraded';
+  /** Alias retained by the health route for compatibility. */
+  timestamp: string;
+  service: string;
   version: string;
   uptimeSeconds: number;
   /** Server clock (ISO-8601 UTC). */
   time: string;
   /** Whether the database is reachable. Deliberately contains no credentials or paths. */
   database: 'up' | 'down';
+}
+
+/** Summary used by the site-list overview endpoint. */
+export interface SiteSummary {
+  siteId: string;
+  name: string;
+  currentPowerW: number;
+  todayEnergyKwh: number;
+  todayCostInr: number;
+}
+
+/** Compatibility reading shape returned alongside the canonical Reading array. */
+export interface LatestReading {
+  deviceId: string;
+  timestamp: string;
+  powerWatts: number;
+  energyKwh: number;
+  source: 'simulated' | 'real';
+  id: string;
+  intervalStart: string;
+  intervalSeconds: number;
+  energyKwhTotal: number | null;
+  voltageV: number | null;
+  currentA: number | null;
+  isSimulated: boolean;
+}
+
+/** Response returned by GET /api/readings/latest. */
+export interface LatestReadingsResponse {
+  /** Canonical, rich reading array. */
+  data: Reading[];
+  meta: ResponseMeta;
+  /** Compatibility array using powerWatts and simulated/real provenance. */
+  readings: LatestReading[];
+  count: number;
+  generatedAt: string;
+}
+
+/** Result returned by development-only seed and reset endpoints. */
+export interface SeedResult {
+  seeded: boolean;
+  reason: string;
 }
 
 /** Grouping granularity for the aggregate endpoint. */
@@ -237,6 +313,99 @@ export interface AggregatePoint {
   sampleCount: number;
   /** True when every contributing reading was simulated. */
   isSimulated: boolean;
+}
+
+/** Severity levels for alerts. */
+export type AlertSeverity = 'low' | 'medium' | 'high';
+
+/** Lifecycle status for alerts. */
+export type AlertStatus = 'active' | 'acknowledged' | 'resolved';
+
+/** Deterministic alert categories. */
+export type AlertType =
+  | 'consumption_increase'
+  | 'high_consumption'
+  | 'overnight_consumption'
+  | 'unexpected_device_activity'
+  | 'missing_readings';
+
+/** A persisted energy alert. */
+export interface Alert {
+  id: string;
+  siteId: string | null;
+  buildingId: string | null;
+  floorId: string | null;
+  roomId: string | null;
+  circuitId: string | null;
+  deviceId: string | null;
+  type: AlertType;
+  severity: AlertSeverity;
+  status: AlertStatus;
+  title: string;
+  observedValue: number | null;
+  expectedValue: number | null;
+  additionalCostInr: number | null;
+  explanation: string;
+  recommendation: string;
+  detectedAt: string;
+  acknowledgedAt: string | null;
+  resolvedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** A generated energy report. */
+export interface ReportPeriod {
+  type: 'daily' | 'weekly' | 'monthly' | 'custom';
+  from: string;
+  to: string;
+}
+
+export interface ReportScope {
+  siteId: string | null;
+  buildingId: string | null;
+  floorId: string | null;
+  roomId: string | null;
+  circuitId: string | null;
+}
+
+export interface ReportSummary {
+  energyKwh: number;
+  costInr: number;
+  averagePowerW: number;
+  peakPowerW: number;
+  deviceCount: number;
+  readingAvailability: number;
+  simulatedReadings: number;
+  realReadings: number;
+}
+
+export interface ReportAlertSummary {
+  total: number;
+  bySeverity: { low: number; medium: number; high: number };
+  unresolved: number;
+}
+
+export interface ReportComparison {
+  previousFrom: string;
+  previousTo: string;
+  energyKwh: number;
+  costInr: number;
+  energyChangeKwh: number;
+  costChangeInr: number;
+  energyChangePercent: number | null;
+}
+
+export interface Report {
+  scope: ReportScope;
+  period: ReportPeriod;
+  summary: ReportSummary;
+  series: AggregatePoint[];
+  byDevice: Summary['byDevice'];
+  bySpace: Summary['byRoom'];
+  alerts: ReportAlertSummary;
+  comparison?: ReportComparison;
+  generatedAt: string;
 }
 
 /** Summary over a time window. */

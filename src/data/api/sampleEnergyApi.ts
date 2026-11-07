@@ -7,6 +7,9 @@ import type {
   RoomSummary,
   SiteOverview,
   SiteSummary,
+  Summary,
+  Alert,
+  Report,
 } from "./energyApi";
 import { SAMPLE_READINGS, SAMPLE_SITE_SUMMARIES } from "../sample/sampleEnergyData";
 
@@ -76,6 +79,11 @@ const SAMPLE_DEVICES: DeviceSummary[] = [
 ];
 
 export class SampleEnergyApi implements EnergyApi {
+  async getBuildings() { return []; }
+  async getFloors() { return []; }
+  async getRooms() { return []; }
+  async getCircuits() { return []; }
+  async getDevices() { return []; }
   async getSiteSummaries(): Promise<SiteSummary[]> {
     return SAMPLE_SITE_SUMMARIES;
   }
@@ -99,6 +107,28 @@ export class SampleEnergyApi implements EnergyApi {
   async getAggregate(): Promise<AggregatePoint[]> {
     return [];
   }
+
+  async getSummary(): Promise<Summary> {
+    return {
+      siteId: "site-001",
+      window: { from: new Date().toISOString(), to: new Date().toISOString() },
+      totals: { powerW: 0, energyKwh: 0, costInr: 0, costIsEstimate: true },
+      byDevice: [],
+      byRoom: [],
+      dataQuality: { simulated: true, simulatedReadings: 0, realReadings: 0, simulatedEnergyKwh: 0, realEnergyKwh: 0 },
+    };
+  }
+
+  async getScopedSummary(): Promise<Summary> {
+    return this.getSummary();
+  }
+
+  async getAlerts(): Promise<Alert[]> { return []; }
+  async getAlert(): Promise<Alert> { throw new Error("No alert"); }
+  async acknowledgeAlert(): Promise<Alert> { throw new Error("No alert"); }
+  async resolveAlert(): Promise<Alert> { throw new Error("No alert"); }
+  async detectAlerts(): Promise<Alert[]> { return []; }
+  async getReport(): Promise<Report> { throw new Error("No report"); }
 
   async getSiteOverview(): Promise<SiteOverview> {
     const rooms: RoomSummary[] = [];

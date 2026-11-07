@@ -7,9 +7,12 @@ import { registerHealthRoute } from './routes/health.js';
 import { registerConfigRoute } from './routes/config.js';
 import { registerSitesRoute } from './routes/sites.js';
 import { registerRoomsRoute } from './routes/rooms.js';
+import { registerAlertsRoute } from './routes/alerts.js';
+import { registerReportsRoute } from './routes/reports.js';
 import { registerDevicesRoute } from './routes/devices.js';
 import { registerReadingsRoute } from './routes/readings.js';
 import { registerDevRoute } from './routes/dev.js';
+import { registerHierarchyRoutes } from './routes/hierarchy.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -80,7 +83,10 @@ export async function buildApp(): Promise<FastifyInstance> {
   await registerHealthRoute(app);
   await registerConfigRoute(app);
   await registerSitesRoute(app);
+  await registerHierarchyRoutes(app);
   await registerRoomsRoute(app);
+  await registerAlertsRoute(app);
+  await registerReportsRoute(app);
   await registerDevicesRoute(app);
   await registerReadingsRoute(app);
   if (devEndpointsEnabled) {

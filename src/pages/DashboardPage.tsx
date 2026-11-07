@@ -3,22 +3,27 @@ import { getEnergyApi } from "../data/getEnergyApi";
 import { useDataSource } from "../data/useDataSource";
 import { useApiResource } from "../data/useApiResource";
 import type { SiteOverview } from "../data/api/energyApi";
-import { Card } from "../components/ui/Card";
+import type { Alert } from "../data/api/energyApi";
 import { Spinner } from "../components/ui/Spinner";
 import { EmptyState } from "../components/ui/EmptyState";
 import { ErrorState } from "../components/ui/ErrorState";
+import { MetricTile } from "../components/ui/MetricTile";
+import { ChartPanel } from "../components/ui/ChartPanel";
+import { StatusPill } from "../components/ui/StatusPill";
 import { SitePowerChart } from "../components/dashboard/SitePowerChart";
 import { DeviceList } from "../components/dashboard/DeviceList";
 import { RoomCards } from "../components/dashboard/RoomCards";
 import { TopConsumers } from "../components/dashboard/TopConsumers";
 import { ApplianceRanking, rankAppliances, type AppliancePeriod } from "../components/dashboard/ApplianceRanking";
 import { resolveWholeSite } from "../data/api/normalize";
+import type { AggregatePoint, PowerPoint } from "../data/api/energyApi";
 
 const POLL_INTERVAL_MS = 10000;
 
 export function DashboardPage() {
   const { setDataSource } = useDataSource();
   const [appliancePeriod, setAppliancePeriod] = useState<AppliancePeriod>("today");
+  const [chartPeriod, setChartPeriod] = useState<"24h" | "7d">("24h");
 
   const loader = useCallback(async (): Promise<SiteOverview> => {
     const api = getEnergyApi();
@@ -29,6 +34,30 @@ export function DashboardPage() {
   }, [setDataSource]);
 
   const { state, reload } = useApiResource<SiteOverview>(loader, POLL_INTERVAL_MS);
+
+  const alertsLoader = useCallback(async (): Promise<Alert[]> => {
+    const api = getEnergyApi();
+    return (await api.getAlerts?.({ status: "active" })) ?? [];
+  }, []);
+  const { state: alertsState } = useApiResource<Alert[]>(alertsLoader);
+
+  const chartLoader = useCallback(async (): Promise<PowerPoint[]> => {
+    const api = getEnergyApi();
+    const overview = await api.getSiteOverview?.();
+    if (!overview) return [];
+    if (chartPeriod === "24h") return overview.series;
+    const now = new Date();
+    const from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const points = await api.getAggregate?.({
+      siteId: overview.siteId,
+      from,
+      to: now.toISOString(),
+      bucket: "day",
+      groupBy: "site",
+    });
+    return (points ?? []).map((p: AggregatePoint) => ({ timestamp: p.bucketStart, powerW: p.powerWAvg }));
+  }, [chartPeriod]);
+  const { state: chartState } = useApiResource<PowerPoint[]>(chartLoader);
 
   const applianceLoader = useCallback(async () => {
     const api = getEnergyApi();
@@ -63,7 +92,6 @@ export function DashboardPage() {
       coverageIncomplete,
     };
   }, [appliancePeriod]);
-
   const { state: applianceState } = useApiResource(applianceLoader);
 
   if (state.status === "loading") {
@@ -86,184 +114,113 @@ export function DashboardPage() {
   const { wholeSite, dataSource } = overview;
   const meterBased = wholeSite.source === "meter";
   const currencySymbol = overview.currency === "INR" ? "₹" : "";
+  const chartPoints = chartState.status === "ready" ? chartState.data : overview.series;
+  const alerts = alertsState.status === "ready" ? alertsState.data : [];
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6 lattice-reveal">
       {state.error ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3">
-          <p className="text-xs text-ink/80">
-            <span className="font-semibold">Refresh failed:</span> {state.error} — showing the last
-            successful reading.
-          </p>
-          <button
-            type="button"
-            onClick={reload}
-            className="rounded-lg border border-amber-300 bg-white px-2.5 py-1 text-xs font-semibold text-warn"
-          >
-            Retry
-          </button>
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+          <span className="font-semibold">Refresh failed:</span> {state.error} — showing the last successful reading.
         </div>
       ) : null}
 
-      {dataSource.simulated ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand/30 bg-brand-soft px-4 py-3">
-          <div>
-            <p className="text-sm font-semibold text-brand">Simulated data</p>
-            <p className="text-xs text-ink/70">{dataSource.notice}</p>
-          </div>
-          <p className="text-xs font-medium text-ink/70">
-            Not connected to real electrical hardware
-          </p>
-        </div>
-      ) : null}
-
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-ink md:text-3xl">
-            {overview.siteName}
-          </h1>
-          <p className="mt-1 text-sm text-muted">
-            {overview.onlineDeviceCount} of {overview.deviceCount} devices reporting ·{" "}
-            {Math.round(wholeSite.powerW)} W live · {overview.rooms.length} rooms
-          </p>
-        </div>
-        <div className="text-right">
-          <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-              dataSource.simulated
-                ? "bg-amber-50 text-warn ring-1 ring-amber-200"
-                : "bg-emerald-50 text-ok ring-1 ring-emerald-200"
-            }`}
-          >
-            <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />
-            {dataSource.simulated ? "simulated" : "live"}
-          </span>
-          <p className="mt-1 text-xs text-muted">
-            Updated{" "}
-            {new Date(overview.lastUpdated).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-            })}
-          </p>
-        </div>
-      </header>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card eyebrow="01 · Estimated spend today">
-          <p className="text-4xl font-bold tracking-tight text-ink">
-            {currencySymbol}
-            {wholeSite.costInr.toFixed(0)}
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <span className="rounded-full bg-brand-soft px-2.5 py-1 text-xs font-semibold text-brand">
-              {Math.round(wholeSite.powerW)} W live
-            </span>
-            <span className="rounded-full bg-page px-2.5 py-1 text-xs font-semibold text-ink">
-              {wholeSite.energyKwh.toFixed(2)} kWh today
-            </span>
-            <span className="rounded-full bg-page px-2.5 py-1 text-xs font-semibold text-ink">
-              {meterBased ? "site meter" : "device sum"}
-            </span>
-          </div>
-          <p className="mt-4 text-xs text-muted">
-            {meterBased
-              ? "Total site load read from the site meter; appliance readings are not added on top."
-              : "Summed from individual devices; no site meter is reporting."}
-          </p>
-        </Card>
-
-        <Card eyebrow="02 · Usage insights">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-warn">Peak power today</p>
-              <p className="mt-1 text-2xl font-bold text-ink">
-                {Math.round(overview.peak.powerW)} W
-              </p>
-              <p className="mt-1 text-xs text-ink/70">
-                {overview.peak.at
-                  ? new Date(overview.peak.at).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
-                  : "no data"}
+      <section className="grid gap-4 xl:grid-cols-[1.35fr_1fr]">
+        <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-brand/15 via-white/[0.03] to-transparent p-6 shadow-[0_0_60px_-20px_rgba(225,29,72,0.35)] backdrop-blur">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-brand-light">Live energy overview</p>
+              <h1 className="mt-2 text-4xl font-black tracking-tight text-white md:text-5xl">{overview.siteName}</h1>
+              <p className="mt-2 text-sm text-gray-400">
+                {overview.onlineDeviceCount} of {overview.deviceCount} devices reporting · {overview.rooms.length} spaces
               </p>
             </div>
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-ok">Average power</p>
-              <p className="mt-1 text-2xl font-bold text-ink">
-                {Math.round(overview.averagePowerW)} W
-              </p>
-              <p className="mt-1 text-xs text-ink/70">Average across today&apos;s readings</p>
+            <div className="text-right">
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold ${dataSource.simulated ? "bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/30" : "bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30"}`}>
+                <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                {dataSource.simulated ? "simulated" : "live"}
+              </span>
+              <p className="mt-2 text-xs text-gray-500">Updated {new Date(overview.lastUpdated).toLocaleTimeString()}</p>
             </div>
           </div>
-          <p className="mt-3 text-xs text-muted">
-            Waste and savings estimates are not shown: the API v1 contract has no baseline or
-            tariff-shift model to derive them from.
-          </p>
-        </Card>
-      </div>
 
-      <Card
-        eyebrow="03 · Quick actions"
-        title="Device control"
-        action={
-          <span className="rounded-full bg-page px-2.5 py-1 text-[11px] font-semibold text-muted">
-            Unavailable
-          </span>
-        }
-      >
-        <div className="flex flex-wrap gap-2">
-          {["All on", "Night", "All off"].map((label) => (
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <MetricTile label="Live power" value={`${Math.round(wholeSite.powerW)} W`} sub={meterBased ? "site meter" : "device sum"} accent="brand" />
+            <MetricTile label="Energy today" value={`${wholeSite.energyKwh.toFixed(2)} kWh`} sub="since midnight" accent="neutral" />
+            <MetricTile label="Cost today" value={`${currencySymbol}${wholeSite.costInr.toFixed(0)}`} sub="estimated" accent="emerald" />
+            <MetricTile label="Peak power" value={`${Math.round(overview.peak.powerW)} W`} sub={overview.peak.at ? new Date(overview.peak.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "no data"} accent="amber" />
+          </div>
+        </div>
+
+        <div className="grid gap-4">
+          <MetricTile label="Average power" value={`${Math.round(overview.averagePowerW)} W`} sub="across today's readings" />
+          <MetricTile label="Devices online" value={`${overview.onlineDeviceCount} / ${overview.deviceCount}`} sub="reporting now" />
+          <MetricTile label="Spaces" value={`${overview.rooms.length}`} sub="monitored areas" />
+          <MetricTile label="Active alerts" value={`${alerts.length}`} sub="unresolved" accent={alerts.length > 0 ? "amber" : "emerald"} />
+        </div>
+      </section>
+
+      <ChartPanel title="Power consumption" eyebrow="01 · Today's curve">
+        <div className="mb-3 flex gap-2">
+          {(["24h", "7d"] as const).map((option) => (
             <button
-              key={label}
+              key={option}
               type="button"
-              disabled
-              aria-disabled="true"
-              title="Device control is not part of API v1 — buttons are disabled and change nothing."
-              className="cursor-not-allowed rounded-lg border border-line bg-page px-3 py-1.5 text-xs font-semibold text-muted"
+              onClick={() => setChartPeriod(option)}
+              className={`rounded-lg px-3 py-1 text-xs font-semibold transition-colors ${chartPeriod === option ? "bg-brand text-white" : "text-muted hover:text-ink"}`}
             >
-              {label}
+              {option === "24h" ? "24 hours" : "7 days"}
             </button>
           ))}
         </div>
-        <p className="mt-3 text-xs text-muted">
-          API v1 exposes read-only endpoints, so these controls are disabled rather than
-          pretending to switch devices on or off.
+        {chartState.status === "loading" ? (
+          <Spinner label="Loading chart" />
+        ) : (
+          <SitePowerChart points={chartPoints} timezone={overview.timezone} />
+        )}
+        <p className="mt-2 text-xs text-muted">
+          {meterBased ? "Site meter readings for the selected period." : "Summed device readings for the selected period."}
         </p>
-      </Card>
+      </ChartPanel>
 
-      <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr]">
-        <Card eyebrow="04 · Today's curve" title="Whole-site watts — line">
-          <SitePowerChart points={overview.series} timezone={overview.timezone} />
-          <p className="mt-2 text-xs text-muted">
-            {meterBased
-              ? "Site meter readings for today (local time)."
-              : "Summed device readings for today (local time)."}
-          </p>
-        </Card>
-
-        <Card
-          title={`Devices · ${overview.onlineDeviceCount} on`}
-          action={<span className="text-xs text-muted">{overview.deviceCount} total</span>}
-        >
-          {overview.devices.length === 0 ? (
-            <EmptyState title="No devices" description="No devices are reporting for this site." />
-          ) : (
-            <DeviceList devices={overview.devices} />
-          )}
-        </Card>
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card eyebrow="05 · Rooms" title="Usage by room">
-          <RoomCards rooms={overview.rooms} />
-        </Card>
-
-        <Card eyebrow="06 · Highest consumers" title="By current power">
+      <section className="grid gap-4 lg:grid-cols-2">
+        <ChartPanel title="Highest consumers" eyebrow="02 · By current power">
           <TopConsumers devices={overview.devices} />
-        </Card>
-      </div>
+        </ChartPanel>
+        <ChartPanel title="Usage by space" eyebrow="03 · Rooms">
+          <RoomCards rooms={overview.rooms} />
+        </ChartPanel>
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
+        <ChartPanel title="Device status" eyebrow="04 · Fleet">
+          <DeviceList devices={overview.devices} />
+          <div className="mt-4 flex flex-wrap gap-2">
+            {overview.devices.map((d) => (
+              <StatusPill key={d.deviceId} status={d.status} />
+            ))}
+          </div>
+        </ChartPanel>
+        <ChartPanel title="Recent alerts" eyebrow="05 · Anomalies">
+          {alerts.length === 0 ? (
+            <EmptyState title="No active alerts" description="All systems are operating normally." />
+          ) : (
+            <ul className="space-y-2">
+              {alerts.slice(0, 6).map((alert) => (
+                <li key={alert.id} className="rounded-xl border border-line bg-card/60 p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-semibold text-ink">{alert.title}</p>
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${alert.severity === "high" ? "bg-red-500/15 text-red-300" : alert.severity === "medium" ? "bg-amber-500/15 text-amber-300" : "bg-blue-500/15 text-blue-300"}`}>
+                      {alert.severity}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-muted">{alert.type} · {new Date(alert.detectedAt).toLocaleString()}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </ChartPanel>
+      </section>
 
       {applianceState.status === "ready" ? (
         <ApplianceRanking

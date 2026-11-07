@@ -88,11 +88,79 @@ export interface SiteOverview {
   lastUpdated: string;
 }
 
+import type { Summary as ContractSummary, Alert as ContractAlert, Report as ContractReport } from "@lattice/contracts";
+
+export type Alert = ContractAlert;
+export type Report = ContractReport;
+
+export type Summary = ContractSummary;
+
 export interface EnergyApi {
   getSiteSummaries(): Promise<SiteSummary[]>;
   getRecentReadings(siteId: string, limit: number): Promise<EnergyReading[]>;
   getDataSource?(): Promise<DataSourceInfo>;
   getDeviceSummaries?(siteId?: string, from?: string, to?: string): Promise<DeviceSummary[]>;
-  getAggregate?(params: { siteId?: string; from: string; to: string; bucket?: string }): Promise<AggregatePoint[]>;
+  getSummary?(filters?: {
+    siteId?: string;
+    buildingId?: string;
+    floorId?: string;
+    roomId?: string;
+    circuitId?: string;
+    from?: string;
+    to?: string;
+  }): Promise<Summary>;
+  getScopedSummary?(filters?: {
+    siteId?: string;
+    buildingId?: string;
+    floorId?: string;
+    roomId?: string;
+    circuitId?: string;
+    from?: string;
+    to?: string;
+  }): Promise<Summary>;
+  getAggregate?(params: {
+    siteId?: string;
+    buildingId?: string;
+    floorId?: string;
+    roomId?: string;
+    circuitId?: string;
+    deviceId?: string;
+    from: string;
+    to: string;
+    bucket?: string;
+    groupBy?: string;
+  }): Promise<AggregatePoint[]>;
   getSiteOverview?(): Promise<SiteOverview>;
+  getBuildings?(siteId?: string): Promise<Building[]>;
+  getFloors?(buildingId?: string): Promise<Floor[]>;
+  getRooms?(filters?: { siteId?: string; buildingId?: string; floorId?: string }): Promise<Room[]>;
+  getCircuits?(filters?: { siteId?: string; buildingId?: string; floorId?: string; roomId?: string }): Promise<Circuit[]>;
+  getDevices?(filters?: { siteId?: string; buildingId?: string; floorId?: string; roomId?: string; circuitId?: string }): Promise<Device[]>;
+  getAlerts?(filters?: {
+    siteId?: string;
+    buildingId?: string;
+    floorId?: string;
+    roomId?: string;
+    circuitId?: string;
+    deviceId?: string;
+    severity?: string;
+    status?: string;
+    type?: string;
+  }): Promise<Alert[]>;
+  getAlert?(id: string): Promise<Alert>;
+  acknowledgeAlert?(id: string): Promise<Alert>;
+  resolveAlert?(id: string): Promise<Alert>;
+  detectAlerts?(): Promise<Alert[]>;
+  getReport?(params: {
+    siteId?: string;
+    buildingId?: string;
+    floorId?: string;
+    roomId?: string;
+    circuitId?: string;
+    period: "daily" | "weekly" | "monthly" | "custom";
+    from?: string;
+    to?: string;
+    compare?: boolean;
+  }): Promise<Report>;
 }
+import type { Building, Circuit, Device, Floor, Room } from "@lattice/contracts";

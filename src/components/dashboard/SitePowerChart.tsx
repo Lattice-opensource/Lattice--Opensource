@@ -77,6 +77,7 @@ export function SitePowerChart({ points, timezone, title = "Whole-site power" }:
   }, []);
 
   const geometry = useMemo(() => {
+    if (points.length === 0) return null;
     const innerWidth = Math.max(width - PADDING.left - PADDING.right, 10);
     const innerHeight = HEIGHT - PADDING.top - PADDING.bottom;
     const maxValue = Math.max(...points.map((p) => p.powerW), 100);
@@ -96,7 +97,7 @@ export function SitePowerChart({ points, timezone, title = "Whole-site power" }:
     return { innerWidth, innerHeight, niceMax, x, xAtTime, y, startMs, endMs };
   }, [points, width]);
 
-  if (points.length === 0) {
+  if (points.length === 0 || !geometry) {
     return (
       <div
         className="grid place-items-center rounded-xl border border-dashed border-line bg-page/60 text-sm text-muted"

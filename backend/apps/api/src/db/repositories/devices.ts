@@ -6,6 +6,7 @@ interface DeviceRow {
   id: string;
   site_id: string;
   room_id: string | null;
+  circuit_id: string | null;
   name: string;
   category: string;
   model: string | null;
@@ -29,6 +30,7 @@ function rowToDevice(db: DatabaseSync, row: DeviceRow): Device {
     id: row.id,
     siteId: row.site_id,
     roomId: row.room_id,
+    circuitId: row.circuit_id,
     roomName: rowToRoomName(db, row.room_id),
     name: row.name,
     category: row.category as DeviceCategory,
@@ -45,19 +47,28 @@ function rowToDevice(db: DatabaseSync, row: DeviceRow): Device {
 
 export function listDevices(
   db: DatabaseSync,
-  filters: { siteId?: string; roomId?: string } = {},
+  filters: { siteId?: string; buildingId?: string; floorId?: string; roomId?: string; circuitId?: string } = {},
 ): Device[] {
   const where: string[] = [];
   const params: unknown[] = [];
   if (filters.siteId) {
-    where.push('site_id = ?');
+    where.push('d.site_id = ?');
     params.push(filters.siteId);
   }
   if (filters.roomId) {
-    where.push('room_id = ?');
+    where.push('d.room_id = ?');
     params.push(filters.roomId);
   }
-  const sql = `SELECT * FROM devices ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY name`;
+  if (filters.circuitId) { where.push('d.circuit_id = ?'); params.push(filters.circuitId); }
+  if (filters.buildingId) {
+    where.push('EXISTS (SELECT 1 FROM rooms r WHERE r.id = d.room_id AND r.building_id = ?)');
+    params.push(filters.buildingId);
+  }
+  if (filters.floorId) {
+    where.push('EXISTS (SELECT 1 FROM rooms r WHERE r.id = d.room_id AND r.floor_id = ?)');
+    params.push(filters.floorId);
+  }
+  const sql = `SELECT d.* FROM devices d ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY d.name`;
   const rows = db.prepare(sql).all(...(params as any)) as unknown as DeviceRow[];
   return rows.map((r) => rowToDevice(db, r));
 }
@@ -73,6 +84,7 @@ export function upsertDevice(
     id: string;
     siteId: string;
     roomId: string | null;
+    circuitId?: string | null;
     name: string;
     category: DeviceCategory;
     model: string | null;
@@ -84,11 +96,12 @@ export function upsertDevice(
 ): void {
   const now = toIso(new Date());
   db.prepare(
-    `INSERT INTO devices (id, site_id, room_id, name, category, model, rated_power_w, status, is_simulated, installed_at, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO devices (id, site_id, room_id, circuit_id, name, category, model, rated_power_w, status, is_simulated, installed_at, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        site_id = excluded.site_id,
        room_id = excluded.room_id,
+       circuit_id = excluded.circuit_id,
        name = excluded.name,
        category = excluded.category,
        model = excluded.model,
@@ -101,6 +114,7 @@ export function upsertDevice(
     device.id,
     device.siteId,
     device.roomId,
+    device.circuitId ?? null,
     device.name,
     device.category,
     device.model,

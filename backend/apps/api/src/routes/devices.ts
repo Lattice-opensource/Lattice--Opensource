@@ -4,26 +4,28 @@ import { getDb } from '../db/index.js';
 import { listDevices, getDevice } from '../db/repositories/devices.js';
 import { parseOrThrow } from '../lib/validate.js';
 import { STALE_AFTER_SECONDS } from '../config.js';
+import { freshnessStatus } from '../lib/freshness.js';
+import { getBuilding, getFloor, getCircuit } from '../db/repositories/hierarchy.js';
 
 const ListQuery = z.object({
   siteId: z.string().min(1).max(64).optional(),
+  buildingId: z.string().min(1).max(64).optional(),
+  floorId: z.string().min(1).max(64).optional(),
   roomId: z.string().min(1).max(64).optional(),
+  circuitId: z.string().min(1).max(64).optional(),
 });
 
 function applyStale<T extends { status: string; lastSeenAt: string | null }>(d: T): T {
-  if (d.status === 'online' && d.lastSeenAt) {
-    const age = (Date.now() - new Date(d.lastSeenAt).getTime()) / 1000;
-    if (age > STALE_AFTER_SECONDS) {
-      return { ...d, status: 'stale' };
-    }
-  }
-  return d;
+  return { ...d, status: freshnessStatus(d.status as import('@lattice/contracts').DeviceStatus, d.lastSeenAt, STALE_AFTER_SECONDS) };
 }
 
 export async function registerDevicesRoute(app: FastifyInstance): Promise<void> {
   app.get('/api/devices', async (req, reply) => {
     const q = parseOrThrow(ListQuery, req.query);
     const db = getDb();
+    if (q.buildingId && !getBuilding(db, q.buildingId)) return reply.code(404).send({ error: { code: 'NOT_FOUND', message: `Unknown building: ${q.buildingId}`, requestId: req.id } });
+    if (q.floorId && !getFloor(db, q.floorId)) return reply.code(404).send({ error: { code: 'NOT_FOUND', message: `Unknown floor: ${q.floorId}`, requestId: req.id } });
+    if (q.circuitId && !getCircuit(db, q.circuitId)) return reply.code(404).send({ error: { code: 'NOT_FOUND', message: `Unknown circuit: ${q.circuitId}`, requestId: req.id } });
     const devices = listDevices(db, q).map(applyStale);
     reply.send({
       data: devices,

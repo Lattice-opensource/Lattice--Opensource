@@ -1,4 +1,5 @@
 import { NavLinks } from "./NavLinks";
+import { ThemeToggle } from "../ui/ThemeToggle";
 
 interface TopBarProps {
   onMenuClick: () => void;
@@ -43,6 +44,7 @@ export function TopBar({ onMenuClick, simulated }: TopBarProps) {
         </div>
 
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           <NavLinks />
           {simulated ? (
             <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-warn ring-1 ring-amber-200">

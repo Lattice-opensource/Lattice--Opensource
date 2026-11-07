@@ -15,8 +15,21 @@ export function openDatabase(filePath: string = databasePath): DatabaseSync {
   // In dev (tsx) it is read from src/db/schema.sql next to this source file.
   const schema = readFileSync(new URL('./schema.sql', import.meta.url), 'utf8');
   instance.exec(schema);
+  ensureColumn(instance, 'rooms', 'building_id', 'TEXT REFERENCES buildings(id) ON DELETE SET NULL');
+  ensureColumn(instance, 'rooms', 'floor_id', 'TEXT REFERENCES floors(id) ON DELETE SET NULL');
+  ensureColumn(instance, 'devices', 'circuit_id', 'TEXT REFERENCES circuits(id) ON DELETE SET NULL');
+  instance.exec('CREATE INDEX IF NOT EXISTS idx_rooms_building ON rooms(building_id);');
+  instance.exec('CREATE INDEX IF NOT EXISTS idx_rooms_floor ON rooms(floor_id);');
+  instance.exec('CREATE INDEX IF NOT EXISTS idx_devices_circuit ON devices(circuit_id);');
   db = instance;
   return instance;
+}
+
+function ensureColumn(instance: DatabaseSync, table: string, column: string, definition: string): void {
+  const columns = instance.prepare(`PRAGMA table_info(${table})`).all() as Array<{ name: string }>;
+  if (!columns.some((entry) => entry.name === column)) {
+    instance.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition};`);
+  }
 }
 
 export function getDb(): DatabaseSync {

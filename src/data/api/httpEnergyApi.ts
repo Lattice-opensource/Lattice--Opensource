@@ -7,9 +7,26 @@ import type {
   RoomSummary,
   SiteOverview,
   SiteSummary,
+  Summary,
+  Alert,
+  Report,
 } from "./energyApi";
 import { buildPowerSeries, resolveWholeSite, startOfDayInTimeZone } from "./normalize";
 import { config } from "../../config/env";
+import type {
+  ItemResponse as ContractItemResponse,
+  LatestReading,
+  ListResponse as ContractListResponse,
+  Reading as ContractReading,
+  Site as ContractSite,
+  SiteConfig as ContractSiteConfig,
+  Summary as ContractSummary,
+  Building,
+  Circuit,
+  Device,
+  Floor,
+  Room,
+} from "@lattice/contracts";
 
 const API_BASE = config.apiBaseUrl.replace(/\/$/, "");
 
@@ -30,65 +47,12 @@ async function request<T>(path: string): Promise<T> {
   return (await res.json()) as T;
 }
 
-interface SiteDto {
-  id: string;
-  name: string;
-  timezone: string;
-  currency: string;
-}
-
-interface ConfigDto {
-  siteId: string;
-  currency: string;
-  timezone: string;
-  dataSource: { simulated: boolean; notice: string; mode: string };
-}
-
-interface ReadingDto {
-  id: string;
-  deviceId: string;
-  timestamp: string;
-  powerW: number;
-  energyKwh: number | null;
-  source: "simulator" | "device" | "import";
-  isSimulated: boolean;
-}
-
-interface SummaryDto {
-  siteId: string;
-  totals: { powerW: number; energyKwh: number; costInr: number };
-  byDevice: Array<{
-    deviceId: string;
-    deviceName: string;
-    roomId: string | null;
-    roomName: string | null;
-    category: string;
-    status: string;
-    isSimulated: boolean;
-    powerW: number;
-    energyKwh: number;
-    costInr: number;
-    lastSeenAt: string | null;
-  }>;
-  byRoom: Array<{
-    roomId: string;
-    roomName: string;
-    powerW: number;
-    energyKwh: number;
-    costInr: number;
-  }>;
-  dataQuality: { simulated: boolean; simulatedReadings: number; realReadings: number };
-}
-
-interface ListResponse<T> {
-  data: T[];
-  meta: { serverTime: string; total?: number };
-}
-
-interface ItemResponse<T> {
-  data: T;
-  meta: { serverTime: string };
-}
+type SiteDto = ContractSite;
+type ConfigDto = ContractSiteConfig;
+type ReadingDto = ContractReading;
+type SummaryDto = ContractSummary;
+type ListResponse<T> = ContractListResponse<T>;
+type ItemResponse<T> = ContractItemResponse<T>;
 
 function toDeviceSummary(d: SummaryDto["byDevice"][number]): DeviceSummary {
   return {
@@ -106,6 +70,18 @@ function toDeviceSummary(d: SummaryDto["byDevice"][number]): DeviceSummary {
 }
 
 export class HttpEnergyApi implements EnergyApi {
+  async getBuildings(siteId?: string): Promise<Building[]> { return this.list<Building>("/api/buildings", { siteId }); }
+  async getFloors(buildingId?: string): Promise<Floor[]> { return this.list<Floor>("/api/floors", { buildingId }); }
+  async getRooms(filters: { siteId?: string; buildingId?: string; floorId?: string } = {}): Promise<Room[]> { return this.list<Room>("/api/rooms", filters); }
+  async getCircuits(filters: { siteId?: string; buildingId?: string; floorId?: string; roomId?: string } = {}): Promise<Circuit[]> { return this.list<Circuit>("/api/circuits", filters); }
+  async getDevices(filters: { siteId?: string; buildingId?: string; floorId?: string; roomId?: string; circuitId?: string } = {}): Promise<Device[]> { return this.list<Device>("/api/devices", filters); }
+
+  private async list<T>(path: string, params: Record<string, string | undefined>): Promise<T[]> {
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) if (value) query.set(key, value);
+    const body = await request<ListResponse<T>>(`${path}${query.size ? `?${query}` : ""}`);
+    return body.data;
+  }
   async getSiteSummaries(): Promise<SiteSummary[]> {
     const sitesBody = await request<ListResponse<SiteDto>>("/api/sites");
     const sites = sitesBody.data ?? [];
@@ -170,18 +146,120 @@ export class HttpEnergyApi implements EnergyApi {
     return body.data.byDevice.map(toDeviceSummary);
   }
 
+  async getSummary(filters: {
+    siteId?: string;
+    buildingId?: string;
+    floorId?: string;
+    roomId?: string;
+    circuitId?: string;
+    from?: string;
+    to?: string;
+  } = {}): Promise<Summary> {
+    const q = new URLSearchParams();
+    for (const [key, value] of Object.entries(filters)) if (value) q.set(key, value);
+    const qs = q.toString() ? `?${q.toString()}` : "";
+    const body = await request<ItemResponse<SummaryDto>>(`/api/readings/summary${qs}`);
+    return body.data as Summary;
+  }
+
+  async getScopedSummary(filters?: {
+    siteId?: string;
+    buildingId?: string;
+    floorId?: string;
+    roomId?: string;
+    circuitId?: string;
+    from?: string;
+    to?: string;
+  }): Promise<Summary> {
+    return this.getSummary(filters);
+  }
+
+  async getAlerts(filters?: {
+    siteId?: string;
+    buildingId?: string;
+    floorId?: string;
+    roomId?: string;
+    circuitId?: string;
+    deviceId?: string;
+    severity?: string;
+    status?: string;
+    type?: string;
+  }): Promise<Alert[]> {
+    const q = new URLSearchParams();
+    for (const [key, value] of Object.entries(filters ?? {})) if (value) q.set(key, value);
+    const qs = q.toString() ? `?${q.toString()}` : "";
+    const body = await request<{ data: Alert[] }>(`/api/alerts${qs}`);
+    return body.data ?? [];
+  }
+
+  async getAlert(id: string): Promise<Alert> {
+    const body = await request<{ data: Alert }>(`/api/alerts/${encodeURIComponent(id)}`);
+    return body.data;
+  }
+
+  async acknowledgeAlert(id: string): Promise<Alert> {
+    const res = await fetch(`${API_BASE}/api/alerts/${encodeURIComponent(id)}/acknowledge`, { method: "POST", headers: { "Content-Type": "application/json" } });
+    if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+    const json = await res.json();
+    return json.data as Alert;
+  }
+
+  async resolveAlert(id: string): Promise<Alert> {
+    const res = await fetch(`${API_BASE}/api/alerts/${encodeURIComponent(id)}/resolve`, { method: "POST", headers: { "Content-Type": "application/json" } });
+    if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+    const json = await res.json();
+    return json.data as Alert;
+  }
+
+  async detectAlerts(): Promise<Alert[]> {
+    const res = await fetch(`${API_BASE}/api/alerts/detect`, { method: "POST", headers: { "Content-Type": "application/json" } });
+    if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+    const json = await res.json();
+    return (json.data ?? []) as Alert[];
+  }
+
+  async getReport(params: {
+    siteId?: string;
+    buildingId?: string;
+    floorId?: string;
+    roomId?: string;
+    circuitId?: string;
+    period: "daily" | "weekly" | "monthly" | "custom";
+    from?: string;
+    to?: string;
+    compare?: boolean;
+  }): Promise<Report> {
+    const q = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (value === undefined || value === null) continue;
+      q.set(key, String(value));
+    }
+    const body = await request<{ data: Report }>(`/api/reports?${q.toString()}`);
+    return body.data;
+  }
+
   async getAggregate(params: {
     siteId?: string;
+    buildingId?: string;
+    floorId?: string;
+    roomId?: string;
+    circuitId?: string;
+    deviceId?: string;
     from: string;
     to: string;
     bucket?: string;
+    groupBy?: string;
   }): Promise<AggregatePoint[]> {
     const q = new URLSearchParams();
-    if (params.siteId) q.set("siteId", params.siteId);
+    for (const [key, value] of Object.entries(params)) {
+      if (value === undefined || value === null) continue;
+      if (key === "from" || key === "to" || key === "bucket" || key === "groupBy") continue;
+      q.set(key, String(value));
+    }
     q.set("from", params.from);
     q.set("to", params.to);
     q.set("bucket", params.bucket ?? "hour");
-    q.set("groupBy", "site");
+    q.set("groupBy", params.groupBy ?? "site");
     const body = await request<ListResponse<Record<string, unknown>>>(`/api/readings/aggregate?${q.toString()}`);
     return (body.data ?? []).map((p) => ({
       bucketStart: String(p.bucketStart),
@@ -288,12 +366,6 @@ export class HttpEnergyApi implements EnergyApi {
   }
 }
 
-interface LegacyReading {
-  deviceId: string;
-  timestamp: string;
-  powerWatts: number;
-  energyKwh: number;
-  source: "simulated" | "real";
-}
+type LegacyReading = LatestReading;
 
 export const httpEnergyApi = new HttpEnergyApi();

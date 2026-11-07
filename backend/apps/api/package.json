@@ -12,8 +12,10 @@
     "start": "node dist/server.js",
     "build": "tsc -p tsconfig.json && node -e \"const fs=require('fs'); fs.mkdirSync('dist/db',{recursive:true}); fs.copyFileSync('src/db/schema.sql','dist/db/schema.sql')\"",
     "seed": "tsx src/db/seed-cli.ts",
+    "pretest": "npm run build --workspace @lattice/contracts",
     "test": "vitest run",
     "test:watch": "vitest",
+    "pretypecheck": "npm run build --workspace @lattice/contracts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

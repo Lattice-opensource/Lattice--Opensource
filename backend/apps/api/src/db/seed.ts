@@ -27,7 +27,10 @@ export function seedDatabase(db: DatabaseSync, opts: SeedOptions = {}): { seeded
   if (force) {
     db.exec('DELETE FROM readings;');
     db.exec('DELETE FROM devices;');
+    db.exec('DELETE FROM circuits;');
     db.exec('DELETE FROM rooms;');
+    db.exec('DELETE FROM floors;');
+    db.exec('DELETE FROM buildings;');
     db.exec('DELETE FROM sites;');
   }
 

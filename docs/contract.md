@@ -1,8 +1,10 @@
-# Shared energy-reading contract (v1)
+# Shared API contract (v1)
 
-Agreed between the backend/data-architecture developer and the frontend developer.
-Source of truth lives in `packages/contracts` (`src/types.ts` + `src/schema/index.ts`).
-Both sides import from `@lattice/contracts` (types) and `@lattice/contracts/schema` (Zod).
+The authoritative contract is `backend/packages/contracts`: `src/types.ts` defines
+the type-only public API and `src/schema/index.ts` defines the matching runtime Zod
+schemas. Backend route tests validate implemented responses against those schemas.
+The frontend resolves `@lattice/contracts` to this source and its legacy
+`src/types/apiContract.ts` file only re-exports compatibility aliases.
 
 ## Negotiation outcome (summary)
 
@@ -82,8 +84,12 @@ Errors:
 | GET | `/api/health` | Liveness + DB status |
 | GET | `/api/sites` | List sites |
 | GET | `/api/sites/:siteId` | Single site |
-| GET | `/api/rooms?siteId=` | Rooms |
-| GET | `/api/devices?siteId=&roomId=` | Devices |
+| GET | `/api/sites/summary` | Current power, energy, and estimated cost by site |
+| GET | `/api/buildings?siteId=` / `/api/buildings/:buildingId` | Campus buildings |
+| GET | `/api/floors?buildingId=` / `/api/floors/:floorId` | Building floors |
+| GET | `/api/circuits?siteId=&buildingId=&floorId=&roomId=` / `/api/circuits/:circuitId` | Circuits |
+| GET | `/api/rooms?siteId=&buildingId=&floorId=` | Rooms / spaces |
+| GET | `/api/devices?siteId=&roomId=&circuitId=` | Devices |
 | GET | `/api/devices/:deviceId` | Single device |
 | GET | `/api/readings?deviceId=&roomId=&siteId=&from=&to=&limit=&offset=&order=` | Raw readings |
 | GET | `/api/readings/latest?siteId=&deviceId=` | Latest reading per device |
@@ -107,19 +113,18 @@ Errors:
 
 No push transport in v1. Poll `GET /api/readings/latest` (suggested 5 s). The simulator guarantees a reading younger than 30 s, so the "live" UI moves.
 
-## Canonical response schema for `/api/readings/latest`
+## `GET /api/readings/latest` response
 
-`readings` is the **canonical** array. `data` and `meta` are retained for backward
-compatibility with earlier backend clients but new code should read `readings`,
-`count`, and `generatedAt`.
+`data` is the canonical rich `Reading[]` response used by current clients. It uses
+`powerW`, `isSimulated`, and `source: "simulator"|"device"|"import"`, wrapped in
+the standard `{ data, meta }` envelope.
 
-Field naming: wire format uses `powerWatts` (watts) and `source: "simulated"|"real"`.
-The richer internal fields (`powerW`, `isSimulated`, `source: "simulator"|"device"|"import"`,
-`energyKwhTotal`, ...) are retained as additive fields on each reading.
+`readings`, `count`, and `generatedAt` are retained compatibility fields for older
+clients. `readings` uses `powerWatts` and `source: "simulated"|"real"`.
 
 ## Frontend connection
 
-Base URL: `http://localhost:8000` in dev (configurable). All endpoints are under `/api`.
+Base URL: `http://localhost:4000` in dev (configurable). All endpoints are under `/api`.
 Set `CORS_ORIGINS` to include the frontend origin (e.g. `http://localhost:5173`).
 
 ```ts

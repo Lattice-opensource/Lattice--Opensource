@@ -5,10 +5,14 @@ import { listDevices } from '../db/repositories/devices.js';
 import { getSiteTariffJson } from '../db/repositories/sites.js';
 import { costForEnergy, round2 } from './cost.js';
 import { toIso } from '../lib/time.js';
+import { siteTotalReadings } from './site-meter.js';
 
 export interface AggregateParams {
   siteId?: string;
+  buildingId?: string;
+  floorId?: string;
   roomId?: string;
+  circuitId?: string;
   deviceId?: string;
   from: string;
   to: string;
@@ -83,15 +87,22 @@ interface GroupKey {
 }
 
 export function aggregate(db: DatabaseSync, params: AggregateParams): AggregatePoint[] {
-  const devices = listDevices(db, { siteId: params.siteId, roomId: params.roomId });
+  const deviceFilters = {
+    siteId: params.siteId,
+    buildingId: params.buildingId,
+    floorId: params.floorId,
+    roomId: params.roomId,
+    circuitId: params.circuitId,
+  };
+  const devices = listDevices(db, deviceFilters);
   const deviceMap = new Map(devices.map((d) => [d.id, d]));
   const readings = listAllReadings(db, {
-    siteId: params.siteId,
-    roomId: params.roomId,
+    ...deviceFilters,
     deviceId: params.deviceId,
     from: params.from,
     to: params.to,
   });
+  const readingsForGroup = params.groupBy === 'site' ? siteTotalReadings(devices, readings) : readings;
 
   const siteRow = params.siteId
     ? (db.prepare('SELECT timezone FROM sites WHERE id = ?').get(params.siteId) as { timezone: string } | undefined)
@@ -108,18 +119,11 @@ export function aggregate(db: DatabaseSync, params: AggregateParams): AggregateP
     simulatedCount: number;
   }>();
 
-  for (const r of readings) {
+  for (const r of readingsForGroup) {
     const dev = deviceMap.get(r.deviceId);
     if (!dev) continue;
     if (params.roomId && dev.roomId !== params.roomId) continue;
     if (params.deviceId && r.deviceId !== params.deviceId) continue;
-    // For site-level aggregation, use the site meter only to avoid
-    // double-counting appliance readings.
-    if (params.groupBy === 'site') {
-      const isMeter = dev.roomId === null && dev.category === 'other';
-      if (!isMeter) continue;
-    }
-
     const { start, end } = bucketStartUtc(r.timestamp, params.bucket, siteTz);
     const bucketStart = toIso(start);
 

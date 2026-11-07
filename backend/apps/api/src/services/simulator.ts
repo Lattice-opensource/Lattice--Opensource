@@ -5,11 +5,14 @@ import { insertReading, deleteSimulatedOlderThan } from '../db/repositories/read
 import { updateDeviceLastSeen, upsertDevice } from '../db/repositories/devices.js';
 import { upsertRoom } from '../db/repositories/rooms.js';
 import { upsertSite } from '../db/repositories/sites.js';
+import { upsertBuilding, upsertCircuit, upsertFloor } from '../db/repositories/hierarchy.js';
+import { detectAlerts } from './alerts.js';
 
 export interface DeviceProfile {
   id: string;
   siteId: string;
   roomId: string | null;
+  circuitId: string | null;
   roomName: string | null;
   name: string;
   category: import('@lattice/contracts').DeviceCategory;
@@ -26,53 +29,72 @@ export interface DeviceProfile {
 }
 
 export const SITE_ID = 'site_home_01';
-
-export const ROOMS: Array<{ id: string; siteId: string; name: string }> = [
-  { id: 'room_living_01', siteId: SITE_ID, name: 'Living Room' },
-  { id: 'room_bed_01', siteId: SITE_ID, name: 'Bedroom' },
-  { id: 'room_kitchen_01', siteId: SITE_ID, name: 'Kitchen' },
-  { id: 'room_bath_01', siteId: SITE_ID, name: 'Bathroom' },
-  { id: 'room_garage_01', siteId: SITE_ID, name: 'Garage' },
+export const BUILDING_ID = 'building_academic_01';
+export const FLOORS = [
+  { id: 'floor_ground_01', buildingId: BUILDING_ID, name: 'Ground Floor', level: 0 },
+  { id: 'floor_first_01', buildingId: BUILDING_ID, name: 'First Floor', level: 1 },
 ];
+
+export const ROOMS: Array<{ id: string; siteId: string; buildingId: string; floorId: string; name: string }> = [
+  { id: 'room_living_01', siteId: SITE_ID, buildingId: BUILDING_ID, floorId: 'floor_ground_01', name: 'Computer Laboratory' },
+  { id: 'room_bed_01', siteId: SITE_ID, buildingId: BUILDING_ID, floorId: 'floor_first_01', name: 'Classroom Block A' },
+  { id: 'room_kitchen_01', siteId: SITE_ID, buildingId: BUILDING_ID, floorId: 'floor_first_01', name: 'Library' },
+  { id: 'room_bath_01', siteId: SITE_ID, buildingId: BUILDING_ID, floorId: 'floor_ground_01', name: 'Auditorium' },
+  { id: 'room_garage_01', siteId: SITE_ID, buildingId: BUILDING_ID, floorId: 'floor_ground_01', name: 'Administrative Office' },
+  { id: 'room_corridor_01', siteId: SITE_ID, buildingId: BUILDING_ID, floorId: 'floor_first_01', name: 'First Floor Corridor' },
+  { id: 'room_common_01', siteId: SITE_ID, buildingId: BUILDING_ID, floorId: 'floor_ground_01', name: 'Student Common Area' },
+];
+
+export const CIRCUITS = ROOMS.map((room) => ({ id: `circuit_${room.id.slice(5)}`, siteId: SITE_ID, buildingId: room.buildingId, floorId: room.floorId, roomId: room.id, name: `${room.name} circuit` }));
 
 export const DEVICE_PROFILES: DeviceProfile[] = [
   {
-    id: 'dev_bed_ac_01', siteId: SITE_ID, roomId: 'room_bed_01', roomName: 'Bedroom',
-    name: 'Bedroom AC', category: 'hvac', model: 'Voltas 1.5T Inverter', ratedPowerW: 1500,
+    id: 'dev_bed_ac_01', siteId: SITE_ID, roomId: 'room_bed_01', circuitId: 'circuit_bed_01', roomName: 'Classroom Block A',
+    name: 'Classroom HVAC', category: 'hvac', model: 'Campus HVAC', ratedPowerW: 1500,
     isSimulated: true, onWindows: [[13, 17], [21, 24], [0, 6]], baseW: 1100, standbyW: 12, variance: 0.12, offDuty: 0.05,
   },
   {
-    id: 'dev_living_ac_01', siteId: SITE_ID, roomId: 'room_living_01', roomName: 'Living Room',
-    name: 'Living Room AC', category: 'hvac', model: 'Daikin 2T', ratedPowerW: 1800,
+    id: 'dev_living_ac_01', siteId: SITE_ID, roomId: 'room_living_01', circuitId: 'circuit_living_01', roomName: 'Computer Laboratory',
+    name: 'Computer Lab HVAC', category: 'hvac', model: 'Campus HVAC', ratedPowerW: 1800,
     isSimulated: true, onWindows: [[12, 16], [18, 23]], baseW: 1500, standbyW: 15, variance: 0.1, offDuty: 0.04,
   },
   {
-    id: 'dev_fridge_01', siteId: SITE_ID, roomId: 'room_kitchen_01', roomName: 'Kitchen',
-    name: 'Refrigerator', category: 'kitchen', model: 'LG 260L', ratedPowerW: 150,
+    id: 'dev_fridge_01', siteId: SITE_ID, roomId: 'room_kitchen_01', circuitId: 'circuit_kitchen_01', roomName: 'Library',
+    name: 'Library Lighting', category: 'lighting', model: 'LED lighting bank', ratedPowerW: 150,
     isSimulated: true, onWindows: [], baseW: 130, standbyW: 0, variance: 0.08, offDuty: 0.35,
   },
   {
-    id: 'dev_tv_01', siteId: SITE_ID, roomId: 'room_living_01', roomName: 'Living Room',
-    name: 'Television', category: 'electronics', model: 'Samsung 55"', ratedPowerW: 120,
+    id: 'dev_tv_01', siteId: SITE_ID, roomId: 'room_living_01', circuitId: 'circuit_living_01', roomName: 'Computer Laboratory',
+    name: 'Laboratory Computers', category: 'electronics', model: 'Computer workstation bank', ratedPowerW: 120,
     isSimulated: true, onWindows: [[18, 23]], baseW: 110, standbyW: 2, variance: 0.05, offDuty: 0.02,
   },
   {
-    id: 'dev_fan_01', siteId: SITE_ID, roomId: 'room_bed_01', roomName: 'Bedroom',
-    name: 'Ceiling Fan', category: 'appliance', model: 'Havells 1200mm', ratedPowerW: 75,
+    id: 'dev_fan_01', siteId: SITE_ID, roomId: 'room_garage_01', circuitId: 'circuit_garage_01', roomName: 'Administrative Office',
+    name: 'Office Equipment', category: 'electronics', model: 'Office equipment bank', ratedPowerW: 75,
     isSimulated: true, onWindows: [[21, 24], [0, 7]], baseW: 68, standbyW: 0, variance: 0.04, offDuty: 0.05,
   },
   {
-    id: 'dev_induction_01', siteId: SITE_ID, roomId: 'room_kitchen_01', roomName: 'Kitchen',
-    name: 'Induction Cooktop', category: 'kitchen', model: 'Prestige PIC', ratedPowerW: 2000,
+    id: 'dev_induction_01', siteId: SITE_ID, roomId: 'room_living_01', circuitId: 'circuit_living_01', roomName: 'Computer Laboratory',
+    name: 'Laboratory Equipment', category: 'appliance', model: 'Laboratory equipment bank', ratedPowerW: 2000,
     isSimulated: true, onWindows: [[7, 9], [12, 14], [19, 21]], baseW: 1600, standbyW: 0, variance: 0.15, offDuty: 0.02,
   },
   {
-    id: 'dev_geyser_01', siteId: SITE_ID, roomId: 'room_bath_01', roomName: 'Bathroom',
-    name: 'Water Heater', category: 'appliance', model: 'Bajaj 25L', ratedPowerW: 2000,
+    id: 'dev_geyser_01', siteId: SITE_ID, roomId: 'room_bath_01', circuitId: 'circuit_bath_01', roomName: 'Auditorium',
+    name: 'Auditorium HVAC', category: 'hvac', model: 'Auditorium HVAC', ratedPowerW: 2000,
     isSimulated: true, onWindows: [[6, 8], [20, 22]], baseW: 1900, standbyW: 0, variance: 0.06, offDuty: 0.01,
   },
   {
-    id: 'dev_main_meter_01', siteId: SITE_ID, roomId: null, roomName: null,
+    id: 'dev_corridor_lights_01', siteId: SITE_ID, roomId: 'room_corridor_01', circuitId: 'circuit_corridor_01', roomName: 'First Floor Corridor',
+    name: 'Corridor Lighting', category: 'lighting', model: 'LED corridor lighting', ratedPowerW: 400,
+    isSimulated: true, onWindows: [[6, 18]], baseW: 320, standbyW: 10, variance: 0.05, offDuty: 0.02,
+  },
+  {
+    id: 'dev_common_area_01', siteId: SITE_ID, roomId: 'room_common_01', circuitId: 'circuit_common_01', roomName: 'Student Common Area',
+    name: 'Common Area Ventilation', category: 'appliance', model: 'Ventilation bank', ratedPowerW: 900,
+    isSimulated: true, onWindows: [[7, 18]], baseW: 700, standbyW: 20, variance: 0.08, offDuty: 0.02,
+  },
+  {
+    id: 'dev_main_meter_01', siteId: SITE_ID, roomId: null, circuitId: null, roomName: null,
     name: 'Main Meter', category: 'other', model: 'Smart Meter v2', ratedPowerW: null,
     isSimulated: true, onWindows: [], baseW: 0, standbyW: 0, variance: 0, offDuty: 0,
   },
@@ -247,6 +269,10 @@ export function startLiveWriter(db: DatabaseSync, opts: LiveWriterOptions): () =
       // retention prune: only fine-grained live samples are pruned.
       const cutoff = toIso(addSeconds(now, -opts.retentionSeconds));
       deleteSimulatedOlderThan(db, cutoff, opts.liveIntervalSeconds);
+
+      setImmediate(() => {
+        try { detectAlerts(db); } catch (e) { console.error('alert detection failed:', e); }
+      });
     } catch (e) {
       console.error('live tick failed:', e);
     }
@@ -281,9 +307,10 @@ export function upsertSimulatedDevices(db: DatabaseSync, seed: number): void {
     }),
   });
 
-  for (const r of ROOMS) {
-    upsertRoom(db, r);
-  }
+  upsertBuilding(db, { id: BUILDING_ID, siteId: SITE_ID, name: 'Academic Block' });
+  for (const floor of FLOORS) upsertFloor(db, floor);
+  for (const r of ROOMS) upsertRoom(db, r);
+  for (const circuit of CIRCUITS) upsertCircuit(db, circuit);
 
   const installedAt = '2026-05-01T00:00:00.000Z';
   for (const p of DEVICE_PROFILES) {
@@ -291,6 +318,7 @@ export function upsertSimulatedDevices(db: DatabaseSync, seed: number): void {
       id: p.id,
       siteId: p.siteId,
       roomId: p.roomId,
+      circuitId: p.circuitId,
       name: p.name,
       category: p.category,
       model: p.model,

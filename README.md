@@ -60,7 +60,7 @@ src/
   data/DataSourceContext.tsx  shares the simulated/real banner state with the header
   data/getEnergyApi.ts        provider selection (sample vs HTTP)
   config/env.ts               environment configuration
-  types/apiContract.ts        API contract types
+  types/apiContract.ts        compatibility aliases for the shared API contract
 ```
 
 ## Data access
@@ -82,8 +82,9 @@ clearly labelled sample provider. Dashboard components never import the HTTP cli
 
 ## API contract
 
-`docs/contract.md` and `backend/packages/contracts` are the source of truth for the
-backend contract; `src/types/apiContract.ts` mirrors the frontend-facing types.
+`backend/packages/contracts` is the source of truth for the API contract.
+`docs/contract.md` documents it, and `src/types/apiContract.ts` re-exports
+compatibility aliases for older frontend imports.
 
 ## Notes
 

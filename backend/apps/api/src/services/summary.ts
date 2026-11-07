@@ -5,18 +5,32 @@ import { listDevices } from '../db/repositories/devices.js';
 
 import { costForEnergy, round2 } from './cost.js';
 import { resolveTariff } from './aggregate.js';
+import { STALE_AFTER_SECONDS } from '../config.js';
+import { freshnessStatus } from '../lib/freshness.js';
+import { siteTotalReadings } from './site-meter.js';
 
 export interface SummaryParams {
   siteId?: string;
+  buildingId?: string;
+  floorId?: string;
+  roomId?: string;
+  circuitId?: string;
   from: string;
   to: string;
 }
 
 export function computeSummary(db: DatabaseSync, params: SummaryParams): Summary {
   const siteId = params.siteId ?? 'site_home_01';
-  const devices = listDevices(db, { siteId });
+  const filters = {
+    siteId,
+    buildingId: params.buildingId,
+    floorId: params.floorId,
+    roomId: params.roomId,
+    circuitId: params.circuitId,
+  };
+  const devices = listDevices(db, filters);
   const deviceMap = new Map(devices.map((d) => [d.id, d]));
-  const readings = listAllReadings(db, { siteId, from: params.from, to: params.to });
+  const readings = listAllReadings(db, { ...filters, from: params.from, to: params.to });
 
   const tariff = resolveTariff(db, siteId);
 
@@ -48,7 +62,7 @@ export function computeSummary(db: DatabaseSync, params: SummaryParams): Summary
       roomId: d.roomId,
       roomName: d.roomName,
       category: d.category,
-      status: d.status,
+      status: freshnessStatus(d.status, d.lastSeenAt, STALE_AFTER_SECONDS),
       isSimulated: d.isSimulated,
       powerW: 0,
       energyKwh: 0,
@@ -61,10 +75,8 @@ export function computeSummary(db: DatabaseSync, params: SummaryParams): Summary
   // double-counting appliance readings. If no site meter exists (e.g. a
   // real-hardware deployment with only appliance sensors), fall back to
   // summing all devices (best effort) and document the limitation.
-  const siteMeterIds = new Set(
-    devices.filter((d) => d.roomId === null && d.category === 'other').map((d) => d.id),
-  );
-  const hasSiteMeter = siteMeterIds.size > 0;
+  const siteReadings = siteTotalReadings(devices, readings);
+  const siteReadingIds = new Set(siteReadings.map((r) => r.id));
 
   let totalEnergy = 0;
   let totalCost = 0;
@@ -86,8 +98,7 @@ export function computeSummary(db: DatabaseSync, params: SummaryParams): Summary
       realReadings += 1;
       realEnergy += ek;
     }
-    // Only the site meter contributes to site totals.
-    if (!hasSiteMeter || siteMeterIds.has(r.deviceId)) {
+    if (siteReadingIds.has(r.id)) {
       totalEnergy += ek;
       totalCost += costForEnergy(tariff, ek);
     }
@@ -99,13 +110,11 @@ export function computeSummary(db: DatabaseSync, params: SummaryParams): Summary
     if (dev) dev.powerW = r.powerW;
   }
 
-  // Site current power = site meter's latest power (avoid double counting).
-  const siteMeterPower = [...latestByDevice.entries()]
-    .filter(([did]) => siteMeterIds.has(did))
-    .reduce((acc, [, r]) => acc + r.powerW, 0);
-  const totalPower = hasSiteMeter
-    ? siteMeterPower
-    : [...byDeviceMap.values()].reduce((a, b) => a + b.powerW, 0);
+  const latestSiteReadings = siteTotalReadings(
+    devices,
+    [...latestByDevice.values()],
+  );
+  const totalPower = latestSiteReadings.reduce((total, reading) => total + reading.powerW, 0);
   const byRoomMap = new Map<string, { roomId: string; roomName: string; powerW: number; energyKwh: number; costInr: number }>();
   for (const d of byDeviceMap.values()) {
     if (!d.roomId) continue;

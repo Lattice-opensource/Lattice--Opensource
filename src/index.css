@@ -4,15 +4,24 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 
   --color-brand: #e11d48;
-  --color-brand-dark: #be123c;
-  --color-brand-soft: #fdf2f5;
-  --color-page: #f6f7f9;
+  --color-brand-light: #f43f5e;
+  --color-brand-soft: rgba(225, 29, 72, 0.12);
+  --color-page: #0b0f19;
+  --color-card: #121826;
+  --color-line: rgba(255, 255, 255, 0.10);
+  --color-ink: #e5e7eb;
+  --color-muted: #9ca3af;
+  --color-ok: #10b981;
+  --color-warn: #f59e0b;
+}
+
+.light {
+  --color-page: #fafafb;
   --color-card: #ffffff;
-  --color-line: #e7e9ee;
-  --color-ink: #0f172a;
-  --color-muted: #6b7280;
-  --color-ok: #059669;
-  --color-warn: #b45309;
+  --color-line: #e5e5ea;
+  --color-ink: #17171b;
+  --color-muted: #707077;
+  --color-brand-soft: #fdf2f5;
 }
 
 html {
@@ -30,6 +39,62 @@ body {
 }
 
 ::selection {
-  background: #fecdd3;
-  color: #881337;
+  background: #e11d4859;
+  color: #ffffff;
+}
+
+:focus-visible {
+  outline: 2px solid #e11d48;
+  outline-offset: 2px;
+}
+
+@keyframes lattice-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes lattice-glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 rgba(225, 29, 72, 0);
+  }
+  50% {
+    box-shadow: 0 0 40px -10px rgba(225, 29, 72, 0.35);
+  }
+}
+
+.lattice-reveal {
+  animation: lattice-fade-up 0.5s ease-out both;
+}
+
+.lattice-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(12px);
+}
+
+.light .lattice-card {
+  background: #ffffff;
+  border: 1px solid #e5e5ea;
+  backdrop-filter: none;
+}
+
+.lattice-glow:hover {
+  box-shadow: 0 0 40px -10px rgba(225, 29, 72, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
