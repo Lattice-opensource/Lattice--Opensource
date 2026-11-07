@@ -36,3 +36,5 @@ backend/**/*.db-shm
 backend/.env
 backend/.env.*
 !backend/.env.example
+__pycache__/
+*.FCBak

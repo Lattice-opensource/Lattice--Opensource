@@ -1,0 +1,196 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #141416;
+  --bg-soft: #19191C;
+  --surface: #1D1D21;
+  --surface-2: #26262B;
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --text: #F5F5F5;
+  --text-muted: #9C9CA4;
+  --text-faint: #6E6E76;
+  --accent: #E11D48;
+  --accent-soft: rgba(225, 29, 72, 0.14);
+  --accent-contrast: #FFFFFF;
+  --green: #34D399;
+  --green-soft: rgba(52, 211, 153, 0.14);
+  --amber: #FBBF24;
+  --amber-soft: rgba(251, 191, 36, 0.14);
+}
+
+[data-theme="light"] {
+  --bg: #FAFAFB;
+  --bg-soft: #F3F3F5;
+  --surface: #FFFFFF;
+  --surface-2: #EDEDF0;
+  --border: #E7E7EA;
+  --border-strong: #D7D7DC;
+  --text: #17171B;
+  --text-muted: #707077;
+  --text-faint: #A2A2AA;
+  --accent: #C81E42;
+  --accent-soft: rgba(200, 30, 66, 0.10);
+  --accent-contrast: #FFFFFF;
+  --green: #0FA968;
+  --green-soft: rgba(15, 169, 104, 0.10);
+  --amber: #B45309;
+  --amber-soft: rgba(180, 83, 9, 0.10);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+  }
+
+  .card-hover {
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .card-hover:hover {
+    border-color: var(--border-strong);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 9px 16px;
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+    cursor: pointer;
+  }
+  .btn:active { transform: scale(0.98); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+  .btn-primary:hover { filter: brightness(1.1); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-ghost {
+    background: transparent;
+    border-color: var(--border);
+    color: var(--text);
+  }
+  .btn-ghost:hover { background: var(--surface-2); }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: all 0.15s ease;
+  }
+  .nav-item:hover { color: var(--text); background: var(--surface-2); }
+  .nav-item.active { color: var(--text); background: var(--surface-2); }
+
+  .label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  .text-muted { color: var(--text-muted); }
+  .text-faint { color: var(--text-faint); }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+
+  .switch {
+    position: relative;
+    width: 38px;
+    height: 22px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .switch::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    background: var(--text-faint);
+    transition: all 0.2s ease;
+  }
+  .switch.on {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .switch.on::after {
+    left: 18px;
+    background: #fff;
+  }
+
+  .input {
+    background: var(--surface-2);
+    border: 1px solid transparent;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .input:focus { border-color: var(--accent); }
+
+  .bar {
+    background: var(--accent);
+    border-radius: 3px 3px 0 0;
+  }
+  .bar.off { background: var(--surface-2); }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 999px;
+  }
+}
