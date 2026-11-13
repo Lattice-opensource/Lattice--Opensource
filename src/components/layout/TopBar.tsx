@@ -34,7 +34,7 @@ export function TopBar({ onMenuClick }: TopBarProps) {
               L
             </span>
             <div className="leading-tight">
-              <p className="text-sm font-black tracking-[0.18em] text-gradient">LATTICE</p>
+              <p className="text-sm font-black tracking-[0.18em] text-brand">LATTICE</p>
               <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted">
                 Smart Energy
               </p>
