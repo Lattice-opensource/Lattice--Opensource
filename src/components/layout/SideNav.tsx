@@ -49,12 +49,12 @@ export function SideNav({ open, onClose }: SideNavProps) {
         />
       ) : null}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-line bg-transparent backdrop-blur-xl transition-transform md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-brand-dark bg-brand transition-transform md:static md:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex items-center justify-between border-b border-line px-4 py-4">
-          <p className="text-sm font-black tracking-[0.18em] text-ink">LATTICE</p>
+          <p className="text-sm font-black tracking-[0.18em] text-white">LATTICE</p>
           <button
             type="button"
             onClick={onClose}
@@ -75,7 +75,7 @@ export function SideNav({ open, onClose }: SideNavProps) {
           {sections.map((section, idx) => (
             <div key={section.title}>
               {idx > 0 ? <div className="my-3 border-t border-line" /> : null}
-              <p className="px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">
+              <p className="px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/70">
                 {section.title}
               </p>
               <div className="mt-2 space-y-1">
@@ -86,7 +86,7 @@ export function SideNav({ open, onClose }: SideNavProps) {
                     onClick={onClose}
                     className={({ isActive }) =>
                       `block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                        isActive ? "bg-transparent text-brand" : "text-muted hover:bg-transparent hover:text-ink"
+                        isActive ? "bg-white/20 text-white" : "text-white/80 hover:bg-white/10 hover:text-white"
                       }`
                     }
                   >
