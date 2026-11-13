@@ -9,6 +9,7 @@ import { ErrorState } from "../components/ui/ErrorState";
 import { SitePowerChart } from "../components/dashboard/SitePowerChart";
 import { DeviceList } from "../components/dashboard/DeviceList";
 import { ZoneDonut } from "../components/dashboard/ZoneDonut";
+import { ZoneTabs } from "../components/dashboard/ZoneTabs";
 import { TopConsumers } from "../components/dashboard/TopConsumers";
 import { ApplianceRanking, rankAppliances, type AppliancePeriod } from "../components/dashboard/ApplianceRanking";
 import { resolveWholeSite } from "../data/api/normalize";
@@ -238,6 +239,10 @@ export function DashboardPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card eyebrow="05 · Zones" title="Usage by zone">
           <ZoneDonut rooms={overview.rooms} />
+
+        <Card eyebrow="05b - Zone tabs" title="Zones">
+          <ZoneTabs rooms={overview.rooms} devices={overview.devices} />
+        </Card>
         </Card>
 
         <Card eyebrow="06 · Highest consumers" title="By current power">
@@ -318,4 +323,5 @@ export function DashboardPage() {
     </div>
   );
 }
+
 
