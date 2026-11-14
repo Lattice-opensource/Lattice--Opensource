@@ -32,9 +32,11 @@ export async function registerConfigRoute(app: FastifyInstance): Promise<void> {
     const hasSimulated = devices.some((d) => d.isSimulated);
     const hasReal = devices.some((d) => !d.isSimulated);
     const mode = hasSimulated && hasReal ? 'mixed' : hasSimulated ? 'simulated' : 'live';
-    const notice = hasSimulated
-      ? 'All readings are SIMULATED development data. They are not real sensor measurements.'
-      : 'Readings come from connected devices.';
+    const notice = hasSimulated && hasReal
+      ? 'Data includes both SIMULATED development data and real device readings.'
+      : hasSimulated
+        ? 'All readings are SIMULATED development data. They are not real sensor measurements.'
+        : 'Readings come from connected devices.';
     reply.send({
       data: {
         siteId: q.siteId,

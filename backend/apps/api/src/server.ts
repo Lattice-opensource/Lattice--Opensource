@@ -3,7 +3,8 @@ import { openDatabase, closeDatabase } from './db/index.js';
 import { seedDatabase } from './db/seed.js';
 import { startLiveWriter, stopLiveWriter } from './services/simulator.js';
 import { startMqttIngestion } from './services/mqtt.js';
-import { env, simulationEnabled, mqttEnabled, redactSecret } from './config.js';
+import { startTuyaIngestion } from './services/tuya.js';
+import { env, simulationEnabled, mqttEnabled, tuyaEnabled, redactSecret } from './config.js';
 
 async function main(): Promise<void> {
   const db = openDatabase();
@@ -21,11 +22,15 @@ async function main(): Promise<void> {
   const mqttHandle = startMqttIngestion(db);
   console.log(`[lattice] mqtt: ${mqttEnabled ? 'enabled' : 'disabled'} (broker ${mqttEnabled ? (env.MQTT_BROKER_URL ?? '(unset)') : '(n/a)'}, password ${redactSecret(env.MQTT_PASSWORD)})`);
 
+  const tuyaHandle = startTuyaIngestion(db);
+  console.log(`[lattice] tuya: ${tuyaEnabled ? 'enabled' : 'disabled'} (device ${tuyaEnabled ? (env.TUYA_DEVICE_ID ?? '(unset)') : '(n/a)'}, access id ${redactSecret(env.TUYA_ACCESS_ID)})`);
+
   const app = await buildApp();
   const close = async () => {
     liveStop();
     stopLiveWriter();
     mqttHandle.stop();
+    tuyaHandle.stop();
     await app.close();
     closeDatabase();
   };

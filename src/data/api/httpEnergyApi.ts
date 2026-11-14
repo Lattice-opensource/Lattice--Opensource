@@ -75,6 +75,28 @@ export class HttpEnergyApi implements EnergyApi {
   async getRooms(filters: { siteId?: string; buildingId?: string; floorId?: string } = {}): Promise<Room[]> { return this.list<Room>("/api/rooms", filters); }
   async getCircuits(filters: { siteId?: string; buildingId?: string; floorId?: string; roomId?: string } = {}): Promise<Circuit[]> { return this.list<Circuit>("/api/circuits", filters); }
   async getDevices(filters: { siteId?: string; buildingId?: string; floorId?: string; roomId?: string; circuitId?: string } = {}): Promise<Device[]> { return this.list<Device>("/api/devices", filters); }
+  async getDevice(deviceId: string): Promise<Device> {
+    const body = await request<ItemResponse<Device>>(`/api/devices/${encodeURIComponent(deviceId)}`);
+    return body.data;
+  }
+  async getDeviceReadings(deviceId: string, from?: string, to?: string): Promise<EnergyReading[]> {
+    const q = new URLSearchParams();
+    q.set("deviceId", deviceId);
+    if (from) q.set("from", from);
+    if (to) q.set("to", to);
+    q.set("order", "asc");
+    q.set("limit", "1000");
+    const body = await request<ListResponse<ReadingDto>>(`/api/readings?${q.toString()}`);
+    return (body.data ?? []).map((r) => ({
+      timestamp: r.timestamp ?? "",
+      powerW: Number.isFinite(r.powerW) ? r.powerW : 0,
+      energyKwh: Number.isFinite(r.energyKwh) ? (r.energyKwh as number) : 0,
+      costInr: undefined,
+      isSimulated: r.isSimulated !== false,
+      deviceId: r.deviceId,
+      voltageV: r.voltageV ?? null,
+    }));
+  }
 
   private async list<T>(path: string, params: Record<string, string | undefined>): Promise<T[]> {
     const query = new URLSearchParams();
@@ -152,6 +174,7 @@ export class HttpEnergyApi implements EnergyApi {
     floorId?: string;
     roomId?: string;
     circuitId?: string;
+    deviceId?: string;
     from?: string;
     to?: string;
   } = {}): Promise<Summary> {

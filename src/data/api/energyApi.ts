@@ -10,6 +10,7 @@ export interface EnergyReading {
   costInr?: number;
   isSimulated?: boolean;
   deviceId?: string;
+  voltageV?: number | null;
 }
 
 export interface SiteSummary {
@@ -100,12 +101,15 @@ export interface EnergyApi {
   getRecentReadings(siteId: string, limit: number): Promise<EnergyReading[]>;
   getDataSource?(): Promise<DataSourceInfo>;
   getDeviceSummaries?(siteId?: string, from?: string, to?: string): Promise<DeviceSummary[]>;
+  getDevice?(deviceId: string): Promise<Device>;
+  getDeviceReadings?(deviceId: string, from?: string, to?: string): Promise<EnergyReading[]>;
   getSummary?(filters?: {
     siteId?: string;
     buildingId?: string;
     floorId?: string;
     roomId?: string;
     circuitId?: string;
+    deviceId?: string;
     from?: string;
     to?: string;
   }): Promise<Summary>;
@@ -164,3 +168,4 @@ export interface EnergyApi {
   }): Promise<Report>;
 }
 import type { Building, Circuit, Device, Floor, Room } from "@lattice/contracts";
+export type { Device };

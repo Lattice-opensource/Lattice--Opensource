@@ -48,6 +48,116 @@ body {
   outline-offset: 2px;
 }
 
+/* Hero dotted grid + ambient rose glows */
+.lattice-hero {
+  position: relative;
+  overflow: hidden;
+  background-color: #0b0f19;
+}
+
+.lattice-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.09) 1.1px, rgba(0, 0, 0, 0) 1.2px);
+  background-size: 28px 28px;
+  z-index: 0;
+}
+
+.lattice-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(960px 640px at 85% -10%, rgba(225, 29, 72, 0.14), rgba(0, 0, 0, 0) 60%),
+    radial-gradient(800px 560px at -10% 30%, rgba(225, 29, 72, 0.07), rgba(0, 0, 0, 0) 60%);
+  z-index: 0;
+}
+
+.lattice-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.light .lattice-hero {
+  background-color: #fafafb;
+}
+
+.light .lattice-hero::before {
+  background-image: radial-gradient(circle, rgba(11, 15, 25, 0.06) 1.1px, rgba(0, 0, 0, 0) 1.2px);
+}
+
+.light .lattice-hero::after {
+  background:
+    radial-gradient(960px 640px at 85% -10%, rgba(225, 29, 72, 0.08), rgba(0, 0, 0, 0) 60%),
+    radial-gradient(800px 560px at -10% 30%, rgba(225, 29, 72, 0.04), rgba(0, 0, 0, 0) 60%);
+}
+
+/* Hero card glass */
+.lattice-hero-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 60px -15px rgba(225, 29, 72, 0.45);
+}
+
+.light .lattice-hero-card {
+  background: #ffffff;
+  border: 1px solid #e5e5ea;
+  backdrop-filter: none;
+  box-shadow: 0 0 40px -15px rgba(225, 29, 72, 0.15);
+}
+
+/* Hero ink that adapts */
+.lattice-hero-ink {
+  color: #ffffff;
+}
+
+.light .lattice-hero-ink {
+  color: #17171b;
+}
+
+.lattice-hero-muted {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.light .lattice-hero-muted {
+  color: #707077;
+}
+
+/* Gradient text for two-tone headline */
+.lattice-grad-text {
+  background: linear-gradient(to right, #e11d48, #fda4af);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Sub-metric boxes inside hero card */
+.lattice-subbox {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.75rem;
+}
+
+.light .lattice-subbox {
+  background: rgba(11, 15, 25, 0.03);
+  border: 1px solid #e5e5ea;
+}
+
+/* Secondary metric strip */
+.lattice-strip {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.light .lattice-strip {
+  background: #ffffff;
+  border: 1px solid #e5e5ea;
+}
+
 @keyframes lattice-fade-up {
   from {
     opacity: 0;

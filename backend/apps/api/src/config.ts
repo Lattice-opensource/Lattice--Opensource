@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -33,6 +34,13 @@ const EnvSchema = z.object({
   MQTT_TOPIC_PREFIX: z.string().min(1).optional(),
   MQTT_CLIENT_ID: z.string().min(1).optional(),
   MQTT_QOS: z.coerce.number().int().min(0).max(2).optional(),
+  TUYA_ENABLED: z.string().optional(),
+  TUYA_ACCESS_ID: z.string().min(1).optional(),
+  TUYA_ACCESS_SECRET: z.string().min(1).optional(),
+  TUYA_BASE_URL: z.string().min(1).optional(),
+  TUYA_DEVICE_ID: z.string().min(1).optional(),
+  TUYA_DEVICE_IDS: z.string().min(1).optional(),
+  TUYA_POLL_INTERVAL_SECONDS: z.coerce.number().int().min(5).max(3600).optional(),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
@@ -44,10 +52,28 @@ function loadEnvFile(): void {
     path.resolve(API_ROOT, '..', '.env'),
   ];
   for (const p of candidates) {
+    let raw: string;
     try {
-      process.loadEnvFile(p);
+      raw = readFileSync(p, 'utf8');
     } catch {
       // File missing is expected; ignore.
+      continue;
+    }
+    for (const line of raw.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const eq = trimmed.indexOf('=');
+      if (eq < 0) continue;
+      const key = trimmed.slice(0, eq).trim();
+      if (!key || Object.prototype.hasOwnProperty.call(process.env, key)) continue;
+      let value = trimmed.slice(eq + 1).trim();
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
+        value = value.slice(1, -1);
+      }
+      process.env[key] = value;
     }
   }
 }
@@ -82,6 +108,17 @@ export const mqttPassword = env.MQTT_PASSWORD;
 export const mqttTopicPrefix = (env.MQTT_TOPIC_PREFIX ?? 'lattice/telemetry').replace(/\/$/, '');
 export const mqttClientId = env.MQTT_CLIENT_ID ?? 'lattice-api';
 export const mqttQos = (env.MQTT_QOS ?? 1) as 0 | 1 | 2;
+
+export const tuyaEnabled = parseBool(env.TUYA_ENABLED, false);
+export const tuyaAccessId = env.TUYA_ACCESS_ID;
+export const tuyaAccessSecret = env.TUYA_ACCESS_SECRET;
+export const tuyaBaseUrl = env.TUYA_BASE_URL;
+export const tuyaDeviceId = env.TUYA_DEVICE_ID;
+export const tuyaDeviceIds = (env.TUYA_DEVICE_IDS ?? env.TUYA_DEVICE_ID ?? '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+export const tuyaPollIntervalSeconds = env.TUYA_POLL_INTERVAL_SECONDS ?? 60;
 
 export const databasePath = env.DATABASE_PATH
   ? path.resolve(process.cwd(), env.DATABASE_PATH)

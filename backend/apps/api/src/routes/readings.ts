@@ -103,6 +103,7 @@ export async function registerReadingsRoute(app: FastifyInstance): Promise<void>
         floorId: z.string().min(1).max(64).optional(),
         roomId: z.string().min(1).max(64).optional(),
         circuitId: z.string().min(1).max(64).optional(),
+        deviceId: z.string().min(1).max(64).optional(),
         from: z.string().optional(),
         to: z.string().optional(),
       }),
@@ -125,7 +126,7 @@ export async function registerReadingsRoute(app: FastifyInstance): Promise<void>
       reply.code(400).send({ error: { code: 'VALIDATION_ERROR', message: 'Invalid from/to timestamp', requestId: req.id } });
       return;
     }
-    const summary = computeSummary(db, { siteId: q.siteId, buildingId: q.buildingId, floorId: q.floorId, roomId: q.roomId, circuitId: q.circuitId, from, to });
+    const summary = computeSummary(db, { siteId: q.siteId, buildingId: q.buildingId, floorId: q.floorId, roomId: q.roomId, circuitId: q.circuitId, deviceId: q.deviceId, from, to });
     reply.send({ data: summary, meta: { serverTime: new Date().toISOString() } });
   });
 

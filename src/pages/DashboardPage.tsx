@@ -7,9 +7,7 @@ import type { Alert } from "../data/api/energyApi";
 import { Spinner } from "../components/ui/Spinner";
 import { EmptyState } from "../components/ui/EmptyState";
 import { ErrorState } from "../components/ui/ErrorState";
-import { MetricTile } from "../components/ui/MetricTile";
 import { ChartPanel } from "../components/ui/ChartPanel";
-import { StatusPill } from "../components/ui/StatusPill";
 import { SitePowerChart } from "../components/dashboard/SitePowerChart";
 import { DeviceList } from "../components/dashboard/DeviceList";
 import { RoomCards } from "../components/dashboard/RoomCards";
@@ -117,6 +115,14 @@ export function DashboardPage() {
   const chartPoints = chartState.status === "ready" ? chartState.data : overview.series;
   const alerts = alertsState.status === "ready" ? alertsState.data : [];
 
+  const statusCounts = overview.devices.reduce(
+    (acc, d) => {
+      acc[d.status] = (acc[d.status] ?? 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+
   return (
     <div className="space-y-6 lattice-reveal">
       {state.error ? (
@@ -125,63 +131,123 @@ export function DashboardPage() {
         </div>
       ) : null}
 
-      <section className="grid gap-4 xl:grid-cols-[1.35fr_1fr]">
-        <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-brand/15 via-white/[0.03] to-transparent p-6 shadow-[0_0_60px_-20px_rgba(225,29,72,0.35)] backdrop-blur">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-brand-light">Live energy overview</p>
-              <h1 className="mt-2 text-4xl font-black tracking-tight text-white md:text-5xl">{overview.siteName}</h1>
-              <p className="mt-2 text-sm text-gray-400">
-                {overview.onlineDeviceCount} of {overview.deviceCount} devices reporting · {overview.rooms.length} spaces
-              </p>
+      {/* HERO */}
+      <section className="lattice-hero rounded-3xl p-6 md:p-10">
+        <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-center">
+          {/* Left: eyebrow + headline + supporting */}
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/10 px-3.5 py-1.5 text-[12px] font-semibold uppercase tracking-wider text-brand-light">
+              <span className="h-1.5 w-1.5 rounded-full bg-brand-light" />
+              Live energy overview
+            </span>
+            <h1 className="mt-6 text-4xl font-black leading-[1.05] tracking-tight lattice-hero-ink md:text-6xl">
+              {overview.siteName}
+              <br />
+              <span className="lattice-grad-text">Energy overview.</span>
+            </h1>
+            <p className="mt-4 text-sm lattice-hero-muted md:text-base">
+              {overview.onlineDeviceCount} of {overview.deviceCount} devices reporting · {overview.rooms.length} spaces monitored
+              {meterBased ? " · site meter" : " · device sum"} · updated {new Date(overview.lastUpdated).toLocaleTimeString()}
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-semibold ${dataSource.simulated ? "border border-amber-500/30 bg-amber-500/10 text-amber-300" : "border border-emerald-500/30 bg-emerald-500/10 text-emerald-400"}`}>
+                <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                {dataSource.simulated ? "simulated" : "live"} data
+              </span>
+              <span className="inline-flex items-center rounded-full border border-white/15 px-3.5 py-1.5 text-[12px] font-semibold lattice-hero-muted">
+                {overview.timezone}
+              </span>
             </div>
-            <div className="text-right">
-              <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold ${dataSource.simulated ? "bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/30" : "bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30"}`}>
+          </div>
+
+          {/* Right: main energy card */}
+          <div className="lattice-hero-card rounded-3xl p-6">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">Live power</p>
+                <p className="mt-1 text-xs text-muted">{meterBased ? "site meter" : "summed devices"}</p>
+              </div>
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold ${dataSource.simulated ? "border border-amber-500/30 bg-amber-500/10 text-amber-300" : "border border-emerald-500/30 bg-emerald-500/10 text-emerald-400"}`}>
                 <span className="h-1.5 w-1.5 rounded-full bg-current" />
                 {dataSource.simulated ? "simulated" : "live"}
               </span>
-              <p className="mt-2 text-xs text-gray-500">Updated {new Date(overview.lastUpdated).toLocaleTimeString()}</p>
+            </div>
+
+            <div className="mt-4 flex items-baseline gap-2">
+              <span className="text-5xl font-black tabular-nums tracking-tight lattice-hero-ink md:text-6xl">
+                {(wholeSite.powerW / 1000).toFixed(2)}
+              </span>
+              <span className="text-2xl font-bold text-brand-light">kW</span>
+            </div>
+
+            <div className="mt-4">
+              <div className="mb-3 flex gap-2">
+                {(["24h", "7d"] as const).map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => setChartPeriod(option)}
+                    className={`rounded-full px-3.5 py-1.5 text-[11px] font-semibold transition-all ${chartPeriod === option ? "bg-brand text-white shadow-[0_0_30px_-8px_rgba(225,29,72,0.6)]" : "border border-white/10 text-muted hover:text-ink"}`}
+                  >
+                    {option === "24h" ? "24 hours" : "7 days"}
+                  </button>
+                ))}
+              </div>
+              {chartState.status === "loading" ? (
+                <Spinner label="Loading chart" />
+              ) : (
+                <SitePowerChart points={chartPoints} timezone={overview.timezone} variant={chartPeriod === "24h" ? "bars" : "line"} />
+              )}
+              <p className="mt-2 text-xs text-muted">
+                {meterBased ? "Site meter readings for the selected period." : "Summed device readings for the selected period."}
+              </p>
+            </div>
+
+            <div className="mt-5 grid grid-cols-3 gap-3">
+              <div className="lattice-subbox p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">Energy today</p>
+                <p className="mt-1 text-base font-bold tabular-nums lattice-hero-ink">{wholeSite.energyKwh.toFixed(2)} kWh</p>
+              </div>
+              <div className="lattice-subbox p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">Cost today</p>
+                <p className="mt-1 text-base font-bold tabular-nums text-emerald-400">{currencySymbol}{wholeSite.costInr.toFixed(2)}</p>
+              </div>
+              <div className="lattice-subbox p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">Peak power</p>
+                <p className="mt-1 text-base font-bold tabular-nums text-amber-300">{(overview.peak.powerW / 1000).toFixed(2)} kW</p>
+                <p className="mt-0.5 text-[10px] text-muted">{overview.peak.at ? new Date(overview.peak.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "no data"}</p>
+              </div>
             </div>
           </div>
-
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <MetricTile label="Live power" value={`${Math.round(wholeSite.powerW)} W`} sub={meterBased ? "site meter" : "device sum"} accent="brand" />
-            <MetricTile label="Energy today" value={`${wholeSite.energyKwh.toFixed(2)} kWh`} sub="since midnight" accent="neutral" />
-            <MetricTile label="Cost today" value={`${currencySymbol}${wholeSite.costInr.toFixed(0)}`} sub="estimated" accent="emerald" />
-            <MetricTile label="Peak power" value={`${Math.round(overview.peak.powerW)} W`} sub={overview.peak.at ? new Date(overview.peak.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "no data"} accent="amber" />
-          </div>
-        </div>
-
-        <div className="grid gap-4">
-          <MetricTile label="Average power" value={`${Math.round(overview.averagePowerW)} W`} sub="across today's readings" />
-          <MetricTile label="Devices online" value={`${overview.onlineDeviceCount} / ${overview.deviceCount}`} sub="reporting now" />
-          <MetricTile label="Spaces" value={`${overview.rooms.length}`} sub="monitored areas" />
-          <MetricTile label="Active alerts" value={`${alerts.length}`} sub="unresolved" accent={alerts.length > 0 ? "amber" : "emerald"} />
         </div>
       </section>
 
-      <ChartPanel title="Power consumption" eyebrow="01 · Today's curve">
-        <div className="mb-3 flex gap-2">
-          {(["24h", "7d"] as const).map((option) => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => setChartPeriod(option)}
-              className={`rounded-lg px-3 py-1 text-xs font-semibold transition-colors ${chartPeriod === option ? "bg-brand text-white" : "text-muted hover:text-ink"}`}
-            >
-              {option === "24h" ? "24 hours" : "7 days"}
-            </button>
-          ))}
+      {/* Secondary metric strip */}
+      <section className="lattice-strip rounded-2xl px-5 py-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">Average power</p>
+            <p className="mt-1 text-lg font-bold tabular-nums text-ink">{Math.round(overview.averagePowerW)} W</p>
+          </div>
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">Devices online</p>
+            <p className="mt-1 text-lg font-bold tabular-nums text-ink">{overview.onlineDeviceCount} / {overview.deviceCount}</p>
+          </div>
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">Spaces</p>
+            <p className="mt-1 text-lg font-bold tabular-nums text-ink">{overview.rooms.length}</p>
+          </div>
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">Active alerts</p>
+            <p className={`mt-1 text-lg font-bold tabular-nums ${alerts.length > 0 ? "text-amber-300" : "text-emerald-400"}`}>{alerts.length}</p>
+          </div>
         </div>
-        {chartState.status === "loading" ? (
-          <Spinner label="Loading chart" />
-        ) : (
-          <SitePowerChart points={chartPoints} timezone={overview.timezone} />
-        )}
-        <p className="mt-2 text-xs text-muted">
-          {meterBased ? "Site meter readings for the selected period." : "Summed device readings for the selected period."}
-        </p>
-      </ChartPanel>
+      </section>
+
+      {/* Fleet summary */}
+      <p className="text-xs text-muted">
+        Fleet: {statusCounts.online ?? 0} online · {statusCounts.stale ?? 0} stale · {statusCounts.offline ?? 0} offline · {statusCounts.unknown ?? 0} unknown
+      </p>
 
       <section className="grid gap-4 lg:grid-cols-2">
         <ChartPanel title="Highest consumers" eyebrow="02 · By current power">
@@ -195,11 +261,6 @@ export function DashboardPage() {
       <section className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
         <ChartPanel title="Device status" eyebrow="04 · Fleet">
           <DeviceList devices={overview.devices} />
-          <div className="mt-4 flex flex-wrap gap-2">
-            {overview.devices.map((d) => (
-              <StatusPill key={d.deviceId} status={d.status} />
-            ))}
-          </div>
         </ChartPanel>
         <ChartPanel title="Recent alerts" eyebrow="05 · Anomalies">
           {alerts.length === 0 ? (

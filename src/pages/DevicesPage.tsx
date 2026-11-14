@@ -25,7 +25,8 @@ export function DevicesPage() {
     return { devices, readings, timezone: overview.timezone };
   }, []);
 
-  const { state, reload } = useApiResource<DevicesPayload>(loader);
+  const POLL_INTERVAL_MS = 10000;
+  const { state, reload } = useApiResource<DevicesPayload>(loader, POLL_INTERVAL_MS);
 
   return (
     <div className="space-y-5">

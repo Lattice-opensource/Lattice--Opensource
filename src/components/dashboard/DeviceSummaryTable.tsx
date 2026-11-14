@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import type { DeviceSummary } from "../../data/api/energyApi";
 
 interface DeviceSummaryTableProps {
@@ -28,9 +29,14 @@ export function DeviceSummaryTable({ devices }: DeviceSummaryTableProps) {
         </thead>
         <tbody className="divide-y divide-line">
           {devices.map((d) => (
-            <tr key={d.deviceId}>
+            <tr key={d.deviceId} className="transition-colors hover:bg-white/5">
               <td className="py-3 pr-4">
-                <p className="font-medium text-ink">{d.name}</p>
+                <Link
+                to={`/devices/${encodeURIComponent(d.deviceId)}`}
+                className="font-medium text-ink hover:text-brand-light focus:outline-none focus:ring-2 focus:ring-brand/40 rounded"
+              >
+                {d.name}
+              </Link>
                 {d.isSimulated ? (
                   <p className="text-[11px] font-medium text-warn">simulated</p>
                 ) : null}

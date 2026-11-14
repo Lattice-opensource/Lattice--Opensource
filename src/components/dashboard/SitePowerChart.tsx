@@ -6,25 +6,11 @@ interface SitePowerChartProps {
   points: PowerPoint[];
   timezone: string;
   title?: string;
+  variant?: "line" | "bars";
 }
 
 const HEIGHT = 240;
-const PADDING = { top: 16, right: 16, bottom: 28, left: 52 };
-
-function buildSmoothPath(xs: number[], ys: number[]): string {
-  if (xs.length === 0) return "";
-  if (xs.length === 1) return `M ${xs[0]} ${ys[0]}`;
-  let d = `M ${xs[0]} ${ys[0]}`;
-  for (let i = 0; i < xs.length - 1; i++) {
-    const x0 = xs[i];
-    const y0 = ys[i];
-    const x1 = xs[i + 1];
-    const y1 = ys[i + 1];
-    const cx = (x0 + x1) / 2;
-    d += ` C ${cx} ${y0}, ${cx} ${y1}, ${x1} ${y1}`;
-  }
-  return d;
-}
+const PADDING = { top: 16, right: 16, bottom: 28, left: 48 };
 
 function formatTime(iso: string, timezone: string): string {
   return new Intl.DateTimeFormat("en-GB", {
@@ -60,7 +46,22 @@ function buildClockTicks(startMs: number, endMs: number, timezone: string): Cloc
   return ticks;
 }
 
-export function SitePowerChart({ points, timezone, title = "Whole-site power" }: SitePowerChartProps) {
+function buildSmoothPath(xs: number[], ys: number[]): string {
+  if (xs.length === 0) return "";
+  if (xs.length === 1) return `M ${xs[0]} ${ys[0]}`;
+  let d = `M ${xs[0]} ${ys[0]}`;
+  for (let i = 0; i < xs.length - 1; i++) {
+    const x0 = xs[i];
+    const y0 = ys[i];
+    const x1 = xs[i + 1];
+    const y1 = ys[i + 1];
+    const cx = (x0 + x1) / 2;
+    d += ` C ${cx} ${y0}, ${cx} ${y1}, ${x1} ${y1}`;
+  }
+  return d;
+}
+
+export function SitePowerChart({ points, timezone, title = "Whole-site power", variant = "line" }: SitePowerChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(800);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
@@ -108,15 +109,130 @@ export function SitePowerChart({ points, timezone, title = "Whole-site power" }:
     );
   }
 
+  const xTicks = buildClockTicks(geometry.startMs, geometry.endMs, timezone);
+  const hovered = hoverIndex !== null ? points[hoverIndex] : null;
+
+  if (variant === "bars") {
+    const barCount = points.length;
+    const gap = 2;
+    const totalGap = Math.max(barCount - 1, 0) * gap;
+    const barWidth = Math.max((geometry.innerWidth - totalGap) / Math.max(barCount, 1), 2);
+    const barX = (i: number) => PADDING.left + i * (barWidth + gap);
+
+    return (
+      <div ref={containerRef} className="relative w-full">
+        <svg
+          width={width}
+          height={HEIGHT}
+          role="img"
+          aria-label={`${title} over time, ${points.length} readings`}
+          onMouseLeave={() => setHoverIndex(null)}
+          onMouseMove={(event) => {
+            const rect = event.currentTarget.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            let nearest = 0;
+            let best = Infinity;
+            points.forEach((_, i) => {
+              const dist = Math.abs(barX(i) + barWidth / 2 - x);
+              if (dist < best) {
+                best = dist;
+                nearest = i;
+              }
+            });
+            setHoverIndex(nearest);
+          }}
+        >
+          <defs>
+            <linearGradient id="lattice-bar-fill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f43f5e" stopOpacity="1" />
+              <stop offset="100%" stopColor="#e11d48" stopOpacity="0.6" />
+            </linearGradient>
+            <linearGradient id="lattice-bar-fill-dim" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.55" />
+              <stop offset="100%" stopColor="#e11d48" stopOpacity="0.25" />
+            </linearGradient>
+          </defs>
+
+          {[0, 0.5, 1].map((f) => (
+            <line
+              key={f}
+              x1={PADDING.left}
+              x2={PADDING.left + geometry.innerWidth}
+              y1={geometry.y(geometry.niceMax * f)}
+              y2={geometry.y(geometry.niceMax * f)}
+              stroke="rgba(255,255,255,0.06)"
+              strokeWidth="1"
+            />
+          ))}
+
+          {points.map((p, i) => {
+            const v = p.powerW;
+            const h = Math.max(((v / geometry.niceMax) * geometry.innerHeight), 1);
+            const y = PADDING.top + geometry.innerHeight - h;
+            const isHovered = hoverIndex === i;
+            return (
+              <rect
+                key={i}
+                x={barX(i)}
+                y={y}
+                width={barWidth}
+                height={h}
+                rx={Math.min(barWidth / 2, 4)}
+                ry={Math.min(barWidth / 2, 4)}
+                fill={isHovered ? "url(#lattice-bar-fill)" : "url(#lattice-bar-fill-dim)"}
+                className="transition-opacity"
+              />
+            );
+          })}
+
+          {[0, geometry.niceMax / 2, geometry.niceMax].map((tick) => (
+            <text
+              key={tick}
+              x={PADDING.left - 6}
+              y={geometry.y(tick) + 3}
+              textAnchor="end"
+              className="fill-muted text-[9px]"
+            >
+              {tick >= 1000 ? `${(tick / 1000).toFixed(1)}k` : Math.round(tick)}
+            </text>
+          ))}
+
+          {xTicks.map((tick) => (
+            <text
+              key={tick.atMs}
+              x={geometry.xAtTime(tick.atMs)}
+              y={HEIGHT - 8}
+              textAnchor="middle"
+              className="fill-muted text-[9px]"
+            >
+              {tick.label}
+            </text>
+          ))}
+        </svg>
+
+        {hovered && hoverIndex !== null ? (
+          <div
+            className="pointer-events-none absolute z-10 -translate-x-1/2 rounded-lg border border-white/10 bg-card/95 px-2.5 py-1.5 text-xs shadow-lg backdrop-blur"
+            style={{
+              left: Math.min(Math.max(barX(hoverIndex) + barWidth / 2, 50), width - 50),
+              top: Math.max(geometry.y(hovered.powerW) - 48, 0),
+            }}
+          >
+            <p className="font-semibold text-ink">{Math.round(hovered.powerW)} W</p>
+            <p className="text-muted">{formatTime(hovered.timestamp, timezone)}</p>
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  // line variant (existing)
   const xs = points.map((_, i) => geometry.x(i));
   const ys = points.map((p) => geometry.y(p.powerW));
   const linePath = buildSmoothPath(xs, ys);
   const areaPath = `${linePath} L ${xs[xs.length - 1]} ${PADDING.top + geometry.innerHeight} L ${xs[0]} ${PADDING.top + geometry.innerHeight} Z`;
 
   const yTicks = [0, 0.5, 1].map((f) => Math.round(geometry.niceMax * f));
-  const xTicks = buildClockTicks(geometry.startMs, geometry.endMs, timezone);
-
-  const hovered = hoverIndex !== null ? points[hoverIndex] : null;
 
   return (
     <div ref={containerRef} className="relative w-full">
@@ -155,7 +271,7 @@ export function SitePowerChart({ points, timezone, title = "Whole-site power" }:
               x2={PADDING.left + geometry.innerWidth}
               y1={geometry.y(tick)}
               y2={geometry.y(tick)}
-              stroke="#eceef2"
+              stroke="rgba(255,255,255,0.06)"
               strokeWidth="1"
             />
             <text
@@ -164,7 +280,7 @@ export function SitePowerChart({ points, timezone, title = "Whole-site power" }:
               textAnchor="end"
               className="fill-muted text-[10px]"
             >
-              {tick}
+              {tick >= 1000 ? `${(tick / 1000).toFixed(1)}k` : tick}
             </text>
           </g>
         ))}
@@ -204,7 +320,7 @@ export function SitePowerChart({ points, timezone, title = "Whole-site power" }:
 
       {hovered && hoverIndex !== null ? (
         <div
-          className="pointer-events-none absolute z-10 -translate-x-1/2 rounded-lg border border-line bg-card px-2.5 py-1.5 text-xs shadow-sm"
+          className="pointer-events-none absolute z-10 -translate-x-1/2 rounded-lg border border-white/10 bg-card px-2.5 py-1.5 text-xs shadow-sm backdrop-blur"
           style={{
             left: Math.min(Math.max(xs[hoverIndex], 60), width - 60),
             top: Math.max(ys[hoverIndex] - 48, 0),

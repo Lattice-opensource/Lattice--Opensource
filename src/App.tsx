@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { AppShell } from "./components/layout/AppShell";
 import { DashboardPage } from "./pages/DashboardPage";
 import { DevicesPage } from "./pages/DevicesPage";
+import { default as DeviceDetailsPage } from "./pages/DeviceDetailsPage";
 import { RoomsPage } from "./pages/RoomsPage";
 import { CampusPage } from "./pages/CampusPage";
 import { AlertsPage } from "./pages/AlertsPage";
@@ -14,6 +15,7 @@ export default function App() {
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/devices" element={<DevicesPage />} />
+<Route path="/devices/:deviceId" element={<DeviceDetailsPage />} />
         <Route path="/rooms" element={<RoomsPage />} />
         <Route path="/campus" element={<CampusPage />} />
         <Route path="/alerts" element={<AlertsPage />} />

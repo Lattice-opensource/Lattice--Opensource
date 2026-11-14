@@ -51,6 +51,25 @@ describe('site meter selection', () => {
   it('returns no totals when no readings are available', () => {
     expect(siteTotalReadings(meters, [])).toEqual([]);
   });
+
+  it('does not treat a real (non-meter) device as the site main meter', () => {
+    const mixedDevices = [
+      { id: 'main', roomId: null, category: 'other' },
+      { id: 'real-plug', roomId: null, category: 'appliance' },
+    ];
+    const readings = [{ deviceId: 'main' }, { deviceId: 'real-plug' }];
+    // simulated main meter wins; real plug is not double-counted into the site total
+    expect(siteTotalReadings(mixedDevices, readings)).toEqual([{ deviceId: 'main' }]);
+  });
+
+  it('sums sub-meters when no main meter is present, including real devices', () => {
+    const subDevices = [
+      { id: 'sub-a', roomId: 'room-a', category: 'lighting' },
+      { id: 'real-plug', roomId: null, category: 'appliance' },
+    ];
+    const readings = [{ deviceId: 'sub-a' }, { deviceId: 'real-plug' }];
+    expect(siteTotalReadings(subDevices, readings)).toHaveLength(2);
+  });
 });
 
 describe('device freshness', () => {

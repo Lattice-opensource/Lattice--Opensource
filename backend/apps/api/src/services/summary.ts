@@ -15,6 +15,7 @@ export interface SummaryParams {
   floorId?: string;
   roomId?: string;
   circuitId?: string;
+  deviceId?: string;
   from: string;
   to: string;
 }
@@ -27,6 +28,7 @@ export function computeSummary(db: DatabaseSync, params: SummaryParams): Summary
     floorId: params.floorId,
     roomId: params.roomId,
     circuitId: params.circuitId,
+    deviceId: params.deviceId,
   };
   const devices = listDevices(db, filters);
   const deviceMap = new Map(devices.map((d) => [d.id, d]));
