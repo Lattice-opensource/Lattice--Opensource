@@ -29,7 +29,7 @@ export function NavLinks({ stacked = false, onNavigate }: NavLinksProps) {
   }
 
   return (
-    <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">
+    <nav className="flex items-center gap-1 flex-wrap" aria-label="Primary">
       {NAV_ITEMS.map((item) => (
         <NavLink
           key={item.to}

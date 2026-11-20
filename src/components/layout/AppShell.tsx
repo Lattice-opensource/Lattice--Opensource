@@ -1,21 +1,14 @@
-import { useState } from "react";
 import { Outlet } from "react-router-dom";
-import { SideNav } from "./SideNav";
 import { TopBar } from "./TopBar";
 import { DataSourceProvider } from "../../data/DataSourceContext";
 
 function Shell() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-
   return (
-    <div className="flex min-h-screen bg-page">
-      <SideNav open={mobileOpen} onClose={() => setMobileOpen(false)} />
-      <div className="flex min-h-screen flex-1 flex-col md:ml-0">
-        <TopBar onMenuClick={() => setMobileOpen(true)} />
-        <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-6 md:px-8 md:py-8">
-          <Outlet />
-        </main>
-      </div>
+    <div className="min-h-screen bg-page">
+      <TopBar />
+      <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-6 md:px-8 md:py-8">
+        <Outlet />
+      </main>
     </div>
   );
 }
