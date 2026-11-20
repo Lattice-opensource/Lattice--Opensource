@@ -32,8 +32,7 @@ const sections = [
   {
     title: "Settings",
     items: [
-      { to: "/settings", label: "Preferences" },
-      { to: "/settings", label: "Appearance" },
+      { to: "/settings", label: "Settings" },
     ],
   },
 ];
