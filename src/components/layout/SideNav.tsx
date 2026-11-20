@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
 
 interface SideNavProps {
   open: boolean;
@@ -38,6 +39,32 @@ const sections = [
 ];
 
 export function SideNav({ open, onClose }: SideNavProps) {
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
+
+  useEffect(() => {
+    const move = (e: MouseEvent) => {
+      if (!dragRef.current) return;
+      setPos({
+        x: dragRef.current.origX + (e.clientX - dragRef.current.startX),
+        y: dragRef.current.origY + (e.clientY - dragRef.current.startY),
+      });
+    };
+    const up = () => {
+      dragRef.current = null;
+    };
+    window.addEventListener("mousemove", move);
+    window.addEventListener("mouseup", up);
+    return () => {
+      window.removeEventListener("mousemove", move);
+      window.removeEventListener("mouseup", up);
+    };
+  }, []);
+
+  const startDrag = (e: any) => {
+    dragRef.current = { startX: e.clientX, startY: e.clientY, origX: pos.x, origY: pos.y };
+  };
+
   return (
     <>
       {open ? (
@@ -48,11 +75,15 @@ export function SideNav({ open, onClose }: SideNavProps) {
         />
       ) : null}
       <aside
+        style={{ transform: `translate(${pos.x}px, ${pos.y}px)` }}
         className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-brand-dark bg-brand transition-transform ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex items-center justify-between border-b border-line px-4 py-4">
+        <div
+          className="flex items-center justify-between border-b border-line px-4 py-4 cursor-move select-none"
+          onMouseDown={startDrag}
+        >
           <p className="text-sm font-black tracking-[0.18em] text-white">LATTICE</p>
           <button
             type="button"
