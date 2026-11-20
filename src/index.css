@@ -20,13 +20,15 @@
 }
 
 html.dark {
-  --color-page: #0b1220;
-  --color-card: rgba(255, 255, 255, 0.08);
-  --color-line: #1f2937;
-  --color-ink: #e5e7eb;
-  --color-muted: #9ca3af;
-  --color-brand-soft: #1f1216;
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+  --color-page: #0a0a0a;
+  --color-card: #1f1f1f;
+  --color-line: #3f3f3f;
+  --color-ink: #ffffff;
+  --color-muted: #d4d4d4;
+  --color-brand-soft: #2a0a14;
+  --color-ok: #34d399;
+  --color-warn: #fbbf24;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
 }
 
 html {
