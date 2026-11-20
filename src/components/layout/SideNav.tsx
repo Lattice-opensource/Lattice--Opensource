@@ -71,7 +71,7 @@ export function SideNav({ open, onClose }: SideNavProps) {
           </button>
         </div>
         <nav className="space-y-2 p-3" aria-label="Primary">
-          {sections.map((section, idx) => (
+          {sections.map((section) => (
             <div key={section.title}>
 
               <div className="mt-2 space-y-2">
