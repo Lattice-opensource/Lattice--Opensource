@@ -73,7 +73,6 @@ export function SideNav({ open, onClose }: SideNavProps) {
         <nav className="space-y-4 p-3" aria-label="Primary">
           {sections.map((section, idx) => (
             <div key={section.title}>
-              {idx > 0 ? <div className="my-3 border-t border-line" /> : null}
 
               <div className="mt-2 space-y-1">
                 {section.items.map((item) => (
