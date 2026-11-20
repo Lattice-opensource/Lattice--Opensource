@@ -74,9 +74,7 @@ export function SideNav({ open, onClose }: SideNavProps) {
           {sections.map((section, idx) => (
             <div key={section.title}>
               {idx > 0 ? <div className="my-3 border-t border-line" /> : null}
-              <p className="px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/70">
-                {section.title}
-              </p>
+
               <div className="mt-2 space-y-1">
                 {section.items.map((item) => (
                   <NavLink
