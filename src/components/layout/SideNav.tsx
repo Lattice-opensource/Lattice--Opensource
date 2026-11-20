@@ -42,7 +42,7 @@ export function SideNav({ open, onClose }: SideNavProps) {
     <>
       {open ? (
         <div
-          className="fixed inset-0 z-40 bg-ink/30 md:hidden"
+          className="fixed inset-0 z-40 bg-ink/30"
           onClick={onClose}
           aria-hidden="true"
         />
@@ -70,11 +70,11 @@ export function SideNav({ open, onClose }: SideNavProps) {
             </svg>
           </button>
         </div>
-        <nav className="space-y-4 p-3" aria-label="Primary">
+        <nav className="space-y-2 p-3" aria-label="Primary">
           {sections.map((section, idx) => (
             <div key={section.title}>
 
-              <div className="mt-2 space-y-1">
+              <div className="mt-2 space-y-2">
                 {section.items.map((item) => (
                   <NavLink
                     key={item.label}
