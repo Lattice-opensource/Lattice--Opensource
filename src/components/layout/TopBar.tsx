@@ -1,5 +1,5 @@
 import { useTheme } from "../../data/ThemeContext";
-import { NavLinks } from "./NavLinks";
+
 
 interface TopBarProps {
   onMenuClick?: () => void;
@@ -44,7 +44,6 @@ export function TopBar({ onMenuClick }: TopBarProps) {
         </div>
 
         <div className="flex items-center gap-3">
-          <NavLinks />
           <button
             type="button"
             onClick={toggle}
