@@ -156,9 +156,9 @@ export function DashboardPage() {
 
         <Card eyebrow="02 · Usage insights">
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-900/40">
-              <p className="text-xs font-semibold uppercase tracking-wide text-warn dark:text-amber-300">Peak power today</p>
-              <p className="mt-1 text-2xl font-bold text-ink">
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950">
+              <p className="text-xs font-semibold uppercase tracking-wide text-warn dark:text-amber-200">Peak power today</p>
+              <p className="mt-1 text-2xl font-bold text-ink dark:text-amber-100">
                 {Math.round(overview.peak.powerW)} W
               </p>
               <p className="mt-1 text-xs text-ink/70">
@@ -170,9 +170,9 @@ export function DashboardPage() {
                   : "no data"}
               </p>
             </div>
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-700 dark:bg-emerald-900/40">
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-950">
               <p className="text-xs font-semibold uppercase tracking-wide text-ok dark:text-emerald-300">Average power</p>
-              <p className="mt-1 text-2xl font-bold text-ink">
+              <p className="mt-1 text-2xl font-bold text-ink dark:text-emerald-100">
                 {Math.round(overview.averagePowerW)} W
               </p>
               <p className="mt-1 text-xs text-ink/70">Average across today&apos;s readings</p>
