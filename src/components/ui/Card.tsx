@@ -10,7 +10,11 @@ interface CardProps {
 
 export function Card({ title, eyebrow, action, children, className = "" }: CardProps) {
   return (
-    <section className={`rounded-xl border border-line bg-card ${className}`} style={{ boxShadow: "var(--shadow-card)" }}>
+    <section
+      className={`rounded-xl border border-line bg-card ${className}`}
+      style={{ boxShadow: "var(--shadow-card)", resize: "both", overflow: "auto" }}
+      draggable
+    >
       {(title || eyebrow || action) && (
         <header className="flex items-start justify-between gap-3 border-b border-line px-5 py-4">
           <div>
