@@ -1,11 +1,16 @@
+import { useState } from "react";
 import { Outlet } from "react-router-dom";
+import { SideNav } from "./SideNav";
 import { TopBar } from "./TopBar";
 import { DataSourceProvider } from "../../data/DataSourceContext";
 
 function Shell() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-page">
-      <TopBar />
+      <SideNav open={mobileOpen} onClose={() => setMobileOpen(false)} />
+      <TopBar onMenuClick={() => setMobileOpen(true)} />
       <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-6 md:px-8 md:py-8">
         <Outlet />
       </main>

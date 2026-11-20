@@ -49,7 +49,7 @@ export function SideNav({ open, onClose }: SideNavProps) {
         />
       ) : null}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-brand-dark bg-brand transition-transform md:relative md:inset-auto md:h-auto md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-brand-dark bg-brand transition-transform ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
