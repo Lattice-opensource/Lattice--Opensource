@@ -52,7 +52,7 @@ export function TopBar({ onMenuClick }: TopBarProps) {
           >
             {theme === "dark" ? "Light mode" : "Dark mode"}
           </button>
-          <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-ok ring-1 ring-emerald-200">
+          <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-ok ring-1 ring-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:ring-emerald-700">
             Live data
           </span>
         </div>

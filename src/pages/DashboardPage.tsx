@@ -115,7 +115,7 @@ export function DashboardPage() {
           </p>
         </div>
         <div className="text-right">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-ok ring-1 ring-emerald-200">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-ok ring-1 ring-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:ring-emerald-700">
             <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />
             live
           </span>
@@ -156,8 +156,8 @@ export function DashboardPage() {
 
         <Card eyebrow="02 · Usage insights">
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-warn">Peak power today</p>
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-900/40">
+              <p className="text-xs font-semibold uppercase tracking-wide text-warn dark:text-amber-300">Peak power today</p>
               <p className="mt-1 text-2xl font-bold text-ink">
                 {Math.round(overview.peak.powerW)} W
               </p>
@@ -170,8 +170,8 @@ export function DashboardPage() {
                   : "no data"}
               </p>
             </div>
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-ok">Average power</p>
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-700 dark:bg-emerald-900/40">
+              <p className="text-xs font-semibold uppercase tracking-wide text-ok dark:text-emerald-300">Average power</p>
               <p className="mt-1 text-2xl font-bold text-ink">
                 {Math.round(overview.averagePowerW)} W
               </p>
