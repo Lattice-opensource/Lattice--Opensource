@@ -1,5 +1,6 @@
 import { NavLinks } from "./NavLinks";
 import { ThemeToggle } from "../ui/ThemeToggle";
+import { getStoredApiKey, setStoredApiKey } from "../../data/api/httpEnergyApi";
 
 interface TopBarProps {
   onMenuClick: () => void;
@@ -44,6 +45,20 @@ export function TopBar({ onMenuClick, simulated }: TopBarProps) {
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              const current = getStoredApiKey();
+              const next = window.prompt("Enter API key (leave blank to clear):", current);
+              if (next !== null) {
+                setStoredApiKey(next.trim());
+                window.location.reload();
+              }
+            }}
+            className="rounded-lg border border-line px-2.5 py-1.5 text-[11px] font-semibold text-muted transition-colors hover:text-ink"
+          >
+            API key
+          </button>
           <ThemeToggle />
           <NavLinks />
           {simulated ? (

@@ -30,10 +30,30 @@ import type {
 
 const API_BASE = config.apiBaseUrl.replace(/\/$/, "");
 
+const API_KEY_STORAGE = "lattice_api_key";
+
+export function getStoredApiKey(): string {
+  try {
+    return localStorage.getItem(API_KEY_STORAGE) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+export function setStoredApiKey(value: string): void {
+  try {
+    if (value) localStorage.setItem(API_KEY_STORAGE, value);
+    else localStorage.removeItem(API_KEY_STORAGE);
+  } catch {
+    /* ignore */
+  }
+}
+
 async function request<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
-  });
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const key = getStoredApiKey();
+  if (key) headers["x-api-key"] = key;
+  const res = await fetch(`${API_BASE}${path}`, { headers });
   if (!res.ok) {
     let message = `Request failed: ${res.status}`;
     try {
