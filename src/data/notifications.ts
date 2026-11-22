@@ -26,8 +26,6 @@ export const NOTIFICATIONS: AppNotification[] = [
     id: "n2",
     title: "Server room temperature high",
     message: "Server Room Cooling + UPS zone is at 29.4 C.",
-    deviceId: "dev_fridge_01",
-    deviceName: "Server Room Cooling + UPS",
     severity: "warning",
     detail: "Rack inlet temperature exceeded the 27 C threshold for 15 minutes.",
     cause: "CRAC unit filter is clogged and airflow is restricted.",
