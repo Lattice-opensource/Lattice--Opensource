@@ -23,6 +23,7 @@ export function SideNav({ open, onClose }: SideNavProps) {
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [hasUnread, setHasUnread] = useState(true);
 
   useEffect(() => {
     const move = (e: MouseEvent) => {
@@ -78,7 +79,10 @@ export function SideNav({ open, onClose }: SideNavProps) {
           </NavLink>
           <button
             type="button"
-            onClick={() => setNotifOpen((v) => !v)}
+            onClick={() => {
+              setNotifOpen((v) => !v);
+              setHasUnread(false);
+            }}
             className="relative rounded-lg p-1.5 text-white/80 hover:bg-white/10"
             aria-label="Notifications"
           >
@@ -86,9 +90,9 @@ export function SideNav({ open, onClose }: SideNavProps) {
               <path d="M12 3a6 6 0 0 0-6 6v3l-2 3h16l-2-3V9a6 6 0 0 0-6-6z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span className="absolute -top-0.5 -right-0.5 grid h-4 w-4 place-items-center rounded-full bg-brand text-[9px] font-bold text-white">
-              3
-            </span>
+            {hasUnread ? (
+              <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-red-500" />
+            ) : null}
           </button>
           <button
             type="button"
@@ -113,7 +117,7 @@ export function SideNav({ open, onClose }: SideNavProps) {
               onClick={() => setNotifOpen(false)}
               aria-hidden="true"
             />
-            <div className="fixed right-4 top-16 z-50 w-72 rounded-xl border border-line bg-card p-4 shadow-lg">
+            <div className="fixed left-64 top-16 z-60 w-72 rounded-xl border border-line bg-card p-4 shadow-lg">
               <p className="text-sm font-semibold text-ink">Notifications</p>
               <ul className="mt-3 space-y-2 text-sm text-muted">
                 <li className="rounded-lg bg-page/60 px-3 py-2">Chiller load above threshold</li>
