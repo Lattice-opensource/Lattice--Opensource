@@ -37,9 +37,6 @@ export function DeviceSummaryTable({ devices }: DeviceSummaryTableProps) {
               >
                 {d.name}
               </Link>
-                {d.isSimulated ? (
-                  <p className="text-[11px] font-medium text-warn">simulated</p>
-                ) : null}
               </td>
               <td className="py-3 pr-4 text-muted">{d.roomName ?? "Site level"}</td>
               <td className="py-3 pr-4">

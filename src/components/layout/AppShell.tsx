@@ -4,17 +4,15 @@ import { SideNav } from "./SideNav";
 import { TopBar } from "./TopBar";
 
 import { DataSourceProvider } from "../../data/DataSourceContext";
-import { useDataSource } from "../../data/useDataSource";
 
 function Shell() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const { simulated } = useDataSource();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-page">
-      <SideNav open={mobileOpen} onClose={() => setMobileOpen(false)} />
+      <SideNav open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex min-h-screen flex-col">
-        <TopBar onMenuClick={() => setMobileOpen(true)} simulated={simulated} />
+        <TopBar onMenuClick={() => setSidebarOpen(true)} />
         <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-6 md:px-8 md:py-8">
           <Outlet />
         </main>

@@ -121,7 +121,7 @@ export function CampusPage() {
                   <Metric label="Connected devices" value={`${summaryData.byDevice.length}`} />
                 </div>
                 <p className="mt-3 text-xs text-muted">
-                  Reading freshness: {onlineCount} online, {staleCount} stale, {unknownCount} unknown, {offlineCount} offline. Data availability: {summaryData.dataQuality.simulated ? "simulated" : "live"} readings ({summaryData.dataQuality.simulatedReadings} simulated, {summaryData.dataQuality.realReadings} real).
+                  Reading freshness: {onlineCount} online, {staleCount} stale, {unknownCount} unknown, {offlineCount} offline.
                 </p>
               </>
             ) : <EmptyState title="No energy data" description="No readings are available for this selection." />}

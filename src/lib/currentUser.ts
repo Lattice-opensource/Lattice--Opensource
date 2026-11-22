@@ -1,0 +1,14 @@
+export const currentUser = {
+  name: "Admin User",
+  username: "admin",
+  initials: "AU",
+  email: "admin@lattice.energy",
+  password: "admin123",
+  role: "Site administrator",
+  phone: "+91 98765 43210",
+  timezone: "Asia/Kolkata",
+  plan: "Home Pro",
+  memberSince: "January 2026",
+  site: "Lattice Home",
+  building: "Academic Block",
+};

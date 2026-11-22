@@ -131,7 +131,6 @@ export function ReportsPage() {
       ["Peak power (W)", report.summary.peakPowerW.toFixed(0)],
       ["Monitored devices", String(report.summary.deviceCount)],
       ["Reading availability", `${Math.round(report.summary.readingAvailability * 100)}%`],
-      ["Simulated readings", String(report.summary.simulatedReadings)],
       ["Real readings", String(report.summary.realReadings)],
     ];
     for (const [k, v] of rows) { doc.text(`${k}: ${v}`, 14, y); y += 5; }
@@ -222,7 +221,6 @@ export function ReportsPage() {
               <div><p className="text-xs text-muted">Peak power</p><p className="text-xl font-bold text-ink">{report.summary.peakPowerW.toFixed(0)} W</p></div>
               <div><p className="text-xs text-muted">Monitored devices</p><p className="text-xl font-bold text-ink">{report.summary.deviceCount}</p></div>
               <div><p className="text-xs text-muted">Reading availability</p><p className="text-xl font-bold text-ink">{Math.round(report.summary.readingAvailability * 100)}%</p></div>
-              <div><p className="text-xs text-muted">Simulated readings</p><p className="text-xl font-bold text-ink">{report.summary.simulatedReadings}</p></div>
               <div><p className="text-xs text-muted">Real readings</p><p className="text-xl font-bold text-ink">{report.summary.realReadings}</p></div>
             </div>
             {report.comparison ? (

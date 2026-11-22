@@ -15,6 +15,7 @@ import { TopConsumers } from "../components/dashboard/TopConsumers";
 import { ApplianceRanking, rankAppliances, type AppliancePeriod } from "../components/dashboard/ApplianceRanking";
 import { resolveWholeSite } from "../data/api/normalize";
 import type { AggregatePoint, PowerPoint } from "../data/api/energyApi";
+import { currentUser } from "../lib/currentUser";
 
 const POLL_INTERVAL_MS = 10000;
 
@@ -109,7 +110,7 @@ export function DashboardPage() {
   }
 
   const overview = state.data;
-  const { wholeSite, dataSource } = overview;
+  const { wholeSite } = overview;
   const meterBased = wholeSite.source === "meter";
   const currencySymbol = overview.currency === "INR" ? "₹" : "";
   const chartPoints = chartState.status === "ready" ? chartState.data : overview.series;
@@ -140,20 +141,14 @@ export function DashboardPage() {
               <span className="h-1.5 w-1.5 rounded-full bg-brand-light" />
               Live energy overview
             </span>
-            <h1 className="mt-6 text-4xl font-black leading-[1.05] tracking-tight lattice-hero-ink md:text-6xl">
-              {overview.siteName}
-              <br />
-              <span className="lattice-grad-text">Energy overview.</span>
+            <h1 className="mt-6 text-4xl font-black leading-[1.05] tracking-tight lattice-grad-text md:text-6xl">
+              {currentUser.building}
             </h1>
             <p className="mt-4 text-sm lattice-hero-muted md:text-base">
               {overview.onlineDeviceCount} of {overview.deviceCount} devices reporting · {overview.rooms.length} spaces monitored
               {meterBased ? " · site meter" : " · device sum"} · updated {new Date(overview.lastUpdated).toLocaleTimeString()}
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <span className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-semibold ${dataSource.simulated ? "border border-amber-500/30 bg-amber-500/10 text-amber-300" : "border border-emerald-500/30 bg-emerald-500/10 text-emerald-400"}`}>
-                <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                {dataSource.simulated ? "simulated" : "live"} data
-              </span>
               <span className="inline-flex items-center rounded-full border border-white/15 px-3.5 py-1.5 text-[12px] font-semibold lattice-hero-muted">
                 {overview.timezone}
               </span>
@@ -167,10 +162,6 @@ export function DashboardPage() {
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">Live power</p>
                 <p className="mt-1 text-xs text-muted">{meterBased ? "site meter" : "summed devices"}</p>
               </div>
-              <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold ${dataSource.simulated ? "border border-amber-500/30 bg-amber-500/10 text-amber-300" : "border border-emerald-500/30 bg-emerald-500/10 text-emerald-400"}`}>
-                <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                {dataSource.simulated ? "simulated" : "live"}
-              </span>
             </div>
 
             <div className="mt-4 flex items-baseline gap-2">

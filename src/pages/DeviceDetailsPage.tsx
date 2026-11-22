@@ -164,7 +164,7 @@ export default function DeviceDetailsPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-ink md:text-3xl">{device.name}</h1>
           <p className="mt-1 text-sm text-muted">
-            {device.category} · {device.roomName ?? "Site level"} · {device.isSimulated ? "Simulated" : "Real device"}
+            {device.category} · {device.roomName ?? "Site level"} 
           </p>
         </div>
         <Link
@@ -177,18 +177,7 @@ export default function DeviceDetailsPage() {
 
       <div className="flex flex-wrap items-center gap-3">
         <StatusPill status={device.status} />
-        {device.isSimulated ? (
-          <span className="rounded-full bg-amber-500/15 px-2.5 py-0.5 text-[11px] font-semibold text-amber-300 ring-1 ring-amber-500/30">
-            simulated
-          </span>
-        ) : (
-          <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-400 ring-1 ring-emerald-500/30">
-            real device
-          </span>
-        )}
-        <span className="text-xs text-muted">
-          Source: {device.isSimulated ? "simulator" : "Tuya/device"}
-        </span>
+
         <span className="text-xs text-muted">
           Last seen: {device.lastSeenAt ? new Date(device.lastSeenAt).toLocaleString() : "—"}
         </span>
@@ -266,10 +255,7 @@ export default function DeviceDetailsPage() {
             <dt className="text-xs text-muted">Status</dt>
             <dd className="text-ink">{device.status}</dd>
           </div>
-          <div>
-            <dt className="text-xs text-muted">Data source</dt>
-            <dd className="text-ink">{device.isSimulated ? "simulator" : "Tuya/device"}</dd>
-          </div>
+
           <div>
             <dt className="text-xs text-muted">Installed at</dt>
             <dd className="text-ink">{device.installedAt ?? "—"}</dd>
