@@ -91,12 +91,12 @@ export function SideNav({ open, onClose }: SideNavProps) {
             className="relative rounded-lg p-1.5 text-white/80 hover:bg-white/10"
             aria-label="Notifications"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M12 3a6 6 0 0 0-6 6v3l-2 3h16l-2-3V9a6 6 0 0 0-6-6z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             {hasUnread ? (
-              <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-red-500" />
+              <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500" />
             ) : null}
           </button>
           <button
@@ -134,10 +134,35 @@ export function SideNav({ open, onClose }: SideNavProps) {
                         setNotifOpen(false);
                         navigate(`/notifications/${n.id}`);
                       }}
-                      className="w-full rounded-lg bg-page/60 px-3 py-2 text-left text-muted hover:bg-page"
+                      className="flex w-full items-start gap-2 rounded-lg bg-page/60 px-3 py-2 text-left text-muted hover:bg-page"
                     >
-                      <span className="font-semibold text-ink">{n.title}</span>
-                      <span className="mt-0.5 block text-xs">{n.message}</span>
+                      <span
+                        className={`mt-0.5 ${
+                          n.severity === "critical" ? "text-red-500" : "text-amber-500"
+                        }`}
+                      >
+                        {n.severity === "critical" ? (
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+                            <path d="M12 8v4M12 16h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                          </svg>
+                        ) : (
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M12 3L2 21h20L12 3z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                            <path d="M12 10v4M12 17h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                          </svg>
+                        )}
+                      </span>
+                      <div className="min-w-0">
+                        <span
+                          className={`font-semibold ${
+                            n.severity === "critical" ? "text-red-600" : "text-amber-600"
+                          }`}
+                        >
+                          {n.title}
+                        </span>
+                        <span className="mt-0.5 block text-xs">{n.message}</span>
+                      </div>
                     </button>
                   </li>
                 ))}

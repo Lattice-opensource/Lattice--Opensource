@@ -5,8 +5,6 @@ import { Card } from "../components/ui/Card";
 const severityColor: Record<string, string> = {
   critical: "text-red-600",
   warning: "text-amber-600",
-  info: "text-sky-600",
-  promo: "text-brand",
 };
 
 export function NotificationsPage() {
