@@ -56,7 +56,7 @@ export function NotificationsPage() {
               </div>
             </div>
 
-            {(selected.severity === "critical" || selected.severity === "warning") ? (
+            {selected.deviceId && (selected.severity === "critical" || selected.severity === "warning") ? (
               <div className="rounded-xl border border-red-300 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
                 <p className="text-xs font-semibold uppercase tracking-wide text-red-700 dark:text-red-300">
                   Note
