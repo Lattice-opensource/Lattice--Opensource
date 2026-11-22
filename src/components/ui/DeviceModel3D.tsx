@@ -52,7 +52,8 @@ export function DeviceModel3D() {
         >
           {/* main body 180x90x70 */}
           {face(180, 90, "translateZ(35px)", "#e2e8f0")}
-          {face(180, 90, "translateZ(-35px) rotateY(180deg)", "#cbd5e1")}
+          {/* back removed to show internal wiring */}
+          <div className="absolute" style={{ width: 160, height: 70, left: "50%", top: "50%", marginLeft: -80, marginTop: -35, transform: "translateZ(-20px)", background: "repeating-linear-gradient(90deg, #f87171 0 2px, transparent 2px 8px)", opacity: 0.6 }} />
           {face(70, 90, "rotateY(-90deg) translateZ(90px)", "#e2e8f0")}
           {face(70, 90, "rotateY(90deg) translateZ(90px)", "#cbd5e1")}
           {face(180, 70, "rotateX(90deg) translateZ(45px)", "#f1f5f9")}
