@@ -65,7 +65,12 @@ export function SideNav({ open, onClose }: SideNavProps) {
           className="flex items-center justify-between border-b border-line px-4 py-4 cursor-move select-none"
           onMouseDown={startDrag}
         >
-          <p className="text-sm font-black tracking-[0.18em] text-white">LATTICE</p>
+          <div className="flex items-center gap-2">
+            <span className="grid h-9 w-9 place-items-center rounded-full bg-white/20 text-sm font-bold text-white">
+              BA
+            </span>
+            <span className="text-sm font-semibold text-white">Building Admin</span>
+          </div>
           <button
             type="button"
             onClick={onClose}
