@@ -1,6 +1,10 @@
 import { useRef, useState } from "react";
 
-export function DeviceModel3D() {
+interface DeviceModel3DProps {
+  variant?: string;
+}
+
+export function DeviceModel3D({ variant = "chiller" }: DeviceModel3DProps) {
   const [rot, setRot] = useState({ x: 20, y: -30 });
   const drag = useRef<{ sx: number; sy: number; rx: number; ry: number } | null>(null);
 
@@ -16,6 +20,14 @@ export function DeviceModel3D() {
   const onUp = () => {
     drag.current = null;
   };
+
+  const isServer = variant.includes("fridge");
+  const isElevator = variant.includes("induction");
+  const W = isServer ? 80 : isElevator ? 60 : 180;
+  const H = isServer ? 150 : isElevator ? 170 : 90;
+  const D = 60;
+  const color = isServer ? "#94a3b8" : isElevator ? "#a78bfa" : "#cbd5e1";
+  const darkColor = isServer ? "#64748b" : isElevator ? "#7c3aed" : "#94a3b8";
 
   const face = (w: number, h: number, transform: string, bg: string) => (
     <div
@@ -50,61 +62,12 @@ export function DeviceModel3D() {
             transform: `rotateX(${rot.x}deg) rotateY(${rot.y}deg)`,
           }}
         >
-          {/* main body 180x90x70 */}
-          {face(180, 90, "translateZ(35px)", "#e2e8f0")}
-          {/* internal wiring */}
-          <div className="absolute" style={{ width: 120, height: 50, left: "50%", top: "50%", marginLeft: -60, marginTop: -25, transform: "translateZ(-15px)" }}>
-            <div className="absolute left-0 top-1 h-0.5 w-full bg-red-500" />
-            <div className="absolute left-0 top-4 h-0.5 w-full bg-blue-500" />
-            <div className="absolute left-0 top-8 h-0.5 w-full bg-yellow-500" />
-            <div className="absolute left-0 top-12 h-0.5 w-full bg-green-500" />
-            <div className="absolute left-0 top-16 h-0.5 w-full bg-purple-500" />
-            <div className="absolute left-2 top-0 h-full w-0.5 bg-red-500" />
-            <div className="absolute left-6 top-0 h-full w-0.5 bg-blue-500" />
-            <div className="absolute left-10 top-0 h-full w-0.5 bg-yellow-500" />
-            <div className="absolute left-14 top-0 h-full w-0.5 bg-green-500" />
-            <div className="absolute left-18 top-0 h-full w-0.5 bg-purple-500" />
-            <div className="absolute left-22 top-0 h-full w-0.5 bg-red-500" />
-            <div className="absolute left-26 top-0 h-full w-0.5 bg-blue-500" />
-            <div className="absolute left-30 top-0 h-full w-0.5 bg-yellow-500" />
-            <div className="absolute left-34 top-0 h-full w-0.5 bg-green-500" />
-            <div className="absolute left-38 top-0 h-full w-0.5 bg-purple-500" />
-            <div className="absolute left-42 top-0 h-full w-0.5 bg-red-500" />
-            <div className="absolute left-46 top-0 h-full w-0.5 bg-blue-500" />
-            <div className="absolute left-50 top-0 h-full w-0.5 bg-yellow-500" />
-            <div className="absolute left-54 top-0 h-full w-0.5 bg-green-500" />
-            <div className="absolute left-58 top-0 h-full w-0.5 bg-purple-500" />
-          </div>
-          {face(70, 90, "rotateY(-90deg) translateZ(90px)", "#e2e8f0")}
-          {face(70, 90, "rotateY(90deg) translateZ(90px)", "#cbd5e1")}
-          {face(180, 70, "rotateX(90deg) translateZ(45px)", "#f1f5f9")}
-          {face(180, 70, "rotateX(-90deg) translateZ(45px)", "#94a3b8")}
-
-          {/* front panel */}
-          <div
-            className="absolute border-[3px] border-slate-600 bg-slate-700"
-            style={{
-              width: 60,
-              height: 30,
-              left: "50%",
-              top: "50%",
-              marginLeft: -30,
-              marginTop: -15,
-              transform: "translateZ(36px)",
-            }}
-          />
-          <div
-            className="absolute bg-sky-500"
-            style={{
-              width: 50,
-              height: 20,
-              left: "50%",
-              top: "50%",
-              marginLeft: -25,
-              marginTop: -10,
-              transform: "translateZ(37px)",
-            }}
-          />
+          {face(W, H, `translateZ(${D / 2}px)`, color)}
+          {face(W, H, `translateZ(${-D / 2}px) rotateY(180deg)`, darkColor)}
+          {face(D, H, `rotateY(-90deg) translateZ(${W / 2}px)`, color)}
+          {face(D, H, `rotateY(90deg) translateZ(${W / 2}px)`, darkColor)}
+          {face(W, D, `rotateX(90deg) translateZ(${H / 2}px)`, color)}
+          {face(W, D, `rotateX(-90deg) translateZ(${H / 2}px)`, darkColor)}
 
           {/* red problem dot */}
           <div
@@ -114,7 +77,7 @@ export function DeviceModel3D() {
               top: "50%",
               marginLeft: -8,
               marginTop: -8,
-              transform: "translateZ(36px) translate(40px, -10px)",
+              transform: `translateZ(${D / 2 + 1}px) translate(${W / 4}px, ${-H / 6}px)`,
             }}
           />
         </div>

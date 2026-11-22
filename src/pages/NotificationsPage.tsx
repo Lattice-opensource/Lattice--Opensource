@@ -33,7 +33,7 @@ export function NotificationsPage() {
               </p>
             ) : null}
 
-            <DeviceModel3D />
+            <DeviceModel3D variant={selected.deviceId} />
 
             <div className="grid gap-3 md:grid-cols-3">
               <div className="rounded-xl border border-red-300 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
