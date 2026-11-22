@@ -10,7 +10,7 @@ const sections = [
   {
     title: "Main",
     items: [
-      { to: "/dashboard", label: "Home page", icon: "home" },
+      { to: "/dashboard", label: "Home", icon: "home" },
       { to: "/rooms", label: "Zones" },
       { to: "/devices", label: "Equipment" },
       { to: "/desk", label: "My Desk" },
