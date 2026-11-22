@@ -51,21 +51,41 @@ export function ElevatorScene() {
             <boxGeometry args={[0.35, 3.0, 0.25]} />
             <meshStandardMaterial color={slate} roughness={0.5} metalness={0.3} />
           </mesh>
-          {/* top beam */}
+          {/* top beam front */}
           <mesh position={[0, 1.95, 0.9]} castShadow>
             <boxGeometry args={[2.0, 0.25, 0.25]} />
+            <meshStandardMaterial color={slate} roughness={0.5} metalness={0.3} />
+          </mesh>
+          {/* top beam back */}
+          <mesh position={[0, 1.95, -0.9]} castShadow>
+            <boxGeometry args={[2.0, 0.25, 0.25]} />
+            <meshStandardMaterial color={slate} roughness={0.5} metalness={0.3} />
+          </mesh>
+          {/* side frame left */}
+          <mesh position={[-0.95, 0.4, 0]} castShadow>
+            <boxGeometry args={[0.12, 3.0, 2.0]} />
+            <meshStandardMaterial color={slate} roughness={0.5} metalness={0.3} />
+          </mesh>
+          {/* side frame right */}
+          <mesh position={[0.95, 0.4, 0]} castShadow>
+            <boxGeometry args={[0.12, 3.0, 2.0]} />
+            <meshStandardMaterial color={slate} roughness={0.5} metalness={0.3} />
+          </mesh>
+          {/* ceiling */}
+          <mesh position={[0, 1.9, 0]} castShadow receiveShadow>
+            <boxGeometry args={[2.0, 0.12, 2.0]} />
             <meshStandardMaterial color={slate} roughness={0.5} metalness={0.3} />
           </mesh>
 
           {/* left glass panel 1 */}
           <mesh position={[-0.45, 0.4, 0.8]} castShadow>
             <boxGeometry args={[0.9, 2.8, 0.05]} />
-            <meshStandardMaterial color={glass} transparent opacity={0.35} roughness={0.1} metalness={0.2} />
+            <meshStandardMaterial color={glass} transparent opacity={0.45} roughness={0.1} metalness={0.2} />
           </mesh>
           {/* left glass panel 2 */}
           <mesh position={[0.45, 0.4, 0.8]} castShadow>
             <boxGeometry args={[0.9, 2.8, 0.05]} />
-            <meshStandardMaterial color={glass} transparent opacity={0.35} roughness={0.1} metalness={0.2} />
+            <meshStandardMaterial color={glass} transparent opacity={0.45} roughness={0.1} metalness={0.2} />
           </mesh>
           {/* glass divider */}
           <mesh position={[0, 0.4, 0.8]} castShadow>
