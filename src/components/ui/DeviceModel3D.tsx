@@ -71,12 +71,19 @@ export function DeviceModel3D({ variant = "chiller" }: DeviceModel3DProps) {
 
           {isElevator ? (
             <>
+              {/* top machine room */}
+              <div className="absolute border border-slate-500 bg-slate-500" style={{ width: W + 10, height: 16, left: "50%", top: "50%", marginLeft: -(W + 10) / 2, marginTop: -(H / 2) - 8, transform: "translateZ(0px)" }} />
               {/* shaft rails */}
-              <div className="absolute bg-slate-600" style={{ width: 4, height: H - 20, left: "50%", top: "50%", marginLeft: -W / 2 + 8, marginTop: -(H / 2) + 10, transform: "translateZ(0px)" }} />
-              <div className="absolute bg-slate-600" style={{ width: 4, height: H - 20, left: "50%", top: "50%", marginLeft: W / 2 - 12, marginTop: -(H / 2) + 10, transform: "translateZ(0px)" }} />
+              <div className="absolute bg-slate-600" style={{ width: 4, height: H - 10, left: "50%", top: "50%", marginLeft: -W / 2 + 6, marginTop: -(H / 2) + 5, transform: "translateZ(2px)" }} />
+              <div className="absolute bg-slate-600" style={{ width: 4, height: H - 10, left: "50%", top: "50%", marginLeft: W / 2 - 10, marginTop: -(H / 2) + 5, transform: "translateZ(2px)" }} />
               {/* elevator car */}
-              <div className="absolute border border-slate-500 bg-slate-300" style={{ width: W - 16, height: 40, left: "50%", top: "50%", marginLeft: -(W - 16) / 2, marginTop: -10, transform: "translateZ(0px)" }} />
-              <div className="absolute bg-slate-700" style={{ width: W - 24, height: 4, left: "50%", top: "50%", marginLeft: -(W - 24) / 2, marginTop: -14, transform: "translateZ(1px)" }} />
+              <div className="absolute border border-slate-500 bg-slate-300" style={{ width: W - 12, height: 44, left: "50%", top: "50%", marginLeft: -(W - 12) / 2, marginTop: -8, transform: "translateZ(4px)" }} />
+              {/* door panels */}
+              <div className="absolute bg-slate-400" style={{ width: (W - 16) / 2, height: 36, left: "50%", top: "50%", marginLeft: -(W - 16) / 2, marginTop: -6, transform: "translateZ(5px)" }} />
+              <div className="absolute bg-slate-400" style={{ width: (W - 16) / 2, height: 36, left: "50%", top: "50%", marginLeft: 2, marginTop: -6, transform: "translateZ(5px)" }} />
+              {/* floor indicator */}
+              <div className="absolute bg-slate-800" style={{ width: 18, height: 8, left: "50%", top: "50%", marginLeft: -9, marginTop: -H / 2 + 12, transform: "translateZ(5px)" }} />
+              <div className="absolute bg-green-400" style={{ width: 6, height: 4, left: "50%", top: "50%", marginLeft: -3, marginTop: -H / 2 + 14, transform: "translateZ(6px)" }} />
             </>
           ) : null}
 
