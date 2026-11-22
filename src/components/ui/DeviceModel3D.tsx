@@ -19,7 +19,7 @@ export function DeviceModel3D() {
 
   const face = (w: number, h: number, transform: string, bg: string) => (
     <div
-      className="absolute border border-slate-400"
+      className="absolute border-[3px] border-slate-500"
       style={{
         width: w,
         height: h,
@@ -52,8 +52,16 @@ export function DeviceModel3D() {
         >
           {/* main body 180x90x70 */}
           {face(180, 90, "translateZ(35px)", "#e2e8f0")}
-          {/* back removed to show internal wiring */}
-          <div className="absolute" style={{ width: 160, height: 70, left: "50%", top: "50%", marginLeft: -80, marginTop: -35, transform: "translateZ(-20px)", background: "repeating-linear-gradient(90deg, #f87171 0 2px, transparent 2px 8px)", opacity: 0.6 }} />
+          {/* internal wiring */}
+          <div className="absolute" style={{ width: 150, height: 60, left: "50%", top: "50%", marginLeft: -75, marginTop: -30, transform: "translateZ(-20px)" }}>
+            <div className="absolute left-0 top-2 h-1 w-full bg-red-500" />
+            <div className="absolute left-0 top-6 h-1 w-full bg-blue-500" />
+            <div className="absolute left-0 top-10 h-1 w-full bg-yellow-500" />
+            <div className="absolute left-4 top-0 h-full w-1 bg-red-500" />
+            <div className="absolute left-12 top-0 h-full w-1 bg-blue-500" />
+            <div className="absolute left-20 top-0 h-full w-1 bg-yellow-500" />
+            <div className="absolute left-28 top-0 h-full w-1 bg-red-500" />
+          </div>
           {face(70, 90, "rotateY(-90deg) translateZ(90px)", "#e2e8f0")}
           {face(70, 90, "rotateY(90deg) translateZ(90px)", "#cbd5e1")}
           {face(180, 70, "rotateX(90deg) translateZ(45px)", "#f1f5f9")}
@@ -61,7 +69,7 @@ export function DeviceModel3D() {
 
           {/* front panel */}
           <div
-            className="absolute border border-slate-600 bg-slate-700"
+            className="absolute border-[3px] border-slate-600 bg-slate-700"
             style={{
               width: 60,
               height: 30,
