@@ -87,6 +87,26 @@ export function DeviceModel3D({ variant = "chiller" }: DeviceModel3DProps) {
             </>
           ) : null}
 
+          {!isServer && !isElevator ? (
+            <>
+              {/* condenser coils on side */}
+              <div className="absolute bg-amber-300" style={{ width: 14, height: 70, left: "50%", top: "50%", marginLeft: 78, marginTop: -35, transform: "translateZ(0px)" }} />
+              <div className="absolute bg-amber-400" style={{ width: 14, height: 70, left: "50%", top: "50%", marginLeft: 78, marginTop: -35, transform: "translateZ(6px)" }} />
+              <div className="absolute bg-amber-500" style={{ width: 14, height: 70, left: "50%", top: "50%", marginLeft: 78, marginTop: -35, transform: "translateZ(12px)" }} />
+              {/* fan grille on top */}
+              <div className="absolute rounded-full border-2 border-slate-500 bg-slate-400" style={{ width: 44, height: 44, left: "50%", top: "50%", marginLeft: -22, marginTop: -67, transform: "translateZ(0px)" }} />
+              <div className="absolute rounded-full border border-slate-600 bg-slate-600" style={{ width: 36, height: 36, left: "50%", top: "50%", marginLeft: -18, marginTop: -63, transform: "translateZ(1px)" }} />
+              {/* fan blades */}
+              <div className="absolute bg-slate-700" style={{ width: 2, height: 28, left: "50%", top: "50%", marginLeft: -1, marginTop: -77, transform: "translateZ(2px)" }} />
+              <div className="absolute bg-slate-700" style={{ width: 2, height: 28, left: "50%", top: "50%", marginLeft: -1, marginTop: -77, transform: "translateZ(2px) rotate(90deg)" }} />
+              {/* control panel on front */}
+              <div className="absolute bg-slate-800" style={{ width: 40, height: 24, left: "50%", top: "50%", marginLeft: -20, marginTop: -20, transform: "translateZ(36px)" }} />
+              <div className="absolute bg-sky-400" style={{ width: 32, height: 16, left: "50%", top: "50%", marginLeft: -16, marginTop: -16, transform: "translateZ(37px)" }} />
+              {/* base frame */}
+              <div className="absolute bg-slate-600" style={{ width: 190, height: 6, left: "50%", top: "50%", marginLeft: -95, marginTop: 42, transform: "translateZ(0px)" }} />
+            </>
+          ) : null}
+
           {/* red problem dot */}
           <div
             className="absolute h-4 w-4 rounded-full bg-red-500 shadow-[0_0_14px_6px_rgba(239,68,68,0.7)]"
