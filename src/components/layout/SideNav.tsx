@@ -107,14 +107,23 @@ export function SideNav({ open, onClose }: SideNavProps) {
           </button>
         </div>
         {notifOpen ? (
-          <div className="border-b border-line px-4 py-3 text-sm text-white">
-            <p className="font-semibold">Notifications</p>
-            <ul className="mt-2 space-y-1 text-xs text-white/80">
-              <li>Chiller load above threshold</li>
-              <li>Server room temperature high</li>
-              <li>Elevator maintenance due</li>
-            </ul>
-          </div>
+          <>
+            <div
+              className="fixed inset-0 z-40 bg-ink/30"
+              onClick={() => setNotifOpen(false)}
+              aria-hidden="true"
+            />
+            <div className="fixed right-4 top-16 z-50 w-72 rounded-xl border border-line bg-card p-4 shadow-lg">
+              <p className="text-sm font-semibold text-ink">Notifications</p>
+              <ul className="mt-3 space-y-2 text-sm text-muted">
+                <li className="rounded-lg bg-page/60 px-3 py-2">Chiller load above threshold</li>
+                <li className="rounded-lg bg-page/60 px-3 py-2">Server room temperature high</li>
+                <li className="rounded-lg bg-page/60 px-3 py-2">Elevator maintenance due</li>
+                <li className="rounded-lg bg-page/60 px-3 py-2">Lighting panel left on after hours</li>
+                <li className="rounded-lg bg-page/60 px-3 py-2">Water pump pressure drop</li>
+              </ul>
+            </div>
+          </>
         ) : null}
 
         <nav className="space-y-2 p-3" aria-label="Primary">
