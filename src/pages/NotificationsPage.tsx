@@ -3,6 +3,7 @@ import { NOTIFICATIONS } from "../data/notifications";
 import { Card } from "../components/ui/Card";
 import { DeviceScene } from "../components/3d/DeviceScene";
 import { ElevatorScene } from "../components/3d/ElevatorScene";
+import { ChillerScene } from "../components/3d/ChillerScene";
 
 const severityColor: Record<string, string> = {
   critical: "text-red-600",
@@ -37,7 +38,9 @@ export function NotificationsPage() {
             {selected.deviceId
               ? selected.deviceId.includes("induction")
                 ? <ElevatorScene />
-                : <DeviceScene variant={selected.deviceId} />
+                : selected.deviceId.includes("bed_ac")
+                  ? <ChillerScene />
+                  : <DeviceScene variant={selected.deviceId} />
               : null}
 
             <div className="grid gap-3 md:grid-cols-3">
