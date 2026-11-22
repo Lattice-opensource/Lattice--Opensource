@@ -10,30 +10,11 @@ const sections = [
   {
     title: "Main",
     items: [
-      { to: "/dashboard", label: "Dashboard" },
+      { to: "/dashboard", label: "Home page", icon: "home" },
       { to: "/rooms", label: "Zones" },
       { to: "/devices", label: "Equipment" },
       { to: "/desk", label: "My Desk" },
       { to: "/insights", label: "Insights & Actions" },
-    ],
-  },
-  {
-    title: "Workspace",
-    items: [
-      { to: "/admin", label: "Admin Console" },
-    ],
-  },
-  {
-    title: "Account",
-    items: [
-      { to: "/account", label: "Profile" },
-      { to: "/account", label: "Billing" },
-    ],
-  },
-  {
-    title: "Settings",
-    items: [
-      { to: "/settings", label: "Settings" },
     ],
   },
 ];
@@ -112,11 +93,18 @@ export function SideNav({ open, onClose }: SideNavProps) {
                     to={item.to}
                     onClick={onClose}
                     className={({ isActive }) =>
-                      `block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                      `flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                         isActive ? "bg-white/20 text-white" : "text-white/80 hover:bg-white/10 hover:text-white"
                       }`
                     }
                   >
+                    {item.icon === "home" ? (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M3 11l9-8 9 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M5 10v10h14V10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M10 20v-6h4v6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    ) : null}
                     {item.label}
                   </NavLink>
                 ))}
