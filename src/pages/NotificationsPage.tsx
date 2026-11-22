@@ -32,15 +32,26 @@ export function NotificationsPage() {
               </p>
             ) : null}
 
-            {/* 3D model placeholder */}
-            <div className="relative mx-auto h-48 w-48 [perspective:800px]">
-              <div className="absolute inset-0 m-auto h-32 w-32 [transform-style:preserve-3d] [transform:rotateX(20deg)_rotateY(-30deg)]">
-                <div className="absolute inset-0 rounded-lg border border-line bg-card shadow-lg" />
-                <div className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-500 shadow-[0_0_12px_4px_rgba(239,68,68,0.6)]" />
-              </div>
-              <p className="absolute bottom-0 left-0 right-0 text-center text-xs text-muted">
-                3D device model (problem area marked)
-              </p>
+            {/* 3D model */}
+            <div className="mx-auto w-full max-w-xs">
+              <svg viewBox="0 0 240 180" className="w-full" aria-label="Device 3D model">
+                {/* floor shadow */}
+                <ellipse cx="120" cy="165" rx="70" ry="12" fill="rgba(0,0,0,0.15)" />
+                {/* device body (isometric-ish) */}
+                <polygon points="60,120 120,90 180,120 120,150" fill="#e5e7eb" stroke="#9ca3af" strokeWidth="1" />
+                <polygon points="60,120 60,80 120,50 120,90" fill="#f3f4f6" stroke="#9ca3af" strokeWidth="1" />
+                <polygon points="120,90 120,50 180,80 180,120" fill="#d1d5db" stroke="#9ca3af" strokeWidth="1" />
+                {/* screen/panel */}
+                <rect x="95" y="60" width="50" height="24" rx="3" fill="#111827" />
+                <rect x="100" y="64" width="40" height="16" rx="2" fill="#3b82f6" />
+                {/* red problem dot */}
+                <circle cx="150" cy="95" r="6" fill="#ef4444" />
+                <circle cx="150" cy="95" r="10" fill="none" stroke="#ef4444" strokeWidth="2" opacity="0.5" />
+                {/* label */}
+                <text x="120" y="175" textAnchor="middle" fontSize="10" fill="#6b7280">
+                  Problem area marked in red
+                </text>
+              </svg>
             </div>
 
             <div className="grid gap-3 md:grid-cols-3">
