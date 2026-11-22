@@ -107,16 +107,30 @@ export function DeviceModel3D({ variant = "chiller" }: DeviceModel3DProps) {
             </>
           ) : null}
 
-          {/* internal wiring */}
+          {/* internal components */}
           <div className="absolute" style={{ width: W - 20, height: H - 20, left: "50%", top: "50%", marginLeft: -(W - 20) / 2, marginTop: -(H - 20) / 2, transform: "translateZ(-15px)" }}>
-            <div className="absolute left-0 top-2 h-0.5 w-full bg-red-500" />
-            <div className="absolute left-0 top-6 h-0.5 w-full bg-blue-500" />
-            <div className="absolute left-0 top-10 h-0.5 w-full bg-yellow-500" />
-            <div className="absolute left-4 top-0 h-full w-0.5 bg-red-500" />
-            <div className="absolute left-12 top-0 h-full w-0.5 bg-blue-500" />
-            <div className="absolute left-20 top-0 h-full w-0.5 bg-yellow-500" />
-            <div className="absolute left-28 top-0 h-full w-0.5 bg-red-500" />
-            <div className="absolute left-36 top-0 h-full w-0.5 bg-blue-500" />
+            {/* PCB board */}
+            <div className="absolute left-2 top-2 h-16 w-20 rounded bg-green-700/80" />
+            {/* compressor */}
+            <div className="absolute bottom-2 left-4 h-10 w-16 rounded-full bg-slate-600" />
+            {/* pipes */}
+            <div className="absolute left-10 top-0 h-full w-1 bg-cyan-500" />
+            <div className="absolute left-20 top-0 h-full w-1 bg-cyan-500" />
+            <div className="absolute left-0 top-8 h-1 w-full bg-cyan-500" />
+            <div className="absolute left-0 top-16 h-1 w-full bg-cyan-500" />
+            {/* wires */}
+            <div className="absolute left-0 top-3 h-0.5 w-full bg-red-500" />
+            <div className="absolute left-0 top-5 h-0.5 w-full bg-blue-500" />
+            <div className="absolute left-0 top-7 h-0.5 w-full bg-yellow-500" />
+            <div className="absolute left-0 top-9 h-0.5 w-full bg-green-500" />
+            <div className="absolute left-0 top-11 h-0.5 w-full bg-purple-500" />
+            <div className="absolute left-6 top-0 h-full w-0.5 bg-red-500" />
+            <div className="absolute left-14 top-0 h-full w-0.5 bg-blue-500" />
+            <div className="absolute left-22 top-0 h-full w-0.5 bg-yellow-500" />
+            <div className="absolute left-30 top-0 h-full w-0.5 bg-green-500" />
+            <div className="absolute left-38 top-0 h-full w-0.5 bg-purple-500" />
+            {/* valve */}
+            <div className="absolute right-4 top-4 h-6 w-6 rounded-full bg-slate-500 border border-slate-700" />
           </div>
 
           {/* red problem dot */}
