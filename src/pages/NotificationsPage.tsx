@@ -1,7 +1,7 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { NOTIFICATIONS } from "../data/notifications";
 import { Card } from "../components/ui/Card";
-import { DeviceModel3D } from "../components/ui/DeviceModel3D";
+import { DeviceScene } from "../components/3d/DeviceScene";
 
 const severityColor: Record<string, string> = {
   critical: "text-red-600",
@@ -33,7 +33,7 @@ export function NotificationsPage() {
               </p>
             ) : null}
 
-            {selected.deviceId ? <DeviceModel3D variant={selected.deviceId} /> : null}
+            {selected.deviceId ? <DeviceScene variant={selected.deviceId} /> : null}
 
             <div className="grid gap-3 md:grid-cols-3">
               <div className="rounded-xl border border-red-300 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
