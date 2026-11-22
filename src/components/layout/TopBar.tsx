@@ -1,4 +1,3 @@
-import { BrandWordmark } from "../ui/BrandWordmark";
 import { ThemeToggle } from "../ui/ThemeToggle";
 import { NotificationBell } from "../ui/NotificationBell";
 import { getStoredApiKey, setStoredApiKey } from "../../data/api/httpEnergyApi";
@@ -28,7 +27,7 @@ export function TopBar({ onMenuClick }: TopBarProps) {
             </svg>
           </button>
 
-          <BrandWordmark />
+
         </div>
 
         <div className="flex items-center gap-3">

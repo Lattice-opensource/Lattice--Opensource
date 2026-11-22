@@ -137,10 +137,6 @@ export function DashboardPage() {
         <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-center">
           {/* Left: eyebrow + headline + supporting */}
           <div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/10 px-3.5 py-1.5 text-[12px] font-semibold uppercase tracking-wider text-brand-light">
-              <span className="h-1.5 w-1.5 rounded-full bg-brand-light" />
-              Live energy overview
-            </span>
             <h1 className="mt-6 text-4xl font-black leading-[1.05] tracking-tight lattice-grad-text md:text-6xl">
               {currentUser.building}
             </h1>

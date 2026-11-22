@@ -1,5 +1,4 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { BrandWordmark } from "../ui/BrandWordmark";
 import { currentUser } from "../../lib/currentUser";
 import { NAV_ITEMS, type NavIcon } from "./navItems";
 
@@ -96,8 +95,7 @@ export function SideNav({ open, onClose }: SideNavProps) {
         }`}
         aria-label="Sidebar"
       >
-        <div className="flex items-center justify-between border-b border-line px-4 py-4">
-          <BrandWordmark />
+        <div className="flex items-center justify-end border-b border-line px-4 py-4">
           <button
             type="button"
             onClick={onClose}

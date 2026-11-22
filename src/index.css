@@ -48,24 +48,45 @@ body {
   outline-offset: 2px;
 }
 
-/* Hero dotted grid + ambient rose glows */
-.lattice-hero {
+/* Per-tab glass surface with lattice background */
+.tab-surface {
   position: relative;
+  isolation: isolate;
   overflow: hidden;
-  background-color: #0b0f19;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(18, 24, 38, 0.28);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 24px 60px -30px rgba(0, 0, 0, 0.7),
+    0 0 60px -28px rgba(225, 29, 72, 0.4);
+  padding: 1.5rem;
 }
 
-.lattice-hero::before {
+.light .tab-surface {
+  border-color: rgba(11, 15, 25, 0.1);
+  background: rgba(255, 255, 255, 0.32);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 24px 60px -32px rgba(11, 15, 25, 0.18),
+    0 0 50px -25px rgba(225, 29, 72, 0.14);
+}
+
+.tab-surface::before {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.09) 1.1px, rgba(0, 0, 0, 0) 1.2px);
-  background-size: 28px 28px;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(225, 29, 72, 0.11) 0, rgba(225, 29, 72, 0.11) 1px, transparent 1px, transparent 16px),
+    repeating-linear-gradient(-45deg, rgba(225, 29, 72, 0.11) 0, rgba(225, 29, 72, 0.11) 1px, transparent 1px, transparent 16px);
+  background-size: 32px 32px;
   z-index: 0;
 }
 
-.lattice-hero::after {
+.tab-surface::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -76,23 +97,32 @@ body {
   z-index: 0;
 }
 
-.lattice-hero > * {
+.tab-surface > * {
   position: relative;
   z-index: 1;
 }
 
-.light .lattice-hero {
-  background-color: #fafafb;
+.light .tab-surface::before {
+  background-image:
+    repeating-linear-gradient(45deg, rgba(225, 29, 72, 0.09) 0, rgba(225, 29, 72, 0.09) 1px, transparent 1px, transparent 16px),
+    repeating-linear-gradient(-45deg, rgba(225, 29, 72, 0.09) 0, rgba(225, 29, 72, 0.09) 1px, transparent 1px, transparent 16px);
 }
 
-.light .lattice-hero::before {
-  background-image: radial-gradient(circle, rgba(11, 15, 25, 0.06) 1.1px, rgba(0, 0, 0, 0) 1.2px);
-}
-
-.light .lattice-hero::after {
+.light .tab-surface::after {
   background:
     radial-gradient(960px 640px at 85% -10%, rgba(225, 29, 72, 0.08), rgba(0, 0, 0, 0) 60%),
     radial-gradient(800px 560px at -10% 30%, rgba(225, 29, 72, 0.04), rgba(0, 0, 0, 0) 60%);
+}
+
+/* Hero surface inherits the tab lattice background */
+.lattice-hero {
+  position: relative;
+  overflow: hidden;
+  background-color: transparent;
+}
+
+.light .lattice-hero {
+  background-color: transparent;
 }
 
 /* Hero card glass */
