@@ -63,7 +63,7 @@ export function DeviceModel3D({ variant = "chiller" }: DeviceModel3DProps) {
           }}
         >
           {face(W, H, `translateZ(${D / 2}px)`, color)}
-          {face(W, H, `translateZ(${-D / 2}px) rotateY(180deg)`, darkColor)}
+          {/* back removed to show internal wiring */}
           {face(D, H, `rotateY(-90deg) translateZ(${W / 2}px)`, color)}
           {face(D, H, `rotateY(90deg) translateZ(${W / 2}px)`, darkColor)}
           {face(W, D, `rotateX(90deg) translateZ(${H / 2}px)`, color)}
@@ -106,6 +106,18 @@ export function DeviceModel3D({ variant = "chiller" }: DeviceModel3DProps) {
               <div className="absolute bg-slate-600" style={{ width: 190, height: 6, left: "50%", top: "50%", marginLeft: -95, marginTop: 42, transform: "translateZ(0px)" }} />
             </>
           ) : null}
+
+          {/* internal wiring */}
+          <div className="absolute" style={{ width: W - 20, height: H - 20, left: "50%", top: "50%", marginLeft: -(W - 20) / 2, marginTop: -(H - 20) / 2, transform: "translateZ(-15px)" }}>
+            <div className="absolute left-0 top-2 h-0.5 w-full bg-red-500" />
+            <div className="absolute left-0 top-6 h-0.5 w-full bg-blue-500" />
+            <div className="absolute left-0 top-10 h-0.5 w-full bg-yellow-500" />
+            <div className="absolute left-4 top-0 h-full w-0.5 bg-red-500" />
+            <div className="absolute left-12 top-0 h-full w-0.5 bg-blue-500" />
+            <div className="absolute left-20 top-0 h-full w-0.5 bg-yellow-500" />
+            <div className="absolute left-28 top-0 h-full w-0.5 bg-red-500" />
+            <div className="absolute left-36 top-0 h-full w-0.5 bg-blue-500" />
+          </div>
 
           {/* red problem dot */}
           <div
