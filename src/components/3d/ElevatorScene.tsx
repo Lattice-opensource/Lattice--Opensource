@@ -34,6 +34,15 @@ export function ElevatorScene() {
             <boxGeometry args={[0.15, 3.0, 2.0]} />
             <meshStandardMaterial color="#e5e7eb" roughness={0.6} />
           </mesh>
+          {/* side frame */}
+          <mesh position={[-0.95, 0.4, 0]} castShadow>
+            <boxGeometry args={[0.12, 3.0, 2.0]} />
+            <meshStandardMaterial color={slate} roughness={0.5} metalness={0.3} />
+          </mesh>
+          <mesh position={[0.95, 0.4, 0]} castShadow>
+            <boxGeometry args={[0.12, 3.0, 2.0]} />
+            <meshStandardMaterial color={slate} roughness={0.5} metalness={0.3} />
+          </mesh>
 
           {/* floor */}
           <mesh position={[0, -1.45, 0]} receiveShadow>
