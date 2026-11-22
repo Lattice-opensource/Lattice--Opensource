@@ -1,0 +1,19 @@
+version: "3.9"
+services:
+  lattice-api:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: production
+      PORT: "4000"
+      HOST: "0.0.0.0"
+      DATABASE_PATH: /data/lattice.db
+      SIMULATION_ENABLED: "true"
+      SEED_ON_START: "true"
+      STALE_AFTER_SECONDS: "1800"
+    volumes:
+      - lattice-data:/data
+volumes:
+  lattice-data:

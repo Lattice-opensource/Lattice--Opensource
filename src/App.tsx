@@ -7,8 +7,17 @@ import { RoomsPage } from "./pages/RoomsPage";
 import { CampusPage } from "./pages/CampusPage";
 import { AlertsPage } from "./pages/AlertsPage";
 import { ReportsPage } from "./pages/ReportsPage";
+import LoginPage from "./pages/LoginPage";
+import { isAuthenticated } from "./lib/auth";
 
 export default function App() {
+  if (!isAuthenticated()) {
+    return (
+      <Routes>
+        <Route path="*" element={<LoginPage />} />
+      </Routes>
+    );
+  }
   return (
     <Routes>
       <Route element={<AppShell />}>

@@ -4,9 +4,47 @@ import { seedDatabase } from './db/seed.js';
 import { startLiveWriter, stopLiveWriter } from './services/simulator.js';
 import { startMqttIngestion } from './services/mqtt.js';
 import { startTuyaIngestion } from './services/tuya.js';
-import { env, simulationEnabled, mqttEnabled, tuyaEnabled, redactSecret } from './config.js';
+import { env, simulationEnabled, mqttEnabled, tuyaEnabled, redactSecret, databasePath } from './config.js';
+import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs';
+import path from 'node:path';
+
+async function acquireLock(): Promise<string> {
+  const lockPath = path.join(path.dirname(databasePath), 'lattice.lock');
+  if (existsSync(lockPath)) {
+    // Probe the health endpoint to decide whether another instance is truly running.
+    let alive = false;
+    try {
+      const http = await import('node:http');
+      alive = await new Promise<boolean>((resolve) => {
+        const req = http.get(`http://127.0.0.1:${env.PORT || 4000}/api/health`, (res) => {
+          resolve(res.statusCode === 200);
+          res.resume();
+        });
+        req.on('error', () => resolve(false));
+        req.setTimeout(1000, () => { req.destroy(); resolve(false); });
+      });
+    } catch {
+      alive = false;
+    }
+    if (alive) {
+      console.error('[lattice] another instance is already running; exiting');
+      process.exit(1);
+    }
+    // Stale lock; remove and continue.
+    try { unlinkSync(lockPath); } catch { /* ignore */ }
+  }
+  try {
+    writeFileSync(lockPath, String(process.pid), { flag: 'wx' });
+  } catch {
+    // race; re-check
+    try { unlinkSync(lockPath); } catch { /* ignore */ }
+    writeFileSync(lockPath, String(process.pid));
+  }
+  return lockPath;
+}
 
 async function main(): Promise<void> {
+  const lockPath = await acquireLock();
   const db = openDatabase();
   const seedRes = seedDatabase(db);
   console.log(`[lattice] seed: ${JSON.stringify(seedRes)}`);
@@ -33,6 +71,7 @@ async function main(): Promise<void> {
     tuyaHandle.stop();
     await app.close();
     closeDatabase();
+    try { unlinkSync(lockPath); } catch { /* ignore */ }
   };
   process.on('SIGINT', () => void close().then(() => process.exit(0)));
   process.on('SIGTERM', () => void close().then(() => process.exit(0)));
