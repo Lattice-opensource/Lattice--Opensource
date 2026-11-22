@@ -5,11 +5,13 @@ import { startLiveWriter, stopLiveWriter } from './services/simulator.js';
 import { startMqttIngestion } from './services/mqtt.js';
 import { startTuyaIngestion } from './services/tuya.js';
 import { env, simulationEnabled, mqttEnabled, tuyaEnabled, redactSecret, databasePath } from './config.js';
-import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, unlinkSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 
 async function acquireLock(): Promise<string> {
-  const lockPath = path.join(path.dirname(databasePath), 'lattice.lock');
+  const lockDir = path.dirname(databasePath);
+  try { mkdirSync(lockDir, { recursive: true }); } catch { /* ignore */ }
+  const lockPath = path.join(lockDir, 'lattice.lock');
   if (existsSync(lockPath)) {
     // Probe the health endpoint to decide whether another instance is truly running.
     let alive = false;
