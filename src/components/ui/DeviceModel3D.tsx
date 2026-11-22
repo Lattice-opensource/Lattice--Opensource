@@ -23,7 +23,7 @@ export function DeviceModel3D() {
 
   return (
     <div
-      className="relative mx-auto h-72 w-80 cursor-grab select-none active:cursor-grabbing"
+      className="relative mx-auto h-64 w-72 cursor-grab select-none active:cursor-grabbing"
       onMouseDown={onDown}
       onMouseMove={onMove}
       onMouseUp={onUp}
@@ -45,29 +45,20 @@ export function DeviceModel3D() {
           <div className={`${face} bg-slate-100`} style={{ width: 180, height: 70, ...T("translate3d(0px, -45px, 0px) rotateX(90deg)") }} />
           <div className={`${face} bg-slate-400`} style={{ width: 180, height: 70, ...T("translate3d(0px, 45px, 0px) rotateX(-90deg)") }} />
 
-          {/* fan housing */}
-          <div className={`${face} bg-slate-500`} style={{ width: 70, height: 22, ...T("translate3d(0px, -56px, 10px)") }} />
-          <div className={`${face} bg-slate-600`} style={{ width: 70, height: 22, ...T("translate3d(0px, -56px, -10px) rotateY(180deg)") }} />
-          <div className={`${face} bg-slate-500`} style={{ width: 20, height: 22, ...T("translate3d(-35px, -56px, 0px) rotateY(-90deg)") }} />
-          <div className={`${face} bg-slate-500`} style={{ width: 20, height: 22, ...T("translate3d(35px, -56px, 0px) rotateY(90deg)") }} />
-          <div className={`${face} bg-slate-400`} style={{ width: 70, height: 20, ...T("translate3d(0px, -67px, 0px) rotateX(90deg)") }} />
-
-          {/* fan blades */}
-          <div style={{ width: 50, height: 50, ...T("translate3d(0px, -77px, 0px) rotateX(90deg)") }}>
-            <div className="absolute left-1/2 top-0 h-50 w-1 -translate-x-1/2 bg-slate-700" style={{ height: 50 }} />
-            <div className="absolute left-1/2 top-0 h-50 w-1 -translate-x-1/2 rotate-90 bg-slate-700" style={{ height: 50 }} />
-          </div>
-
-          {/* condenser coils */}
-          <div className={`${face} bg-amber-200`} style={{ width: 12, height: 70, ...T("translate3d(96px, 0px, 0px) rotateY(90deg)") }} />
-
-          {/* pipes */}
-          <div className="absolute bg-slate-600" style={{ width: 8, height: 45, ...T("translate3d(-95px, 25px, 0px) rotateZ(90deg)") }} />
+          {/* front panel */}
+          <div
+            className="absolute rounded border border-slate-500 bg-slate-700"
+            style={{ width: 60, height: 30, ...T("translate3d(0px, 0px, 36px)") }}
+          />
+          <div
+            className="absolute rounded bg-sky-500"
+            style={{ width: 50, height: 20, ...T("translate3d(0px, 0px, 37px)") }}
+          />
 
           {/* red problem dot */}
           <div
             className="absolute h-4 w-4 rounded-full bg-red-500 shadow-[0_0_14px_6px_rgba(239,68,68,0.7)]"
-            style={{ ...T("translate3d(40px, -10px, 36px)") }}
+            style={{ ...T("translate3d(50px, -10px, 36px)") }}
           />
         </div>
       </div>
