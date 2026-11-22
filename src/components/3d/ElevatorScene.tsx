@@ -61,16 +61,7 @@ export function ElevatorScene() {
             <boxGeometry args={[2.0, 0.25, 0.25]} />
             <meshStandardMaterial color={slate} roughness={0.5} metalness={0.3} />
           </mesh>
-          {/* side frame left */}
-          <mesh position={[-0.95, 0.4, 0]} castShadow>
-            <boxGeometry args={[0.12, 3.0, 2.0]} />
-            <meshStandardMaterial color={slate} roughness={0.5} metalness={0.3} />
-          </mesh>
-          {/* side frame right */}
-          <mesh position={[0.95, 0.4, 0]} castShadow>
-            <boxGeometry args={[0.12, 3.0, 2.0]} />
-            <meshStandardMaterial color={slate} roughness={0.5} metalness={0.3} />
-          </mesh>
+
           {/* ceiling */}
           <mesh position={[0, 1.9, 0]} castShadow receiveShadow>
             <boxGeometry args={[2.0, 0.12, 2.0]} />
@@ -93,15 +84,7 @@ export function ElevatorScene() {
             <meshStandardMaterial color={slate} roughness={0.5} metalness={0.3} />
           </mesh>
 
-          {/* handrails */}
-          <mesh position={[0.75, 0.6, 0.5]} rotation={[0, 0, Math.PI / 2]} castShadow>
-            <cylinderGeometry args={[0.03, 0.03, 1.2, 16]} />
-            <meshStandardMaterial color="#c0c0c0" metalness={0.9} roughness={0.2} />
-          </mesh>
-          <mesh position={[0.75, 0.0, 0.5]} rotation={[0, 0, Math.PI / 2]} castShadow>
-            <cylinderGeometry args={[0.03, 0.03, 1.2, 16]} />
-            <meshStandardMaterial color="#c0c0c0" metalness={0.9} roughness={0.2} />
-          </mesh>
+
 
           {/* control panel */}
           <mesh position={[0.85, 0.2, 0.5]} castShadow>
