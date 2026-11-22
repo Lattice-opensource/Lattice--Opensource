@@ -128,11 +128,7 @@ export function ElevatorScene() {
             <meshStandardMaterial color="#94a3b8" />
           </mesh>
 
-          {/* red problem marker */}
-          <mesh position={[0.4, -0.4, 0.95]}>
-            <sphereGeometry args={[0.06, 16, 16]} />
-            <meshStandardMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={0.8} />
-          </mesh>
+
         </group>
 
         <OrbitControls enablePan={false} minDistance={3} maxDistance={8} />

@@ -115,32 +115,10 @@ export function DeviceModel3D({ variant = "chiller" }: DeviceModel3DProps) {
               {face(W, D, `rotateX(90deg) translateZ(${H / 2}px)`, color)}
               {face(W, D, `rotateX(-90deg) translateZ(${H / 2}px)`, darkColor)}
 
-              {/* red problem dot */}
-              <div
-                className="absolute h-4 w-4 rounded-full bg-red-500 shadow-[0_0_14px_6px_rgba(239,68,68,0.7)]"
-                style={{
-                  left: "50%",
-                  top: "50%",
-                  marginLeft: -8,
-                  marginTop: -8,
-                  transform: `translateZ(${D / 2 + 1}px) translate(${W / 4}px, ${-H / 6}px)`,
-                }}
-              />
             </>
           )}
 
-          {isElevator ? (
-            <div
-              className="absolute h-4 w-4 rounded-full bg-red-500 shadow-[0_0_14px_6px_rgba(239,68,68,0.7)]"
-              style={{
-                left: "50%",
-                top: "50%",
-                marginLeft: -8,
-                marginTop: -8,
-                transform: "translateZ(12px) translate(0px, -4px)",
-              }}
-            />
-          ) : null}
+          {isElevator ? null : null}
         </div>
       </div>
       <p className="absolute bottom-0 left-0 right-0 text-center text-xs text-muted">
