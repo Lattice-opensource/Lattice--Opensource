@@ -6,6 +6,7 @@ import { RoomsPage } from "./pages/RoomsPage";
 import { AccountPage } from "./pages/AccountPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { InsightsPage } from "./pages/InsightsPage";
+import { NotificationsPage } from "./pages/NotificationsPage";
 import { DeskPage } from "./pages/DeskPage";
 import { AdminPage } from "./pages/AdminPage";
 import { DeskProvider } from "./data/DeskContext";
@@ -21,6 +22,8 @@ export default function App() {
           <Route path="/rooms" element={<RoomsPage />} />
           <Route path="/desk" element={<DeskPage />} />
           <Route path="/insights" element={<InsightsPage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/notifications/:id" element={<NotificationsPage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/account" element={<AccountPage />} />
           <Route path="/settings" element={<SettingsPage />} />

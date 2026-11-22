@@ -1,5 +1,6 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
+import { NOTIFICATIONS } from "../../data/notifications";
 
 interface SideNavProps {
   open: boolean;
@@ -20,10 +21,12 @@ const sections = [
 ];
 
 export function SideNav({ open, onClose }: SideNavProps) {
+  const navigate = useNavigate();
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [hasUnread, setHasUnread] = useState(true);
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
+  const hasUnread = readIds.size < NOTIFICATIONS.length;
 
   useEffect(() => {
     const move = (e: MouseEvent) => {
@@ -79,10 +82,7 @@ export function SideNav({ open, onClose }: SideNavProps) {
           </NavLink>
           <button
             type="button"
-            onClick={() => {
-              setNotifOpen((v) => !v);
-              setHasUnread(false);
-            }}
+            onClick={() => setNotifOpen((v) => !v)}
             className="relative rounded-lg p-1.5 text-white/80 hover:bg-white/10"
             aria-label="Notifications"
           >
@@ -119,12 +119,23 @@ export function SideNav({ open, onClose }: SideNavProps) {
             />
             <div className="fixed left-64 top-16 z-60 w-72 rounded-xl border border-line bg-card p-4 shadow-lg">
               <p className="text-sm font-semibold text-ink">Notifications</p>
-              <ul className="mt-3 space-y-2 text-sm text-muted">
-                <li className="rounded-lg bg-page/60 px-3 py-2">Chiller load above threshold</li>
-                <li className="rounded-lg bg-page/60 px-3 py-2">Server room temperature high</li>
-                <li className="rounded-lg bg-page/60 px-3 py-2">Elevator maintenance due</li>
-                <li className="rounded-lg bg-page/60 px-3 py-2">Lighting panel left on after hours</li>
-                <li className="rounded-lg bg-page/60 px-3 py-2">Water pump pressure drop</li>
+              <ul className="mt-3 space-y-2 text-sm">
+                {NOTIFICATIONS.map((n) => (
+                  <li key={n.id}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setReadIds((prev) => new Set(prev).add(n.id));
+                        setNotifOpen(false);
+                        navigate(`/notifications/${n.id}`);
+                      }}
+                      className="w-full rounded-lg bg-page/60 px-3 py-2 text-left text-muted hover:bg-page"
+                    >
+                      <span className="font-semibold text-ink">{n.title}</span>
+                      <span className="mt-0.5 block text-xs">{n.message}</span>
+                    </button>
+                  </li>
+                ))}
               </ul>
             </div>
           </>
