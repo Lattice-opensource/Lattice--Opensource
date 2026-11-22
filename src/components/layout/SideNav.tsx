@@ -61,7 +61,10 @@ export function SideNav({ open, onClose }: SideNavProps) {
       {open ? (
         <div
           className="fixed inset-0 z-40 bg-ink/30"
-          onClick={onClose}
+          onClick={() => {
+            onClose();
+            setNotifOpen(false);
+          }}
           aria-hidden="true"
         />
       ) : null}
