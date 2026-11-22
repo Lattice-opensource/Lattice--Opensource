@@ -1,5 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
+import { getEnergyApi } from "../../data/getEnergyApi";
+import type { SiteOverview } from "../../data/api/energyApi";
 
 interface SideNavProps {
   open: boolean;
@@ -22,6 +24,25 @@ const sections = [
 export function SideNav({ open, onClose }: SideNavProps) {
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [overview, setOverview] = useState<SiteOverview | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const api = getEnergyApi();
+        const o = await api.getSiteOverview?.();
+        if (o) setOverview(o);
+      } catch {
+        // ignore
+      }
+    };
+    load();
+    const id = setInterval(load, 15000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     const move = (e: MouseEvent) => {
@@ -57,7 +78,7 @@ export function SideNav({ open, onClose }: SideNavProps) {
       ) : null}
       <aside
         style={{ transform: `translate(${pos.x}px, ${pos.y}px)` }}
-        className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-brand-dark bg-brand transition-transform ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-brand-dark bg-brand transition-transform ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -65,12 +86,30 @@ export function SideNav({ open, onClose }: SideNavProps) {
           className="flex items-center justify-between border-b border-line px-4 py-4 cursor-move select-none"
           onMouseDown={startDrag}
         >
-          <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setProfileOpen((v) => !v)}
+            className="flex items-center gap-2"
+          >
             <span className="grid h-9 w-9 place-items-center rounded-full bg-white/20 text-sm font-bold text-white">
               BA
             </span>
             <span className="text-sm font-semibold text-white">Building Admin</span>
-          </div>
+          </button>
+          <button
+            type="button"
+            onClick={() => setNotifOpen((v) => !v)}
+            className="relative rounded-lg p-1.5 text-white/80 hover:bg-white/10"
+            aria-label="Notifications"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 3a6 6 0 0 0-6 6v3l-2 3h16l-2-3V9a6 6 0 0 0-6-6z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span className="absolute -top-0.5 -right-0.5 grid h-4 w-4 place-items-center rounded-full bg-brand text-[9px] font-bold text-white">
+              3
+            </span>
+          </button>
           <button
             type="button"
             onClick={onClose}
@@ -87,6 +126,46 @@ export function SideNav({ open, onClose }: SideNavProps) {
             </svg>
           </button>
         </div>
+        {profileOpen ? (
+          <div className="border-b border-line px-4 py-3 text-sm text-white">
+            <p className="font-semibold">Username: building.admin</p>
+            <p className="mt-1 flex items-center gap-2">
+              Password:
+              <span className="font-mono">{showPassword ? "Lattice@2026!" : "••••••••••"}</span>
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="text-white/80 hover:text-white"
+                aria-label="Toggle password visibility"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  {showPassword ? (
+                    <path d="M3 3l18 18M10.5 10.5a3 3 0 0 0 4 4M9.9 4.2A9 9 0 0 1 21 12a9 9 0 0 1-3.2 4.3M6.2 6.2A9 9 0 0 0 3 12a9 9 0 0 0 12.8 8.1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  ) : (
+                    <>
+                      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8" />
+                    </>
+                  )}
+                </svg>
+              </button>
+            </p>
+            <p className="mt-2">Estimated monthly bill: ₹{overview ? (overview.wholeSite.costInr * 30).toFixed(0) : "--"}</p>
+            <p className="mt-1">Today's expense: ₹{overview ? overview.wholeSite.costInr.toFixed(2) : "--"}</p>
+          </div>
+        ) : null}
+
+        {notifOpen ? (
+          <div className="border-b border-line px-4 py-3 text-sm text-white">
+            <p className="font-semibold">Notifications</p>
+            <ul className="mt-2 space-y-1 text-xs text-white/80">
+              <li>Chiller load above threshold</li>
+              <li>Server room temperature high</li>
+              <li>Elevator maintenance due</li>
+            </ul>
+          </div>
+        ) : null}
+
         <nav className="space-y-2 p-3" aria-label="Primary">
           {sections.map((section) => (
             <div key={section.title}>
@@ -117,6 +196,14 @@ export function SideNav({ open, onClose }: SideNavProps) {
             </div>
           ))}
         </nav>
+        <div className="mt-auto border-t border-line px-4 py-3">
+          <button
+            type="button"
+            className="w-full rounded-lg bg-white/10 px-3 py-2 text-sm font-medium text-white hover:bg-white/20"
+          >
+            Log out
+          </button>
+        </div>
       </aside>
     </>
   );
