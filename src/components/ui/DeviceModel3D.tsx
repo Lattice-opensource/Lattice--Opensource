@@ -23,10 +23,10 @@ export function DeviceModel3D({ variant = "chiller" }: DeviceModel3DProps) {
 
   const isServer = variant.includes("fridge");
   const isElevator = variant.includes("induction");
-  const W = isServer ? 80 : isElevator ? 60 : 180;
-  const H = isServer ? 150 : isElevator ? 170 : 90;
-  const D = 60;
-  const color = isServer ? "#94a3b8" : isElevator ? "#a78bfa" : "#cbd5e1";
+  const W = isServer ? 80 : isElevator ? 70 : 180;
+  const H = isServer ? 150 : isElevator ? 180 : 90;
+  const D = isElevator ? 70 : 60;
+  const color = isServer ? "#94a3b8" : isElevator ? "#c4b5fd" : "#cbd5e1";
   const darkColor = isServer ? "#64748b" : isElevator ? "#7c3aed" : "#94a3b8";
 
   const face = (w: number, h: number, transform: string, bg: string) => (
@@ -68,6 +68,17 @@ export function DeviceModel3D({ variant = "chiller" }: DeviceModel3DProps) {
           {face(D, H, `rotateY(90deg) translateZ(${W / 2}px)`, darkColor)}
           {face(W, D, `rotateX(90deg) translateZ(${H / 2}px)`, color)}
           {face(W, D, `rotateX(-90deg) translateZ(${H / 2}px)`, darkColor)}
+
+          {isElevator ? (
+            <>
+              {/* shaft rails */}
+              <div className="absolute bg-slate-600" style={{ width: 4, height: H - 20, left: "50%", top: "50%", marginLeft: -W / 2 + 8, marginTop: -(H / 2) + 10, transform: "translateZ(0px)" }} />
+              <div className="absolute bg-slate-600" style={{ width: 4, height: H - 20, left: "50%", top: "50%", marginLeft: W / 2 - 12, marginTop: -(H / 2) + 10, transform: "translateZ(0px)" }} />
+              {/* elevator car */}
+              <div className="absolute border border-slate-500 bg-slate-300" style={{ width: W - 16, height: 40, left: "50%", top: "50%", marginLeft: -(W - 16) / 2, marginTop: -10, transform: "translateZ(0px)" }} />
+              <div className="absolute bg-slate-700" style={{ width: W - 24, height: 4, left: "50%", top: "50%", marginLeft: -(W - 24) / 2, marginTop: -14, transform: "translateZ(1px)" }} />
+            </>
+          ) : null}
 
           {/* red problem dot */}
           <div
