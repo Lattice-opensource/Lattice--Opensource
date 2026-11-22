@@ -29,6 +29,9 @@ export function SideNav({ open, onClose }: SideNavProps) {
   const hasUnread = readIds.size < NOTIFICATIONS.length;
 
   useEffect(() => {
+    const closeOnBlur = () => setNotifOpen(false);
+    window.addEventListener("blur", closeOnBlur);
+    document.addEventListener("visibilitychange", closeOnBlur);
     const move = (e: MouseEvent) => {
       if (!dragRef.current) return;
       setPos({
@@ -44,6 +47,8 @@ export function SideNav({ open, onClose }: SideNavProps) {
     return () => {
       window.removeEventListener("mousemove", move);
       window.removeEventListener("mouseup", up);
+      window.removeEventListener("blur", closeOnBlur);
+      document.removeEventListener("visibilitychange", closeOnBlur);
     };
   }, []);
 
