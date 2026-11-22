@@ -54,13 +54,26 @@ export function DeviceModel3D() {
           {face(180, 90, "translateZ(35px)", "#e2e8f0")}
           {/* internal wiring */}
           <div className="absolute" style={{ width: 150, height: 60, left: "50%", top: "50%", marginLeft: -75, marginTop: -30, transform: "translateZ(-20px)" }}>
-            <div className="absolute left-0 top-2 h-1 w-full bg-red-500" />
-            <div className="absolute left-0 top-6 h-1 w-full bg-blue-500" />
-            <div className="absolute left-0 top-10 h-1 w-full bg-yellow-500" />
-            <div className="absolute left-4 top-0 h-full w-1 bg-red-500" />
-            <div className="absolute left-12 top-0 h-full w-1 bg-blue-500" />
-            <div className="absolute left-20 top-0 h-full w-1 bg-yellow-500" />
-            <div className="absolute left-28 top-0 h-full w-1 bg-red-500" />
+            <div className="absolute left-0 top-1 h-0.5 w-full bg-red-500" />
+            <div className="absolute left-0 top-4 h-0.5 w-full bg-blue-500" />
+            <div className="absolute left-0 top-8 h-0.5 w-full bg-yellow-500" />
+            <div className="absolute left-0 top-12 h-0.5 w-full bg-green-500" />
+            <div className="absolute left-0 top-16 h-0.5 w-full bg-purple-500" />
+            <div className="absolute left-2 top-0 h-full w-0.5 bg-red-500" />
+            <div className="absolute left-6 top-0 h-full w-0.5 bg-blue-500" />
+            <div className="absolute left-10 top-0 h-full w-0.5 bg-yellow-500" />
+            <div className="absolute left-14 top-0 h-full w-0.5 bg-green-500" />
+            <div className="absolute left-18 top-0 h-full w-0.5 bg-purple-500" />
+            <div className="absolute left-22 top-0 h-full w-0.5 bg-red-500" />
+            <div className="absolute left-26 top-0 h-full w-0.5 bg-blue-500" />
+            <div className="absolute left-30 top-0 h-full w-0.5 bg-yellow-500" />
+            <div className="absolute left-34 top-0 h-full w-0.5 bg-green-500" />
+            <div className="absolute left-38 top-0 h-full w-0.5 bg-purple-500" />
+            <div className="absolute left-42 top-0 h-full w-0.5 bg-red-500" />
+            <div className="absolute left-46 top-0 h-full w-0.5 bg-blue-500" />
+            <div className="absolute left-50 top-0 h-full w-0.5 bg-yellow-500" />
+            <div className="absolute left-54 top-0 h-full w-0.5 bg-green-500" />
+            <div className="absolute left-58 top-0 h-full w-0.5 bg-purple-500" />
           </div>
           {face(70, 90, "rotateY(-90deg) translateZ(90px)", "#e2e8f0")}
           {face(70, 90, "rotateY(90deg) translateZ(90px)", "#cbd5e1")}
