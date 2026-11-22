@@ -29,7 +29,7 @@ export function DeviceModel3D() {
         marginTop: -h / 2,
         background: bg,
         transform,
-        backfaceVisibility: "hidden",
+        backfaceVisibility: "visible",
       }}
     />
   );
