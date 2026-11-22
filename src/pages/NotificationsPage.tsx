@@ -48,9 +48,7 @@ export function NotificationsPage() {
                 <circle cx="150" cy="95" r="6" fill="#ef4444" />
                 <circle cx="150" cy="95" r="10" fill="none" stroke="#ef4444" strokeWidth="2" opacity="0.5" />
                 {/* label */}
-                <text x="120" y="175" textAnchor="middle" fontSize="10" fill="#6b7280">
-                  Problem area marked in red
-                </text>
+
               </svg>
             </div>
 
@@ -74,6 +72,17 @@ export function NotificationsPage() {
                 <p className="mt-2 text-sm text-emerald-900 dark:text-emerald-100">{selected.fix}</p>
               </div>
             </div>
+
+            {(selected.severity === "critical" || selected.severity === "warning") ? (
+              <div className="rounded-xl border border-red-300 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
+                <p className="text-xs font-semibold uppercase tracking-wide text-red-700 dark:text-red-300">
+                  Note
+                </p>
+                <p className="mt-2 text-sm text-red-900 dark:text-red-100">
+                  Problem area is marked in red on the device model above.
+                </p>
+              </div>
+            ) : null}
           </div>
         </Card>
       </div>
