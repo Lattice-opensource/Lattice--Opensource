@@ -53,7 +53,7 @@ export function DeviceModel3D() {
           {/* main body 180x90x70 */}
           {face(180, 90, "translateZ(35px)", "#e2e8f0")}
           {/* internal wiring */}
-          <div className="absolute" style={{ width: 150, height: 60, left: "50%", top: "50%", marginLeft: -75, marginTop: -30, transform: "translateZ(-20px)" }}>
+          <div className="absolute" style={{ width: 120, height: 50, left: "50%", top: "50%", marginLeft: -60, marginTop: -25, transform: "translateZ(-15px)" }}>
             <div className="absolute left-0 top-1 h-0.5 w-full bg-red-500" />
             <div className="absolute left-0 top-4 h-0.5 w-full bg-blue-500" />
             <div className="absolute left-0 top-8 h-0.5 w-full bg-yellow-500" />
