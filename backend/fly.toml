@@ -1,0 +1,25 @@
+app = "lattice-backend"
+primary_region = "sin"
+
+[build]
+  builder = "heroku/buildpacks:20"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "8080"
+  HOST = "0.0.0.0"
+  DATABASE_PATH = "/data/lattice.db"
+  SIMULATION_ENABLED = "true"
+  SEED_ON_START = "true"
+  STALE_AFTER_SECONDS = "1800"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[mounts]]
+  source = "lattice_data"
+  destination = "/data"
