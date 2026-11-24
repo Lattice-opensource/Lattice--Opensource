@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "../components/ui/Card";
 import { currentUser } from "../lib/currentUser";
 
 const TWO_FACTOR_KEY = "lattice_two_factor_enabled";
+const NOTIFICATIONS_KEY = "lattice_notifications_enabled";
 
 function loadTwoFactor(): boolean {
   try {
@@ -11,6 +12,30 @@ function loadTwoFactor(): boolean {
   } catch {
     return false;
   }
+}
+
+function loadNotifications(): boolean {
+  try {
+    const raw = localStorage.getItem(NOTIFICATIONS_KEY);
+    return raw === null ? true : raw === "true";
+  } catch {
+    return true;
+  }
+}
+
+function EyeIcon({ off }: { off: boolean }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="12" r="2.8" stroke="currentColor" strokeWidth="1.6" />
+      {off ? <path d="M4 4 20 20" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /> : null}
+    </svg>
+  );
 }
 
 function DetailRow({ label, value }: { label: string; value: string }) {
@@ -24,6 +49,30 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 
 export default function UserProfilePage() {
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(loadTwoFactor);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(loadNotifications);
+  const [theme, setTheme] = useState<"dark" | "light">(() =>
+    localStorage.getItem("lattice-theme") === "light" ? "light" : "dark",
+  );
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<"dark" | "light">).detail;
+      if (detail === "dark" || detail === "light") setTheme(detail);
+    };
+    window.addEventListener("lattice-theme-change", handler);
+    return () => window.removeEventListener("lattice-theme-change", handler);
+  }, []);
+
+  const toggleNotifications = () => {
+    const next = !notificationsEnabled;
+    setNotificationsEnabled(next);
+    try {
+      localStorage.setItem(NOTIFICATIONS_KEY, String(next));
+    } catch {
+      /* ignore */
+    }
+  };
 
   const toggleTwoFactor = () => {
     const next = !twoFactorEnabled;
@@ -72,7 +121,7 @@ export default function UserProfilePage() {
             <DetailRow label="Full name" value={currentUser.name} />
             <DetailRow label="Email address" value={currentUser.email} />
             <DetailRow label="Phone" value={currentUser.phone} />
-            <DetailRow label="Timezone" value={currentUser.timezone} />
+            <DetailRow label="Timezone" value={currentUser.timezoneLabel} />
           </dl>
         </Card>
 
@@ -81,11 +130,21 @@ export default function UserProfilePage() {
             <DetailRow label="Username" value={currentUser.username} />
             <div className="flex flex-col gap-0.5 border-b border-line py-3 last:border-b-0 sm:flex-row sm:items-center sm:justify-between">
               <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Password</dt>
-              <dd
-                className="select-none text-sm font-medium text-ink blur-[3px]"
-                aria-label="Password hidden"
-              >
-                {currentUser.password}
+              <dd className="flex items-center gap-2">
+                <span
+                  className={`text-sm font-medium text-ink ${passwordVisible ? "" : "select-none blur-[3px]"}`}
+                  aria-label={passwordVisible ? "Password visible" : "Password hidden"}
+                >
+                  {currentUser.password}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPasswordVisible((value) => !value)}
+                  className="rounded-lg border border-line p-1.5 text-muted transition-colors hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                  aria-label={passwordVisible ? "Hide password" : "Show password"}
+                >
+                  <EyeIcon off={!passwordVisible} />
+                </button>
               </dd>
             </div>
             <div className="flex flex-col gap-2 border-b border-line py-3 last:border-b-0 sm:flex-row sm:items-center sm:justify-between">
@@ -126,8 +185,20 @@ export default function UserProfilePage() {
 
         <Card title="Preferences" eyebrow="More">
           <dl>
-            <DetailRow label="Notifications" value="Email + in-app" />
-            <DetailRow label="Theme" value="Dark" />
+            <div className="flex flex-col gap-0.5 border-b border-line py-3 last:border-b-0 sm:flex-row sm:items-center sm:justify-between">
+              <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Notifications</dt>
+              <dd>
+                <button
+                  type="button"
+                  onClick={toggleNotifications}
+                  className="text-sm font-medium text-ink hover:text-brand-light"
+                  aria-label="Toggle notifications"
+                >
+                  {notificationsEnabled ? "On" : "Off"}
+                </button>
+              </dd>
+            </div>
+            <DetailRow label="Theme" value={theme === "light" ? "Light" : "Dark"} />
             <DetailRow label="Language" value="English (India)" />
           </dl>
         </Card>

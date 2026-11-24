@@ -1,3 +1,4 @@
+import { GlobalSearch } from "../ui/GlobalSearch";
 import { ThemeToggle } from "../ui/ThemeToggle";
 import { NotificationBell } from "../ui/NotificationBell";
 import { getStoredApiKey, setStoredApiKey } from "../../data/api/httpEnergyApi";
@@ -31,6 +32,7 @@ export function TopBar({ onMenuClick }: TopBarProps) {
         </div>
 
         <div className="flex items-center gap-3">
+          <GlobalSearch />
           <button
             type="button"
             onClick={() => {

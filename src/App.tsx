@@ -7,6 +7,7 @@ import { RoomsPage } from "./pages/RoomsPage";
 import RoomDetailsPage from "./pages/RoomDetailsPage";
 import { CampusPage } from "./pages/CampusPage";
 import { AlertsPage } from "./pages/AlertsPage";
+import AlertDetailsPage from "./pages/AlertDetailsPage";
 import { InsightsPage } from "./pages/InsightsPage";
 import { ReportsPage } from "./pages/ReportsPage";
 import UserProfilePage from "./pages/UserProfilePage";
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/rooms/:roomId" element={<RoomDetailsPage />} />
         <Route path="/campus" element={<CampusPage />} />
         <Route path="/alerts" element={<AlertsPage />} />
+        <Route path="/alerts/:alertId" element={<AlertDetailsPage />} />
         <Route path="/insights" element={<InsightsPage />} />
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/profile" element={<UserProfilePage />} />

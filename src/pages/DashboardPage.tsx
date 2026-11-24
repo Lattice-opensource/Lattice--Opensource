@@ -146,7 +146,7 @@ export function DashboardPage() {
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <span className="inline-flex items-center rounded-full border border-white/15 px-3.5 py-1.5 text-[12px] font-semibold lattice-hero-muted">
-                {overview.timezone}
+                {overview.timezone === currentUser.timezone ? currentUser.timezoneLabel : overview.timezone}
               </span>
             </div>
           </div>

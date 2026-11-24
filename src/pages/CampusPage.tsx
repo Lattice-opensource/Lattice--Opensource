@@ -27,11 +27,42 @@ function Metric({ label, value }: { label: string; value: string }) {
   );
 }
 
+const CUSTOM_BLOCKS_KEY = "lattice_custom_blocks";
+const CUSTOM_FLOORS_KEY = "lattice_custom_floors";
+
+function loadCustomBlocks(): Building[] {
+  try {
+    const raw = localStorage.getItem(CUSTOM_BLOCKS_KEY);
+    if (!raw) return [];
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as Building[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function loadCustomFloors(): Floor[] {
+  try {
+    const raw = localStorage.getItem(CUSTOM_FLOORS_KEY);
+    if (!raw) return [];
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as Floor[]) : [];
+  } catch {
+    return [];
+  }
+}
+
 export function CampusPage() {
   const siteLoader = useCallback(async () => { const api = getEnergyApi(); const overview = await api.getSiteOverview?.(); if (!overview || !api.getBuildings) throw new Error("Campus data is unavailable from this provider."); return { site: overview, buildings: await api.getBuildings(overview.siteId) }; }, []);
   const { state: siteState, reload } = useApiResource(siteLoader);
   const [building, setBuilding] = useState<Building>(); const [floor, setFloor] = useState<Floor>(); const [room, setRoom] = useState<Room>(); const [circuit, setCircuit] = useState<Circuit>();
   const [period, setPeriod] = useState<"24h" | "7d">("24h");
+  const [customBlocks, setCustomBlocks] = useState<Building[]>(loadCustomBlocks);
+  const [showAddBlock, setShowAddBlock] = useState(false);
+  const [blockName, setBlockName] = useState("");
+  const [customFloors, setCustomFloors] = useState<Floor[]>(loadCustomFloors);
+  const [showAddFloor, setShowAddFloor] = useState(false);
+  const [floorName, setFloorName] = useState("");
   const floorsLoader = useCallback(async () => { const getFloors = getEnergyApi().getFloors; return building && getFloors ? getFloors(building.id) : []; }, [building]);
   const roomsLoader = useCallback(async () => { const getRooms = getEnergyApi().getRooms; return floor && getRooms ? getRooms({ floorId: floor.id }) : []; }, [floor]);
   const circuitsLoader = useCallback(async () => { const getCircuits = getEnergyApi().getCircuits; return room && getCircuits ? getCircuits({ roomId: room.id }) : []; }, [room]);
@@ -47,6 +78,18 @@ export function CampusPage() {
   useEffect(() => { setCircuit(undefined); }, [room?.id]);
 
   const siteId = siteState.status === "ready" ? siteState.data.site.siteId : "";
+  const allBuildings = useMemo(
+    () => [...(siteState.status === "ready" ? siteState.data.buildings : []), ...customBlocks],
+    [siteState, customBlocks],
+  );
+  const apiFloors = floors.state.status === "ready" ? floors.state.data : [];
+  const buildingFloors = useMemo(
+    () =>
+      [...apiFloors, ...customFloors.filter((item) => item.buildingId === building?.id)].sort(
+        (a, b) => a.level - b.level,
+      ),
+    [apiFloors, customFloors, building?.id],
+  );
   const scopeParams = useMemo(() => {
     if (circuit) return { circuitId: circuit.id };
     if (room) return { roomId: room.id };
@@ -100,11 +143,188 @@ export function CampusPage() {
   const unknownCount = summaryData ? summaryData.byDevice.filter((d) => d.status === "unknown").length : 0;
   const offlineCount = summaryData ? summaryData.byDevice.filter((d) => d.status === "offline").length : 0;
 
+  function submitBlock(event: React.FormEvent) {
+    event.preventDefault();
+    const name = blockName.trim();
+    if (!name) return;
+    const now = new Date().toISOString();
+    const block: Building = {
+      id: `custom-block-${Date.now()}`,
+      siteId,
+      name,
+      createdAt: now,
+      updatedAt: now,
+    };
+    const next = [...customBlocks, block];
+    setCustomBlocks(next);
+    try {
+      localStorage.setItem(CUSTOM_BLOCKS_KEY, JSON.stringify(next));
+    } catch {
+      /* ignore */
+    }
+    setBlockName("");
+    setShowAddBlock(false);
+  }
+
+  function persistFloors(next: Floor[]) {
+    setCustomFloors(next);
+    try {
+      localStorage.setItem(CUSTOM_FLOORS_KEY, JSON.stringify(next));
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function addFloor(name?: string) {
+    if (!building) return;
+    const level = buildingFloors.length;
+    const now = new Date().toISOString();
+    const item: Floor = {
+      id: `custom-floor-${Date.now()}`,
+      buildingId: building.id,
+      name: name?.trim() || `Floor ${level + 1}`,
+      level,
+      createdAt: now,
+      updatedAt: now,
+    };
+    persistFloors([...customFloors, item]);
+    setFloorName("");
+    setShowAddFloor(false);
+    setFloor(item);
+  }
+
+  function changeFloorCount(count: number) {
+    const currentCustom = customFloors.filter((item) => item.buildingId === building?.id);
+    const otherCustom = customFloors.filter((item) => item.buildingId !== building?.id);
+    if (count > buildingFloors.length) {
+      const additions: Floor[] = [];
+      for (let i = buildingFloors.length; i < count; i += 1) {
+        const now = new Date().toISOString();
+        additions.push({
+          id: `custom-floor-${Date.now()}-${i}`,
+          buildingId: building?.id ?? "",
+          name: `Floor ${i + 1}`,
+          level: i,
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
+      persistFloors([...otherCustom, ...currentCustom, ...additions]);
+    } else if (count < buildingFloors.length) {
+      const removeCount = Math.min(buildingFloors.length - count, currentCustom.length);
+      const keptCustom = currentCustom.slice(0, currentCustom.length - removeCount);
+      persistFloors([...otherCustom, ...keptCustom]);
+    }
+  }
+
   return (
     <div className="space-y-5">
-      <header><h1 className="text-2xl font-bold tracking-tight text-ink md:text-3xl">Campus</h1><p className="mt-1 text-sm text-muted">{context}</p></header>
-      <Card title="Buildings" eyebrow="01 · Site"><ChoiceList items={siteState.data.buildings} selectedId={building?.id} onSelect={setBuilding} empty="No buildings are available for this site." /></Card>
-      {building ? panel("Floors", floors, (items) => <ChoiceList items={items as Floor[]} selectedId={floor?.id} onSelect={setFloor} empty="No floors are available for this building." />) : null}
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-ink md:text-3xl">Campus</h1>
+          <p className="mt-1 text-sm text-muted">{context}</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowAddBlock(true)}
+          className="rounded-lg border border-line bg-page px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-brand/40 hover:text-brand-light"
+        >
+          ＋ Add block
+        </button>
+      </header>
+      <Card
+        title="Buildings"
+        eyebrow="01 · Site"
+        action={
+          <button
+            type="button"
+            onClick={() => setShowAddBlock(true)}
+            className="rounded-lg border border-line px-2.5 py-1 text-[11px] font-semibold text-muted transition-colors hover:border-brand/40 hover:text-brand-light"
+          >
+            ＋ Add block
+          </button>
+        }
+      >
+        <ChoiceList items={allBuildings} selectedId={building?.id} onSelect={setBuilding} empty="No buildings are available for this site." />
+      </Card>
+      {building ? (
+        <Card
+          title="Floors"
+          eyebrow={`${buildingFloors.length} ${buildingFloors.length === 1 ? "floor" : "floors"}`}
+          action={
+            <button
+              type="button"
+              onClick={() => setShowAddFloor(true)}
+              className="rounded-lg border border-line px-2.5 py-1 text-[11px] font-semibold text-muted transition-colors hover:border-brand/40 hover:text-brand-light"
+            >
+              ＋ Add floor
+            </button>
+          }
+        >
+          {floors.state.status === "loading" ? (
+            <Spinner label="Loading floors" />
+          ) : floors.state.status === "error" ? (
+            <ErrorState message={floors.state.message} />
+          ) : (
+            <>
+              <ChoiceList
+                items={buildingFloors}
+                selectedId={floor?.id}
+                onSelect={setFloor}
+                empty="No floors are available for this building."
+              />
+              <div className="mt-4 flex items-center gap-2 border-t border-line pt-3">
+                <span className="text-xs font-semibold text-muted">Number of floors</span>
+                <div className="ml-auto flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => changeFloorCount(buildingFloors.length - 1)}
+                    className="grid h-7 w-7 place-items-center rounded-lg border border-line text-sm text-ink hover:border-brand/40"
+                    aria-label="Remove a floor"
+                  >
+                    −
+                  </button>
+                  <span className="w-6 text-center text-sm font-bold text-ink">{buildingFloors.length}</span>
+                  <button
+                    type="button"
+                    onClick={() => changeFloorCount(buildingFloors.length + 1)}
+                    className="grid h-7 w-7 place-items-center rounded-lg border border-line text-sm text-ink hover:border-brand/40"
+                    aria-label="Add a floor"
+                  >
+                    ＋
+                  </button>
+                </div>
+              </div>
+              {showAddFloor ? (
+                <form
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    addFloor(floorName);
+                  }}
+                  className="mt-3 flex flex-col gap-2 sm:flex-row"
+                >
+                  <input
+                    value={floorName}
+                    onChange={(event) => setFloorName(event.target.value)}
+                    placeholder={`Floor ${buildingFloors.length + 1}`}
+                    className="flex-1 rounded-lg border border-line bg-page px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-brand/40 focus:outline-none"
+                  />
+                  <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white">
+                    Add
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddFloor(false)}
+                    className="rounded-lg border border-line px-3 py-2 text-sm text-muted"
+                  >
+                    Cancel
+                  </button>
+                </form>
+              ) : null}
+            </>
+          )}
+        </Card>
+      ) : null}
       {floor ? panel("Spaces", rooms, (items) => <ChoiceList items={items as Room[]} selectedId={room?.id} onSelect={setRoom} empty="No spaces are available on this floor." />) : null}
       {room ? panel("Circuits", circuits, (items) => <ChoiceList items={items as Circuit[]} selectedId={circuit?.id} onSelect={setCircuit} empty="No circuits are assigned to this space." />) : null}
       {circuit ? panel("Devices & meters", devices, (items) => <CircuitDevices devices={items as Device[]} />) : null}
@@ -179,7 +399,57 @@ export function CampusPage() {
             </div>
             {historyRes.state.status === "loading" ? <Spinner label="Loading history" /> : historyRes.state.status === "error" ? <ErrorState message={historyRes.state.message} /> : <SitePowerChart points={historyPoints} timezone={historyTimezone} />}
           </Card>
+
+          <Card title="Add block" eyebrow="02 · Site">
+            <form onSubmit={submitBlock} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <label className="flex-1 text-xs font-semibold text-muted">
+                Block name
+                <input
+                  required
+                  value={blockName}
+                  onChange={(event) => setBlockName(event.target.value)}
+                  placeholder="e.g. Academic Block B"
+                  className="mt-1 w-full rounded-lg border border-line bg-page px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-brand/40 focus:outline-none"
+                />
+              </label>
+              <button
+                type="submit"
+                className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+              >
+                Add block
+              </button>
+            </form>
+          </Card>
         </>
+      ) : null}
+
+      {showAddBlock ? (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/60 p-4" role="presentation">
+          <form onSubmit={submitBlock} className="w-full max-w-md space-y-4 rounded-2xl border border-line bg-card p-5 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-ink">Add block</h2>
+                <p className="mt-0.5 text-xs text-muted">Add a building block to this campus.</p>
+              </div>
+              <button type="button" onClick={() => setShowAddBlock(false)} className="rounded-lg border border-line px-2 py-1 text-xs text-muted hover:text-ink">
+                Close
+              </button>
+            </div>
+            <label className="block text-xs font-semibold text-muted">
+              Block name
+              <input
+                required
+                value={blockName}
+                onChange={(event) => setBlockName(event.target.value)}
+                placeholder="e.g. Academic Block B"
+                className="mt-1 w-full rounded-lg border border-line bg-page px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-brand/40 focus:outline-none"
+              />
+            </label>
+            <button type="submit" className="w-full rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white transition hover:opacity-90">
+              Add block
+            </button>
+          </form>
+        </div>
       ) : null}
     </div>
   );

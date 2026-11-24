@@ -7,6 +7,23 @@ import { useApiResource } from "../../data/useApiResource";
 const READ_ALERTS_KEY = "lattice_read_alerts";
 const POLL_INTERVAL_MS = 30000;
 
+const PROMOS = [
+  {
+    id: "promo-pro",
+    tag: "PRO",
+    title: "Upgrade to Home Pro",
+    detail: "Unlock advanced insights, custom reports, and priority support.",
+    to: "/profile",
+  },
+  {
+    id: "promo-insights",
+    tag: "NEW",
+    title: "See where your money goes",
+    detail: "Open Insights for personalised ways to cut your electricity bill.",
+    to: "/insights",
+  },
+];
+
 function loadReadIds(): Set<string> {
   try {
     const raw = localStorage.getItem(READ_ALERTS_KEY);
@@ -107,7 +124,7 @@ export function NotificationBell() {
   const openAlert = (alert: Alert) => {
     markRead(alert.id);
     setOpen(false);
-    navigate("/alerts");
+    navigate(`/alerts/${encodeURIComponent(alert.id)}`);
   };
 
   return (
@@ -182,6 +199,33 @@ export function NotificationBell() {
               })}
             </ul>
           )}
+
+          <div className="border-t border-line bg-page/40 px-3 py-3">
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+              From Lattice
+            </p>
+            <div className="space-y-2">
+              {PROMOS.map((promo) => (
+                <button
+                  key={promo.id}
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    navigate(promo.to);
+                  }}
+                  className="flex w-full items-start gap-2 rounded-lg border border-brand/20 bg-brand/5 p-2.5 text-left transition-colors hover:bg-brand/10"
+                >
+                  <span className="rounded bg-brand px-1.5 py-0.5 text-[9px] font-black text-white">
+                    {promo.tag}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-xs font-semibold text-ink">{promo.title}</span>
+                    <span className="mt-0.5 block text-[11px] leading-snug text-muted">{promo.detail}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       ) : null}
     </div>

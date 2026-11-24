@@ -7,6 +7,7 @@ export const currentUser = {
   role: "Site administrator",
   phone: "+91 98765 43210",
   timezone: "Asia/Kolkata",
+  timezoneLabel: "Bengaluru",
   plan: "Home Pro",
   memberSince: "January 2026",
   site: "Lattice Home",

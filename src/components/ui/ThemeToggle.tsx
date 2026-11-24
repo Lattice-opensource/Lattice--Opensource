@@ -41,6 +41,7 @@ export function ThemeToggle() {
   useEffect(() => {
     document.documentElement.classList.toggle("light", !dark);
     localStorage.setItem("lattice-theme", dark ? "dark" : "light");
+    window.dispatchEvent(new CustomEvent("lattice-theme-change", { detail: dark ? "dark" : "light" }));
   }, [dark]);
 
   return (
