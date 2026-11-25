@@ -40,6 +40,11 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   // Optional shared API key guard (deployment convenience, NOT user auth).
   app.addHook('onRequest', async (req, reply) => {
+    // Health/liveness endpoints stay open so uptime monitors and load balancers
+    // can probe without an API key.
+    const openPaths = ['/', '/api/health'];
+    const path = (req.url.split('?')[0] ?? '/');
+    if (openPaths.includes(path)) return;
     if (env.API_KEY && req.url.startsWith('/api/')) {
       const provided = req.headers['x-api-key'];
       const expected = env.API_KEY;
