@@ -79,10 +79,8 @@ body {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background-image:
-    repeating-linear-gradient(45deg, rgba(225, 29, 72, 0.32) 0, rgba(225, 29, 72, 0.32) 2px, transparent 2px, transparent 16px),
-    repeating-linear-gradient(-45deg, rgba(225, 29, 72, 0.32) 0, rgba(225, 29, 72, 0.32) 2px, transparent 2px, transparent 16px);
-  background-size: 32px 32px;
+  background-image: radial-gradient(rgba(225, 29, 72, 0.32) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
   z-index: 0;
 }
 
@@ -103,9 +101,7 @@ body {
 }
 
 .light .tab-surface::before {
-  background-image:
-    repeating-linear-gradient(45deg, rgba(225, 29, 72, 0.09) 0, rgba(225, 29, 72, 0.09) 1px, transparent 1px, transparent 16px),
-    repeating-linear-gradient(-45deg, rgba(225, 29, 72, 0.09) 0, rgba(225, 29, 72, 0.09) 1px, transparent 1px, transparent 16px);
+  background-image: radial-gradient(rgba(225, 29, 72, 0.22) 1.5px, transparent 1.5px);
 }
 
 .light .tab-surface::after {
