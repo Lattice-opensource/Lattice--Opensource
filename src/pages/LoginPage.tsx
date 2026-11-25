@@ -1,17 +1,17 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRef, useState } from "react";
 import { login } from "../lib/auth";
 
 export default function LoginPage() {
-  const navigate = useNavigate();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const userRef = useRef<HTMLInputElement>(null);
+  const passRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState("");
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (login(username, password)) {
-      navigate("/dashboard", { replace: true });
+    const u = userRef.current?.value ?? "";
+    const p = passRef.current?.value ?? "";
+    if (login(u, p)) {
+      window.location.href = "/dashboard";
     } else {
       setError("Invalid credentials");
     }
@@ -27,17 +27,17 @@ export default function LoginPage() {
         <p className="mt-1 text-sm text-muted">Sign in to continue</p>
         <div className="mt-4 space-y-3">
           <input
+            ref={userRef}
             type="text"
             placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            defaultValue=""
             className="w-full rounded-lg border border-line bg-page/60 px-3 py-2 text-sm text-ink outline-none focus:ring-2 focus:ring-brand/40"
           />
           <input
+            ref={passRef}
             type="password"
             placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            defaultValue=""
             className="w-full rounded-lg border border-line bg-page/60 px-3 py-2 text-sm text-ink outline-none focus:ring-2 focus:ring-brand/40"
           />
         </div>

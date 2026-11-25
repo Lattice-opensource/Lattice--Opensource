@@ -11,7 +11,17 @@ import AlertDetailsPage from "./pages/AlertDetailsPage";
 import { InsightsPage } from "./pages/InsightsPage";
 import { ReportsPage } from "./pages/ReportsPage";
 import UserProfilePage from "./pages/UserProfilePage";
+import LoginPage from "./pages/LoginPage";
+import { isAuthenticated } from "./lib/auth";
+
 export default function App() {
+  if (!isAuthenticated()) {
+    return (
+      <Routes>
+        <Route path="*" element={<LoginPage />} />
+      </Routes>
+    );
+  }
   return (
     <Routes>
       <Route element={<AppShell />}>
