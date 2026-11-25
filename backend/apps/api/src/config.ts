@@ -13,7 +13,7 @@ export const API_ROOT = path.resolve(__dirname, '..');
 const EnvSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().int().min(1).max(65535).default(4000),
-  HOST: z.string().min(1).default('127.0.0.1'),
+  HOST: z.string().min(1).default(process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1'),
   DATABASE_PATH: z.string().min(1).optional(),
   CORS_ORIGINS: z.string().optional(),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).default('info'),
@@ -97,7 +97,7 @@ function parseBool(v: string | undefined, fallback: boolean): boolean {
 }
 
 export const isProduction = env.NODE_ENV === 'production';
-export const simulationEnabled = parseBool(env.SIMULATION_ENABLED, env.NODE_ENV !== 'production');
+export const simulationEnabled = parseBool(env.SIMULATION_ENABLED, true);
 export const devEndpointsEnabled = parseBool(env.ENABLE_DEV_ENDPOINTS, env.NODE_ENV !== 'production');
 export const seedOnStart = parseBool(env.SEED_ON_START, true);
 
