@@ -1,14 +1,33 @@
 import type { DatabaseSync } from 'node:sqlite';
 import { env, seedOnStart, simulationEnabled } from '../config.js';
-import { upsertSimulatedDevices, backfillHistory } from '../services/simulator.js';
+import { upsertSimulatedDevices, backfillHistory, SITE_ID } from '../services/simulator.js';
 import { countDevices } from '../db/repositories/devices.js';
 import { countReadings as countReadingsRepo } from '../db/repositories/readings.js';
+import { upsertSite } from '../db/repositories/sites.js';
 
 export interface SeedOptions {
   force?: boolean;
 }
 
 export function seedDatabase(db: DatabaseSync, opts: SeedOptions = {}): { seeded: boolean; reason: string } {
+  // Ensure the default site exists even when simulation is disabled, so real
+  // (Tuya) devices can be registered against it.
+  upsertSite(db, {
+    id: SITE_ID,
+    name: 'Lattice Home',
+    timezone: 'Asia/Kolkata',
+    currency: 'INR',
+    tariffJson: JSON.stringify({
+      type: 'slab',
+      unit: 'kWh',
+      slabs: [
+        { upToKwh: 100, rateInrPerKwh: 2.5 },
+        { upToKwh: 400, rateInrPerKwh: 5.5 },
+        { upToKwh: null, rateInrPerKwh: 7.5 },
+      ],
+    }),
+  });
+
   if (!simulationEnabled) {
     return { seeded: false, reason: 'simulation disabled (SIMULATION_ENABLED=false)' };
   }
